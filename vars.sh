@@ -11,3 +11,6 @@ export SECRETS="${HOME}/.env/secrets"
 ## GPG variables for SSH.
 export GPG_TTY="$(tty)"
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+
+## Misc. variables.
+AWS_ECR=770088062852.dkr.ecr.us-east-1.amazonaws.com

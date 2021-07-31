@@ -12,3 +12,7 @@ xrandr \
   --output DP4 --off \
   --output HDMI1 --mode 1920x1080 --pos 1920x144 --rotate normal \
   --output VIRTUAL1 --off
+
+sleep 2
+
+source ${HOME}/.bashrc

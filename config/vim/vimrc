@@ -19,4 +19,11 @@ set number            " Put line numbers.
 set spelllang=en_us   " Set spellcheck language.
 set foldmethod=indent " Set fold for indented lines.
 
-let g:tex_flavor='latex'
+au BufNewFile, BufRead *.py " Set Python settings
+    \ set tabstop=4 |
+    \ set softtabstop=4 |
+    \ set shiftwidth=4 |
+    \ set textwidth=79 |
+    \ set expandtab |
+    \ set autoindent |
+    \ set fileformat=unix

@@ -4,6 +4,9 @@ alias la='ls -lFha'
 alias l='ls -CF'
 alias df='df -h'
 
+# AWS
+alias ecr-login='aws ecr get-login-password | docker login ${AWS_ECR} -u AWS --password-stdin'
+
 # cd
 alias back="cd ${OLDPWD}"
 

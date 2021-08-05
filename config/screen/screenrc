@@ -1,7 +1,8 @@
 # ~/.screenrc
-hardstatus alwayslistline
+startup_message off
 defshell -bash
+shelltitle "$ |bash"
 defscrollback 300000
-defslowpaste 0
 defslowpaste 1
-fileformat=unix
+hardstatus alwayslistline
+hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'

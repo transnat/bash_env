@@ -1,18 +1,25 @@
 #!/bin/sh
 xrandr \
-  --auto
-
-sleep 2
-
-xrandr \
-  --output eDP1 --primary --mode 1920x1200 --pos 0x144 --rotate normal \
+  --output eDP1 --primary --mode 1920x1200 --pos 0x173 --rotate normal \
   --output DP1 --off \
+  --output DP1-1 --off \
+  --output DP1-2 --off \
   --output DP2 --off \
-  --output DP3 --mode 1920x1080 --pos 3840x0 --rotate right \
+  --output DP2-1 --off \
+  --output DP2-2 --off \
+  --output DP3 --off \
+  --output DP3-1 --mode 1920x1080 --pos 3840x0 --rotate right \
+  --output DP3-2 --mode 1920x1080 --pos 1920x293 --rotate normal \
+  --output DP3-3 --off \
   --output DP4 --off \
-  --output HDMI1 --mode 1920x1080 --pos 1920x144 --rotate normal \
-  --output VIRTUAL1 --off
-
-sleep 2
+  --output DP4-2 --off \
+  --output DP4-3 --off \
+  --output HDMI1 --off \
+  --output HDMI1-1 --off \
+  --output HDMI1-2 --off \
+  --output HDMI2 --off \
+  --output HDMI2-1 --off \
+  --output HDMI2-2 --off \
+  --output VIRTUAL1 --off &&
 
 source ${HOME}/.bashrc

@@ -4,7 +4,7 @@ This repository aims to provide a portable and distro-agnostic bash environment 
 While the repository is *intended* to be portable, it should not be assumed to be in all cases. Distros I use with regularity include Centos 8, Debian 10, Manjaro, and Ubuntu 20.04 and are, for the most part, supported by this repository.
 
 ## Using this repository
-To use this repo, clone it to your home directory and run `~/env/install.sh`. Be aware that it will replace your existing `.profile`, `.bashrc`, `.screenrc`, `.vimrc`, and `.vim` directory, as well as variables such as `$SCRIPTS` and `$FUNCTIONS`, if they exist already. Once installed, run `source ~/.profile` to load the new envoronment.
+To use this repo, clone it to your home directory and run `make all`. Be aware that it will replace your existing `.profile`, `.bashrc`, `.screenrc`, `.vimrc`, and `.vim` directory, as well as variables such as `$SCRIPTS` and `$FUNCTIONS`, if they exist already. Once installed, run `source ~/.profile` to load the new envoronment.
 
 Lastly, it bears noting that certain functions, scripts, and/or aliases are useful only to me; remove them and fork the repository if you feel the urge. Some files are encrypted, and therefore only usable *by* me.
 

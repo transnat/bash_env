@@ -1,5 +1,6 @@
 # ~/.screenrc
 startup_message off
+caption always
 defshell -bash
 shelltitle "$ |bash"
 defscrollback 300000

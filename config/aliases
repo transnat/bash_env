@@ -58,8 +58,8 @@ alias mysql="mysql -u $(whoami) -p"
 
 ### Python 3
 alias va="source ./venv/bin/activate"
-alias ve="python -m venv ./venv"
-alias www="python -m http.server 8000"
+alias ve="python3 -m venv ./venv"
+alias www="python3 -m http.server 8000"
 
 ### rm
 alias rmf="rm -rf"

@@ -1,32 +1,38 @@
-# if running bash
+# If running bash
 if [ -n "$BASH_VERSION" ]; then
-  # include .bashrc, if it exists.
+
+  # Include .bashrc, if it exists.
   if [ -f "$HOME/.bashrc" ]; then
     . "$HOME/.bashrc" >> /dev/null
   fi
 fi
 
-# set PATH so it includes user's private bin, if it exists.
+# Set PATH so it includes user's private bin, if it exists.
 if [ -d "$HOME/bin" ] ; then
   PATH="$HOME/bin:$PATH"
 fi
 
-# set PATH so it includes user's local bin, if it exists.
+# Set PATH so it includes user's local bin, if it exists.
 if [ -d "$HOME/.local/bin" ] ; then
   PATH="$HOME/.local/bin:$PATH"
 fi
 
-# set PATH so it includes snap, if it exists.
+# Set PATH so it includes snap, if it exists.
 if [ -d "$HOME/.local/bin" ] ; then
   PATH="/var/lib/snapd/snap/bin:$PATH"
 fi
 
-# set PATH so it includes script directory, if it exists.
+# Set PATH so it includes script directory, if it exists.
 if [ -d "$HOME/.env/scripts" ] ; then
   PATH="$HOME/.env/scripts:$PATH"
 fi
 
-# set PATH so it includes gpg-encrypted script directory, if it exists.
+# Set PATH so it includes gpg-encrypted script directory, if it exists.
 if [ -d "$HOME/.env/gsh" ]; then
   PATH="$HOME/.env/gsh:$PATH"
+fi
+
+# Set PATH so it includes go, if installed.
+if [ -d /usr/local/go/bin ]; then
+  PATH="/usr/local/go/bin:$PATH"
 fi

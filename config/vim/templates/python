@@ -15,6 +15,7 @@ locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 handler = logging.StreamHandler()
 log = logging.getLogger()
 parser = argparse.ArgumentParser()
+args = get_arguments(parser)
 
 handler.setFormatter(logging.Formatter('%(asctime)s: "%(name)s" (line: %(lineno)d) - %(levelname)s %(message)s'))
 log.setLevel(logging.DEBUG)
@@ -24,7 +25,7 @@ def get_arguments(parser):
     parser.add_argument(
         '--verbose', '-v',
         action = 'store_const',
-        dest = loglevel,
+        dest = 'loglevel',
         const = log.DEBUG,
         help = 'Set log level to DEBUG.'
     )

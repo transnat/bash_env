@@ -1,0 +1,19 @@
+[user]
+	email = himself@caseyspar.kz
+	name = caseysparkz
+	signingKey = 0x3260255327CBCDA1
+[ssh]
+	postBuffer = 1048576000
+[init]
+	defaultBranch = main
+[http]
+	postBuffer = 1048576000
+[pull]
+	rebase = false
+[commit]
+	gpgsign = true
+[push]
+	default = current
+[fetch]
+	prune = true
+	pruneTags = true

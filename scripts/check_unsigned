@@ -1,0 +1,4 @@
+chkafter="${1+$1..}"
+t=$( echo "  " )
+git log --pretty="format:%H$t%aN$t%s$t%G?" "${chkafter:-HEAD}" | grep -v "${t}G$"
+[ $? -gt 0 ]

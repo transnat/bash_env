@@ -1,0 +1,35 @@
+#!/bin/env bash
+
+TEMPFILE=$(mktemp)
+
+# Remove shebang.
+if head -n 1 "${1}" | grep \#\!/ > /dev/null; then
+  sed -i 1d "${1}"
+fi
+
+# Encrypt and write to temporary file.
+gpg2 --yes --output ${TEMPFILE} --sign --armor --encrypt "${1}"
+
+# Make gsh script and prepend shebang, cleartext commands.
+cat > "${1}".gsh << "EOF"
+#!/bin/env bash
+
+gpg2 --decrypt 2> /dev/null << EOF | bash -s $@
+
+EOF
+
+# Write contents of temporary file to gsh script.
+cat ${TEMPFILE} >> "${1}".gsh
+
+# Append EOF terminator to gsh script.
+printf "\nEOF" >> "${1}".gsh
+
+# Delete temporary file and original script.
+rm ${TEMPFILE} "${1}"
+
+# Change gsh script permissions to process owner.
+chown $(whoami):$(whoami) "${1}".gsh
+chmod +x "${1}".gsh
+
+# Rename gsh script to original filename.
+mv "${1}".gsh "${1}"

@@ -1,0 +1,17 @@
+#!/bin/env bash
+# Display info about the hosts Internet connection.
+
+  printf "Network Information\n";
+  printf "===================\n";
+
+(printf "Public IP:"
+  printf "$(curl ipinfo.io/ip 2> /dev/null )\n"
+  printf "Local IP:"
+  printf "$(ifconfig | awk '$1=="inet"{printf $2; exit}')\n"
+  printf "Netmask:"
+  printf "$(ifconfig | awk '$3=="netmask"{printf $4; exit}')\n"
+  printf "Broadcast:"
+  printf "$(ifconfig | awk '$5=="broadcast"{printf $6; exit}')\n") |
+column -t -s:;
+
+printf "\n";

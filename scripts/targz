@@ -1,0 +1,4 @@
+#!/bin/env bash
+# .tar.gz stuff without thinking about it too hard.
+
+tar -zcvf ${1}.tar.gz ${1}

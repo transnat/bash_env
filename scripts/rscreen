@@ -1,0 +1,11 @@
+#!/bin/env bash
+### rscreen: Record primary display.
+
+ffmpeg                                                \
+  -f x11grab                                          \
+  -r 30                                               \
+  -s 1920x1080                                        \
+  -i :0.0                                             \
+  -q:v 0                                              \
+  -q:a 0                                              \
+  ${HOME}/Videos/screen_recordings/%Y-%m-%d_%H:%M.mpg

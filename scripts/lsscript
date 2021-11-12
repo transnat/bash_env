@@ -1,0 +1,16 @@
+#!/bin/env bash
+### lsscript: List all scripts.
+
+printf 'Scripts:\n-----\n';
+
+( grep '###' ~/.env/scripts/* |
+
+grep -v 'sed' |
+
+grep -v 'grep'|
+
+sed -e 's/.*###\ //g';
+
+printf '\n') |
+
+column -t -s: 

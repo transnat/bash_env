@@ -1,0 +1,9 @@
+# ~/.screenrc
+startup_message off
+caption always
+defshell -bash
+shelltitle "$ |bash"
+defscrollback 3000000
+defslowpaste 1
+hardstatus alwayslistline
+hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'

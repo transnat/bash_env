@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+docker(){
+    case "$@" in
+        login\ primetrust)
+            command aws ecr get-login-password --profile security | \
+                docker login -u AWS --password-stdin ${DEVOPS_ECR} ;;
+
+        login\ caseysparkz)
+            command aws ecr get-login-password | \
+                docker login -u AWS --password-stdin ${ECR} ;;
+
+        *)
+            command docker "$@"
+    esac
+}

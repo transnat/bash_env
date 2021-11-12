@@ -1,0 +1,122 @@
+## If not running interactively, don't do anything.
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# Don't save duplicate lines or lines starting with space in history.
+HISTCONTROL=ignoreboth
+HISTSIZE=1000 # Set history length.
+HISTFILESIZE=2000 # Set history file size.
+
+# Shell options.
+shopt -s histappend # Append to the history file, don't overwrite it.
+shopt -s checkwinsize # Check the window size; update LINES, COLUMNS.
+shopt -s globstar # match all files and zero or more directories and subdirectories with "**"
+
+if ! shopt -oq posix; then # Enable programmable completion features.
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    source /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    source /etc/bash_completion
+  fi
+fi
+
+# Make `less` more friendly for non-text input files (see lesspipe(1)).
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# Set variable identifying the chroot you work in (used in the prompt below).
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# Set a fancy prompt.
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# Set color prompt.
+force_color_prompt=yes
+if [ -n "$force_color_prompt" ]; then
+    if [ -x $(which tput) ] && tput setaf 1 &> /dev/null; then
+        color_prompt=yes
+    else
+        color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+	PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+	PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir.
+case "$TERM" in
+    xterm*|rxvt*)
+        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+        ;;
+
+    *)
+        ;;
+esac
+
+# Enable color support.
+if [ -x $(which dircolors) ]; then
+    test -r ${HOME}/.dircolors && eval "$(dircolors -b ${HOME}/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# Source env vars.
+if [ -f ${HOME}/.env/vars.sh ]; then
+  source ${HOME}/.env/vars.sh
+fi
+
+# Source alias definitions.
+if [ -f ${ALIASES} ]; then
+    source ${ALIASES}
+fi
+
+# Source function definitions.
+if [ -d ${FUNCTIONS} ]; then
+  for f in ${FUNCTIONS}/*; do
+    source $f;
+  done
+fi
+
+# Launch gpg-agent.
+if [ -x /usr/bin/gpgconf ]; then
+  gpgconf --launch gpg-agent
+fi
+
+# Enable thefuck.
+if [ -x $(which thefuck) ]; then
+  eval $(thefuck --alias)
+fi
+
+# Enable wal.
+if [ -x $(which wal) ]; then
+  wal -i $(grep file ${HOME}/.config/nitrogen/bg-saved.cfg | cut -c 6-99) -q -b 000000
+fi
+
+# Load Node version manager (nvm).
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# Get encrypted env vars if Yubikey is connected.
+if lsusb | grep 'Yubikey' &> /dev/null; then
+    getsecrets && \
+        gca &> /dev/null
+fi
+
+export BROWSER=PSISecureBridge.AppImage

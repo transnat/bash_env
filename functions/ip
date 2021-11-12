@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+ip(){
+    case "$@" in
+        e)
+            command curl https://ipinfo.io/ip && \
+                echo ;;
+
+        *)
+            command ip "$@"
+    esac
+}

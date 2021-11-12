@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+git(){
+    case "$@" in
+        gud)
+            command git pull && \
+                git remote prune origin ;;
+
+        rekt)
+            command git reset --hard HEAD && \
+                git clean --force ;;
+
+        fuckt)
+            command git reset --hard origin/$(git branch --show-current) && \
+                git clean --force ;;
+
+        sent)
+            command git commit --amend --no-edit && \
+                git push --force ;;
+
+        *)
+            command git "$@"
+    esac
+}

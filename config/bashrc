@@ -114,7 +114,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 # Get encrypted env vars if Yubikey is connected.
-if lsusb | grep 'Yubikey' &> /dev/null; then
+if lsusb | grep -q 'Yubikey'; then
     getsecrets && \
         gca &> /dev/null
 fi

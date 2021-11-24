@@ -7,6 +7,7 @@ export ALIASES="${HOME}/.env/config/aliases"
 export FUNCTIONS="${HOME}/.env/functions"
 export SCRIPTS="${HOME}/.env/scripts"
 export GSH="${HOME}/.env/gsh"
+export SCREENSHOTS="${HOME}/Pictures/screenshots"
 export SECRETS="${HOME}/.env/secrets.asc"
 
 ## Docker variables.

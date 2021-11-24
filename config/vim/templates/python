@@ -9,26 +9,27 @@ import argparse
 import locale
 import logging
 
-# Set locale.
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-
-# Log to the screen.
+# Enable logging, set locale, set args.
 handler = logging.StreamHandler()
 log = logging.getLogger()
 parser = argparse.ArgumentParser()
-args = get_arguments(parser)
 
 handler.setFormatter(logging.Formatter('%(asctime)s: "%(name)s" (line: %(lineno)d) - %(levelname)s %(message)s'))
-log.setLevel(logging.DEBUG)
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 log.addHandler(handler)
+log.setLevel(logging.DEBUG)
 
 def get_arguments(parser):
     parser.add_argument(
         '--verbose', '-v',
         action = 'store_const',
         dest = 'loglevel',
-        const = log.DEBUG,
+        const = logging.DEBUG,
         help = 'Set log level to DEBUG.'
     )
-    
+
     return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = get_arguments(parser)

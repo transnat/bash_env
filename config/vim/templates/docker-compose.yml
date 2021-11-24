@@ -1,7 +1,7 @@
 version: "3"
 services:
     NAME:
+        image: NAME:TAG
         build:
             context: .
             network: host
-        image: NAME:TAG

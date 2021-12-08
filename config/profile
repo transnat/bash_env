@@ -7,12 +7,17 @@ if [ -n "$BASH_VERSION" ]; then
 fi
 
 
-# PATH directories below listed from lowest to highest priority, purely for aesthetic purposes.
+# PATH directories below listed from lowest to highest priority.
 
 # User-defined dirs (for scripts, etc.).
 # Set PATH so it includes script directory, if it exists.
 if [ -d "$HOME/.env/scripts" ] ; then
   PATH="$HOME/.env/scripts:$PATH"
+fi
+
+# Misc. scripts.
+if [ -d "$HOME/Documents/scripts/ad_hoc" ]; then
+  PATH="$PATH:${HOME}/Documents/scripts/ad_hoc"
 fi
 
 # Set PATH so it includes gpg-encrypted script directory, if it exists.

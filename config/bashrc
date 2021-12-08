@@ -108,15 +108,8 @@ if [ -x $(which wal) ]; then
   wal -i $(grep file ${HOME}/.config/nitrogen/bg-saved.cfg | cut -c 6-99) -q -b 000000
 fi
 
-# Load Node version manager (nvm).
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 # Get encrypted env vars if Yubikey is connected.
 if lsusb | grep -q 'Yubikey'; then
     getsecrets && \
         gca &> /dev/null
 fi
-
-export BROWSER=PSISecureBridge.AppImage

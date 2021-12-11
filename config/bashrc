@@ -110,6 +110,7 @@ fi
 
 # Get encrypted env vars if Yubikey is connected.
 if lsusb | grep -q 'Yubikey'; then
-    getsecrets && \
-        gca &> /dev/null
+    gpg --decrypt ${HOME}/.env/secrets.asc 2> /dev/null | \
+        bash && \
+    gca &> /dev/null
 fi

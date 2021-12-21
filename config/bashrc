@@ -73,9 +73,6 @@ if [ -x $(which dircolors) ]; then
     alias egrep='egrep --color=auto'
 fi
 
-# colored GCC warnings and errors
-#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
 # Source env vars.
 if [ -f ${HOME}/.env/vars.sh ]; then
   source ${HOME}/.env/vars.sh
@@ -110,7 +107,6 @@ fi
 
 # Get encrypted env vars if Yubikey is connected.
 if lsusb | grep -q 'Yubikey'; then
-    gpg --decrypt ${HOME}/.env/secrets.asc 2> /dev/null | \
-        bash && \
-    gca &> /dev/null
+    getsecrets && \
+        gca &> /dev/null
 fi

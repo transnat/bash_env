@@ -9,6 +9,8 @@ export SCRIPTS="${HOME}/.env/scripts"
 export GSH="${HOME}/.env/gsh"
 export SCREENSHOTS="${HOME}/Pictures/screenshots"
 export SECRETS="${HOME}/.env/secrets.asc"
+export VARS="${HOME}/.env/vars.sh"
+export ENV="${HOME}/.env"
 
 ## Docker variables.
 #export DOCKER_BUILDKIT=1

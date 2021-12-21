@@ -1,68 +1,45 @@
-### Default aliases
-alias ll='ls -lFh'
-alias la='ls -lFha'
-alias l='ls -CF'
-alias df='df -h'
-
-# Alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '$
-
-### clear
 alias c="clear"
-alias cl="clear;ls -lFh"
-alias cla="clear;ls -lFha"
-
-### chmod
 alias chr="chmod 644"
 alias chx="chmod 755"
-
-### dirs, pushd/popd
-alias dirs="dirs -p"
-
-### exit
-alias q="exit"
-
-### Fuck
-alias F="fuck"
-
-### GPG
-alias gca="gpg-connect-agent updatestartuptty /bye"
-
-### grep
-alias grip="grep -i"
-alias griP="grep -iP"
-alias greP="grep -P"
-alias grEp="grep -E"
-alias grvp="grep -v"
-alias hgrep="history|grep -E"
-alias lgrep='ls|grep'
-
-### History
-alias h='history'
-
-### Metasploit
-alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
-
-### MySQL
-alias mysql="mysql -u $(whoami) -p"
-
-### Python 3
-alias va="source ./venv/bin/activate"
-alias ve="python3 -m venv ./venv"
-alias www="python3 -m http.server 8000"
-
-### qemu
-alias qlaunch="qemu-system-x86_64 -hda $(basename ${PWD}).img -cdrom $(basename ${PWD}).iso -m 4096 -net nic -net user"
-alias qconnect="vncviewer localhost::5900"
-
-### rm
-alias rmf="rm -rf"
-
-### Sensors
+alias cla="clear;ls -lFha"
+alias cl="clear;ls -lFh"
 alias cputemp="sensors | grep Core"
 
-### Source
+alias df='df -h'
+alias dirs="dirs -p"
+
+alias F="fuck"
+
+alias gca="gpg-connect-agent updatestartuptty /bye"
+alias grEp="grep -E"
+alias greP="grep -P"
+alias grip="grep -i"
+alias griP="grep -iP"
+alias grvp="grep -v"
+
+alias hgrep="history|grep -E"
+alias h='history'
+
+alias la='ls -lFha'
+alias lgrep='ls|grep'
+alias ll='ls -lFh'
+alias l='ls -CF'
+
+alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
+alias mysql="mysql -u $(whoami) -p"
+
+alias qconnect="vncviewer localhost::5900"
+alias q="exit"
+alias qlaunch="qemu-system-x86_64 -hda $(basename ${PWD}).img -cdrom $(basename ${PWD}).iso -m 4096 -net nic -net user"
+
+alias rmf="rm -rf"
+
+alias speed="speedtest-cli"
 alias src="source ${HOME}/.profile && source ${HOME}/.bashrc"
 
-### Speed test
-alias speed="speedtest-cli"
+alias tf="terraform"
+
+alias va="source ./venv/bin/activate"
+alias ve="python3 -m venv ./venv"
+
+alias www="python3 -m http.server 8000"

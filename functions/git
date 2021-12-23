@@ -5,11 +5,11 @@ git(){
             command git pull && \
                 git remote prune origin ;;
 
-        rekt)
+        got)
             command git reset --hard HEAD && \
                 git clean --force ;;
 
-        fuckt)
+        rekt)
             command git reset --hard origin/$(git branch --show-current) && \
                 git clean --force ;;
 

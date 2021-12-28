@@ -1,0 +1,7 @@
+#!/bin/env bash
+### wheis: Whois for IP locations.
+
+for IP in ${@}; do
+    curl --silent http://api.ipstack.com/${IP}?access_key=${IPSTACK_API_KEY} | \
+        jq '.ip, .city, .region_name, .zip, .country_name'
+done

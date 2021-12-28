@@ -2,6 +2,7 @@ alias c="clear"
 alias chr="chmod 644"
 alias chx="chmod 755"
 alias cla="clear;ls -lFha"
+alias clip="xclip -sel clip"
 alias cl="clear;ls -lFh"
 alias cputemp="sensors | grep Core"
 

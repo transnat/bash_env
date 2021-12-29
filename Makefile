@@ -4,12 +4,14 @@ env:
 	@chown -R $(id -u):$(id -g) ${PWD};
 	rm -rf ${HOME}/.profile \
 		${HOME}/.bashrc \
-		${HOME}/.bash_logout
+		${HOME}/.bash_logout \
+		${HOME}/.bash_profile \
 		${HOME}/.screenrc \
 		2> /dev/null; \
 	ln -s ${PWD}/config/profile ${HOME}/.profile; \
 	ln -s ${PWD}/config/bashrc ${HOME}/.bashrc; \
-	ln -s ${PWD}/config/bash_logout ${HOME}/.bashrc; \
+	ln -s ${PWD}/config/bash_logout ${HOME}/.bash_logout; \
+	ln -s ${PWD}/config/bash_profile ${HOME}/.bash_profile; \
 	ln -s ${PWD}/config/screen/screenrc ${HOME}/.screenrc; \
 	ln -s ${PWD}/config/screenlayout ${HOME}/.screenlayout
 

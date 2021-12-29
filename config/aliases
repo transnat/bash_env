@@ -8,6 +8,7 @@ alias cputemp="sensors | grep Core"
 alias df='df -h'
 alias dirs="dirs -p"
 
+alias flake8="flake8 --max-line-length=120"
 alias F="fuck"
 
 alias gca="gpg-connect-agent updatestartuptty /bye"

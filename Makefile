@@ -4,9 +4,12 @@ env:
 	@chown -R $(id -u):$(id -g) ${PWD};
 	rm -rf ${HOME}/.profile \
 		${HOME}/.bashrc \
-		${HOME}/.screenrc 2> /dev/null; \
+		${HOME}/.bash_logout
+		${HOME}/.screenrc \
+		2> /dev/null; \
 	ln -s ${PWD}/config/profile ${HOME}/.profile; \
 	ln -s ${PWD}/config/bashrc ${HOME}/.bashrc; \
+	ln -s ${PWD}/config/bash_logout ${HOME}/.bashrc; \
 	ln -s ${PWD}/config/screen/screenrc ${HOME}/.screenrc; \
 	ln -s ${PWD}/config/screenlayout ${HOME}/.screenlayout
 
@@ -22,12 +25,14 @@ gpg:
 		chmod 0700 ${HOME}/.gnupg && \
 		chown -R $(id -u):$(id -g) ${HOME}/.gnupg; \
 	curl https://keys.caseyspar.kz/public.asc | \
-		gpg --import
+		gpg --import \
+		2> /dev/null
 
 
 ssh:
 	@curl https://keys.caseyspar.kz/authorized_keys >> \
-		${HOME}/.ssh/authorized_keys
+		${HOME}/.ssh/authorized_keys \
+		2> /dev/null
 
 
 vim:

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+docker-compose(){
+    case "$1" in
+        up)
+            command docker-compose up --no-log-prefix "${@:2}" ;;
+
+        *)
+            command docker-compose "$@"
+    esac
+}

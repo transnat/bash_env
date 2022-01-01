@@ -1,18 +1,18 @@
 syntax on
 
+set expandtab				" Expand tabs to spaces.
 set filetype=text
-set tabstop=4				" The width of a TAB is set to 4.
-set softtabstop=4			" Sets the number of columns for a TAB.
-set shiftwidth=4			" Indents will have a width of 4.
-set number					" Enable line numbers.
-set spelllang=en_us			" Set spellcheck language.
 set foldenable				" Enable tab folding
 set foldmethod=indent		" Set fold for indented lines.
-set lazyredraw				" Don't rerender the screen.
-set showmatch				" Match brackets.
-set incsearch				" Start highlighting at search.
 set hlsearch				" Highlight search results.
-set expandtab				" Expand tabs to spaces.
+set incsearch				" Start highlighting at search.
+set lazyredraw				" Don't rerender the screen.
+set number					" Enable line numbers.
+set shiftwidth=4			" Indents will have a width of 4.
+set showmatch				" Match brackets.
+set softtabstop=4			" Sets the number of columns for a TAB.
+set spelllang=en_us			" Set spellcheck language.
+set tabstop=4				" The width of a TAB is set to 4.
 
 filetype indent on
 
@@ -21,11 +21,11 @@ autocmd BufNewFile *.py
 	\ 0r ~/.vim/templates/python
 
 autocmd Filetype python,yaml
-    \ set expandtab |
-    \ set textwidth=120 |
-    \ set autoindent |
-    \ set fileformat=unix |
 	\ set modeline
+    \ set autoindent |
+    \ set expandtab |
+    \ set fileformat=unix |
+    \ set textwidth=120 |
 
 " JSON config ----------------------------------------------------
 autocmd BufRead *.json
@@ -33,16 +33,16 @@ autocmd BufRead *.json
 
 " Makefile config ------------------------------------------------
 autocmd FileType make
+	\ set noexpandtab
 	\ set shiftwidth=8 |
 	\ set softtabstop=0 |
-	\ set noexpandtab
 
 " Pkgbuild config ------------------------------------------------
 autocmd BufRead,BufNewfile PKGBUILD
-    \ set filetype=PKGBUILD |
-    \ set expandtab |
     \ set autoindent |
+    \ set expandtab |
     \ set fileformat=unix |
+    \ set filetype=PKGBUILD |
     \ set noexpandtab |
     \ set shiftwidth=2 |
     \ set softtabstop=2
@@ -53,5 +53,5 @@ autocmd BufNewFile docker-compose.y*ml
 
 " LaTeX config ---------------------------------------------------
 autocmd BufNewFile *.tex
-    \ :0r ~/.vim/templates/latex |
     \ :0!mkdir ./images
+    \ :0r ~/.vim/templates/latex |

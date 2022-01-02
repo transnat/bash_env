@@ -21,11 +21,11 @@ autocmd BufNewFile *.py
 	\ 0r ~/.vim/templates/python
 
 autocmd Filetype python,yaml
-	\ set modeline
-    \ set autoindent |
-    \ set expandtab |
-    \ set fileformat=unix |
-    \ set textwidth=120 |
+	\ set modeline                  |
+    \ set autoindent                |
+    \ set expandtab                 |
+    \ set fileformat=unix           |
+    \ set textwidth=120
 
 " JSON config ----------------------------------------------------
 autocmd BufRead *.json
@@ -33,18 +33,18 @@ autocmd BufRead *.json
 
 " Makefile config ------------------------------------------------
 autocmd FileType make
-	\ set noexpandtab
-	\ set shiftwidth=8 |
-	\ set softtabstop=0 |
+	\ set noexpandtab               |
+	\ set shiftwidth=8              |
+	\ set softtabstop=0
 
 " Pkgbuild config ------------------------------------------------
 autocmd BufRead,BufNewfile PKGBUILD
-    \ set autoindent |
-    \ set expandtab |
-    \ set fileformat=unix |
-    \ set filetype=PKGBUILD |
-    \ set noexpandtab |
-    \ set shiftwidth=2 |
+    \ set autoindent                |
+    \ set expandtab                 |
+    \ set fileformat=unix           |
+    \ set filetype=PKGBUILD         |
+    \ set noexpandtab               |
+    \ set shiftwidth=2              |
     \ set softtabstop=2
 
 " Docker config --------------------------------------------------
@@ -53,5 +53,5 @@ autocmd BufNewFile docker-compose.y*ml
 
 " LaTeX config ---------------------------------------------------
 autocmd BufNewFile *.tex
-    \ :0!mkdir ./images
-    \ :0r ~/.vim/templates/latex |
+    \ :0!mkdir ./images             |
+    \ :0r ~/.vim/templates/latex

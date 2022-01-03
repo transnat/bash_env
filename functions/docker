@@ -2,7 +2,7 @@
 docker(){
     case "$@" in
         login\ primetrust)
-            command aws ecr get-login-password --profile security | \
+            command aws ecr get-login-password | \
                 docker login -u AWS --password-stdin ${DEVOPS_ECR} ;;
 
         login\ caseysparkz)

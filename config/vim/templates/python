@@ -15,23 +15,20 @@ import logging
 # Enable logging, set locale, set args.
 handler = logging.StreamHandler()
 log = logging.getLogger()
-parser = argparse.ArgumentParser(
-    description=''
-)
 
 handler.setFormatter(logging.Formatter(
     '%(asctime)s: %(name)s | %(lineno)d - %(levelname)s %(message)s'
 ))
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-logging.basicConfig(
-    filename=f'./{__name__}.log'
-)
 log.addHandler(handler)
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 
-def get_arguments(parser) -> argparse.Namespace:
+def get_arguments() -> argparse.Namespace:
     '''Get cmdline arguments.'''
+    parser = argparse.ArgumentParser(
+        description='Add a useful description here.'
+    )
     parser.add_argument(                                        # Enable DEBUG logging.
         '--verbose', '-v',
         action='store_const',
@@ -44,4 +41,10 @@ def get_arguments(parser) -> argparse.Namespace:
 
 
 if __name__ == '__main__':
-    args = get_arguments(parser)                                # Get cmdline arguments.
+    args = get_arguments()                                      # Get cmdline arguments.
+
+    if args.loglevel:                                           # Set debug output.
+        log.setLevel(args.loglevel)
+        logging.basicConfig(
+            filename=f'./{__name__}.log'
+        )

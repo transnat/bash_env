@@ -1,9 +1,6 @@
-[submodule "scripts/Meraki-Traffic-Analyzer"]
-	path = scripts/Meraki-Traffic-Analyzer
-	url = https://github.com/picnicsecurity/Meraki-Traffic-Analyzer.git
-[submodule "vim/pack/gnupg/start/vim-gnupg"]
-	path = vim/pack/gnupg/start/vim-gnupg
+[submodule "config/vim/pack/gnupg/start/vim-gnupg"]
+	path = config/vim/pack/gnupg/start/vim-gnupg
 	url = https://github.com/jamessan/vim-gnupg
-[submodule "config/vim/pack/covim/start/CoVim"]
-	path = config/vim/pack/covim/start/CoVim
-	url = git@github.com:FredKSchott/CoVim
+[submodule "config/vim/pack/solidity/start/vim-solidity"]
+	path = config/vim/pack/solidity/start/vim-solidity
+	url = https://github.com/tomlion/vim-solidity

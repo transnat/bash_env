@@ -16,20 +16,18 @@ set tabstop=4				" The width of a TAB is set to 4.
 
 filetype indent on
 
-" Python/YAML config ---------------------------------------------
-autocmd BufNewFile *.py
-	\ 0r ~/.vim/templates/python
-
-autocmd Filetype python,yaml
-	\ set modeline                  |
-    \ set autoindent                |
-    \ set expandtab                 |
-    \ set fileformat=unix           |
-    \ set textwidth=120
+" Docker config --------------------------------------------------
+autocmd BufNewFile docker-compose.y*ml
+	\ :0r ~/.vim/templates/docker-compose.yml
 
 " JSON config ----------------------------------------------------
 autocmd BufRead *.json
 	\ set filetype=json
+
+" LaTeX config ---------------------------------------------------
+autocmd BufNewFile *.tex
+    \ :0!mkdir ./images             |
+    \ :0r ~/.vim/templates/latex
 
 " Makefile config ------------------------------------------------
 autocmd FileType make
@@ -47,11 +45,17 @@ autocmd BufRead,BufNewfile PKGBUILD
     \ set shiftwidth=2              |
     \ set softtabstop=2
 
-" Docker config --------------------------------------------------
-autocmd BufNewFile docker-compose.y*ml
-	\ :0r ~/.vim/templates/docker-compose.yml
+" Python/YAML config ---------------------------------------------
+autocmd BufNewFile *.py
+	\ 0r ~/.vim/templates/python
 
-" LaTeX config ---------------------------------------------------
-autocmd BufNewFile *.tex
-    \ :0!mkdir ./images             |
-    \ :0r ~/.vim/templates/latex
+autocmd Filetype python,yaml
+	\ set modeline                  |
+    \ set autoindent                |
+    \ set expandtab                 |
+    \ set fileformat=unix           |
+    \ set textwidth=120
+
+" Terraform config
+autocmd BufNewFile *.tf
+    \ 0r ~/.vim/templates/terraform

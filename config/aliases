@@ -10,6 +10,7 @@ alias df='df -h'
 alias dirs="dirs -p"
 
 alias flake8="flake8 --max-line-length=120"
+alias free="free -h"
 alias F="fuck"
 
 alias gca="gpg-connect-agent updatestartuptty /bye"

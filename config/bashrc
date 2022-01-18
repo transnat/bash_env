@@ -110,3 +110,5 @@ if lsusb | grep -q 'Yubikey'; then
     getsecrets && \
         gca &> /dev/null
 fi
+
+complete -C /usr/bin/terraform terraform

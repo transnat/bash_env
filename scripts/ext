@@ -1,38 +1,43 @@
 #!/bin/env bash
 # Extract any compressed file or compress any uncompressed file
-if [ -f $1 ] ; then
-    case $1 in
-        *.tar|*.tar.xz)
-            tar -xf $1;;
+for FILE in $@; do
+    if [ -f $FILE ] ; then
+        case $FILE in
+            *.tar|*.tar.xz)
+                tar -xf $FILE;;
 
-        *.tbz2|*.tar.bz2)
-            tar -xjf $1;;
+            *.tbz2|*.tar.bz2)
+                tar -xjf $FILE;;
 
-        *.tgz|*.tar.gz)
-            tar -xzf $1;;
+            *.tgz|*.tar.gz)
+                tar -xzf $FILE;;
 
-        *.bz2)
-            bunzip2 $1;;
+            *.bz2)
+                bunzip2 $FILE;;
 
-        *.rar)
-            unrar x $1;;
+            *.rar)
+                unrar x $FILE;;
 
-        *.gz)
-            gunzip $1;;
+            *.gz)
+                gunzip $FILE;;
 
-        *.zip)
-            unzip $1;;
+            *.xz)
+                xz -d $FILE;;
 
-        *.zst)
-            tar --use-compress-program=unzstd -xvf archive.tar.zst;;
+            *.zip)
+                unzip $FILE;;
 
-        *.Z)
-            uncompress $1;;
+            *.zst)
+                tar --use-compress-program=unzstd -xvf archive.tar.zst;;
 
-        *.7z)
-            7z x $1;;
+            *.Z)
+                uncompress $FILE;;
 
-        *)
-            tar -zcvf $1.tar.gz $1;;
-    esac
-fi
+            *.7z)
+                7z x $FILE;;
+
+            *)
+                tar -zcvf $FILE.tar.gz $FILE;;
+        esac
+    fi
+done

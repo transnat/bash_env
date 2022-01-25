@@ -107,8 +107,7 @@ fi
 
 # Get encrypted env vars if Yubikey is connected.
 if lsusb | grep -q 'Yubikey'; then
-    getsecrets && \
-        gca &> /dev/null
+    getsecrets
 fi
 
 complete -C /usr/bin/terraform terraform

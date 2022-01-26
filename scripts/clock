@@ -1,10 +1,57 @@
-#!/bin/env bash
-### clock: Simple CLI Clock
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-while true; do
-  clear;
-  echo "===========";
-  date +"%r";
-  echo "===========";
-  sleep 1;
-done
+# Author:       Casey Sparks
+# Date:         January 25, 2022
+# Description:
+'''
+A simple CLI clock.
+'''
+
+import argparse
+import locale
+from datetime import datetime
+from time import sleep
+from os import system
+
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
+
+def get_arguments() -> argparse.Namespace:
+    '''Get cmdline arguments.'''
+    parser = argparse.ArgumentParser(
+        description='Add a useful description here.'
+    )
+    parser.add_argument(
+        '-12',
+        action='store_true',
+        dest='twelve',
+        help='Set format to 12hr time.'
+    )
+
+    return parser.parse_args()
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    while True:
+        now = datetime.now()
+
+        system('clear')
+
+        if args.twelve:
+            print(
+                '===========\n'
+                f'{now.strftime("%I:%M:%S %p")}\n'
+                '==========='
+            )
+        else:
+            print(
+                '========\n'
+                f'{now.strftime("%H:%M:%S")}\n'
+                '========'
+            )
+
+        sleep(1)

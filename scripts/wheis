@@ -1,7 +1,36 @@
-#!/bin/env bash
-### wheis: Whois for IP locations.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-for IP in ${@}; do
-    curl --silent http://api.ipstack.com/${IP}?access_key=${IPSTACK_API_KEY} | \
-        jq '.ip, .city, .region_name, .zip, .country_name'
-done
+# Author:       Casey Sparks
+# Date:         January 25, 2022
+# Description:
+'''
+whois for IP locations.
+'''
+
+import locale
+import os
+import sys
+import requests
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
+
+if __name__ == '__main__':
+    api_key = os.environ.get('IPSTACK_API_KEY')
+
+    for ip in sys.argv[1:]:
+        ip_info = requests.get(
+            f'http://api.ipstack.com/{ip}',
+            params={'access_key': os.environ.get('IPSTACK_API_KEY')}
+        ).json()
+
+        print(
+            f'{ip_info["ip"]}\n'
+            f'{ip_info["city"]}\n'
+            f'{ip_info["region_name"]}    '
+            f'{ip_info["zip"]}\n'
+            f'{ip_info["country_name"]}\n'
+            f'{ip_info["latitude"]}, {ip_info["longitude"]}'
+            '\n'
+        )

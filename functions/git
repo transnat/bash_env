@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# git wrapper.
 git(){
     case "$@" in
         gud)

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# ip wrapper.
 ip(){
     case "$@" in
         e)

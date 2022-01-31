@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Change directory and clear terminal
 cdc() {
   cd $1
@@ -9,4 +10,10 @@ cdl() {
   cd $1
   clear
   ls -l
+}
+
+# Make a directory and enter it.
+mkcd() {
+  mkdir -p ${1} &&
+    cd ${1}
 }

@@ -49,6 +49,13 @@ autocmd BufRead,BufNewfile PKGBUILD
 autocmd BufNewFile *.py
 	\ 0r ~/.vim/templates/python
 
+autocmd BufRead,BufNewfile *.y.ml
+    \ setlocal                      |
+    \ set tabstop=2                 |
+    \ set softtabstop=2             |
+    \ set shiftwidth=2              |
+    \ set expandtab
+
 autocmd Filetype python,yaml
 	\ set modeline                  |
     \ set autoindent                |

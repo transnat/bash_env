@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# docker-compose wrapper.
 docker-compose(){
     case "$1" in
         up)

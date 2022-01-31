@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# docker wrapper.
 docker(){
     case "$@" in
         login\ primetrust-security-platform)

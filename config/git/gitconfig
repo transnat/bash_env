@@ -2,6 +2,8 @@
 	email = himself@caseyspar.kz
 	name = caseysparkz
 	signingKey = 0x3260255327CBCDA1
+[core]
+    editor = vim
 [ssh]
 	postBuffer = 1048576000
 [init]

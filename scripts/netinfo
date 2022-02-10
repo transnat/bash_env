@@ -74,8 +74,10 @@ def netmask(interface: str) -> str:
 
 
 if __name__ == '__main__':
-    interface = get_arguments().interface
-    network_table = [
+    interface = get_arguments().interface       # Get cmdline arguments.
+    network_table = [                           # Instantiate netinfo array.
+        ['Network Information', ''],
+        ['============================', ''],
         ['Public IP:', public_ip()],
         ['Local IP:', local_ip(interface)],
         ['Netmask:', netmask(interface)],
@@ -83,10 +85,5 @@ if __name__ == '__main__':
         ['Interface:', interface]
     ]
 
-    print(
-        'Network Information\n'
-        '============================'
-    )
-
-    for row in network_table:
+    for row in network_table:                   # Print formatted array.
         print('{: <12} {: >15}'.format(*row))

@@ -1,17 +1,102 @@
-#!/bin/env bash
-# Display info about the hosts Internet connection.
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 
-  printf "Network Information\n";
-  printf "===================\n";
+# Author:       Casey Sparks
+# Date:         February 09, 2022.
+# Description:
+'''Display information about a network interface.'''
 
-(printf "Public IP:"
-  printf "$(curl ipinfo.io/ip 2> /dev/null )\n"
-  printf "Local IP:"
-  printf "$(ifconfig | awk '$1=="inet"{printf $2; exit}')\n"
-  printf "Netmask:"
-  printf "$(ifconfig | awk '$3=="netmask"{printf $4; exit}')\n"
-  printf "Broadcast:"
-  printf "$(ifconfig | awk '$5=="broadcast"{printf $6; exit}')\n") |
-column -t -s:;
+import argparse
+import fcntl
+import locale
+import socket
+import struct
+import requests
 
-printf "\n";
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+
+
+def get_arguments() -> argparse.Namespace:
+    '''Get cmdline arguments.'''
+    parser = argparse.ArgumentParser(
+        description='Display information about a network interface.'
+    )
+    parser.add_argument(
+        '--interface', '-I',
+        dest='interface',
+        default=wan_interface()[0],
+        help='Specify the network interface.'
+    )
+
+    return parser.parse_args()
+
+
+def public_ip() -> str:
+    '''Get our public IP address.'''
+    return requests.get('https://ipinfo.io/ip').text
+
+
+def wan_interface() -> str:
+    '''Read the default gateway directly from /proc.'''
+    with open('/proc/net/route') as fh:
+        for line in fh:
+            fields = line.strip().split()
+            if fields[1] == '00000000':
+                return fields[0], socket.inet_ntoa(struct.pack('<L', int(fields[2], 16)))
+
+
+def interface_info(interface: str) -> list:
+    '''Get the default gateway.'''
+    with open('/proc/net/route') as fh:
+        for line in fh:
+            fields = line.strip().split()
+            if fields[0] == interface and fields[7] != '00000000':
+                return fields
+
+
+def local_ip(interface: str) -> str:
+    '''Get the local IP address of an interface.'''
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    return socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack(
+            '256s',
+            bytes(interface[:15], 'utf-8')
+        )
+    )[20:24])
+
+
+def netmask(interface: str) -> str:
+    '''Read the default gateway directly from /proc.'''
+    return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[7], 16)))
+
+
+def broadcast(interface: str) -> str:
+    '''Get our local broadcast address.'''
+    return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[2], 16)))
+
+
+def destination(interface: str) -> str:
+    '''Get our local broadcast address.'''
+    return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[1], 16)))
+
+
+if __name__ == '__main__':
+    interface = get_arguments().interface
+    network_table = [
+        ['Public IP:', public_ip()],
+        ['Local IP:', local_ip(interface)],
+        ['Netmask:', netmask(interface)],
+        ['Destination:', destination(interface)],
+        ['Gateway:', wan_interface()[1]]
+    ]
+
+    print(
+        'Network Information\n'
+        '============================'
+    )
+
+    for row in network_table:
+        print('{: <12} {: >15}'.format(*row))

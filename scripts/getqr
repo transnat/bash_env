@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 
-alias tmp_file="mktemp -t scrotscript-XXXXXX"
-scrot "$tmp_file" -f -s
+TMP_FILE='/tmp/scrotscriptout.png'
+scrot ${TMP_FILE} -f -s
 
-scanresult=$(zbarimg --quiet --raw "$tmp_file" | tr -d '\n')
+SCAN_RESULT=$(zbarimg --quiet --raw ${TMP_FILE} | tr -d '\n')
 
-if [ -z "$scanresult" ]; then
+if [ -z ${SCAN_RESULT} ]; then
     notify-send "scrot" "No scan data found"
 else
-    echo "$scanresult" | clip
-    convert $tmp_file -resize 75x75 "$tmp_file"
-    notify-send -i "$tmp_file" "scrot" "$scanresult\n(copied to clipboard)"
+    echo ${SCAN_RESULT} | xsel -ib
+    convert ${TMP_FILE} -resize 75x75 ${TMP_FILE}
+    notify-send -i ${TMP_FILE} "QR Code Scanned:" "${SCAN_RESULT}"
 fi
 
-rm "$tmp_file"
+rm ${TMP_FILE}

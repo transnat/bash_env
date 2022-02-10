@@ -73,23 +73,12 @@ def netmask(interface: str) -> str:
     return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[7], 16)))
 
 
-def broadcast(interface: str) -> str:
-    '''Get our local broadcast address.'''
-    return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[2], 16)))
-
-
-def destination(interface: str) -> str:
-    '''Get our local broadcast address.'''
-    return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[1], 16)))
-
-
 if __name__ == '__main__':
     interface = get_arguments().interface
     network_table = [
         ['Public IP:', public_ip()],
         ['Local IP:', local_ip(interface)],
         ['Netmask:', netmask(interface)],
-        ['Destination:', destination(interface)],
         ['Gateway:', wan_interface()[1]],
         ['Interface:', interface]
     ]

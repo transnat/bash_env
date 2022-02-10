@@ -13,11 +13,11 @@ export SCREENSHOTS="${HOME}/Pictures/screenshots"
 export SCRIPTS="${HOME}/.env/scripts"
 export SECRETS="${HOME}/.env/secrets.asc"
 export VARS="${HOME}/.env/vars.sh"
-export WINEPREFIX="${HOME}/.config/wine"
 
 ## Docker variables.
 #export DOCKER_BUILDKIT=1
 
-## GPG variables for SSH.
+## GPG variables.
+export GPG_KEY_ID="0x3260255327CBCDA1"
 export GPG_TTY="$(tty)"
 export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)

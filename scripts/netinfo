@@ -90,7 +90,8 @@ if __name__ == '__main__':
         ['Local IP:', local_ip(interface)],
         ['Netmask:', netmask(interface)],
         ['Destination:', destination(interface)],
-        ['Gateway:', wan_interface()[1]]
+        ['Gateway:', wan_interface()[1]],
+        ['Interface:', interface]
     ]
 
     print(

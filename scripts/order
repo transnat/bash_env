@@ -7,8 +7,8 @@ read START
 printf "File extension:\n"
 read FILETYPE
 
-for FILE in *.$FILETYPE; do
-  NEW=$(printf "%02d.$FILETYPE" "$START")
+for FILE in *${FILETYPE}; do
+  NEW=$(printf "%02d$FILETYPE" "$START")
   mv -i -- "$FILE" "$NEW"
   let START=START+1
 done

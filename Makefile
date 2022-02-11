@@ -1,4 +1,4 @@
-all: env git gpg vim
+all: env git gpg python vim
 
 env:
 	@chown -R $(id -u):$(id -g) ${PWD};
@@ -29,6 +29,11 @@ gpg:
 	curl https://keys.caseyspar.kz/public.asc | \
 		gpg --import \
 		2> /dev/null
+
+
+python:
+	@python -m ensurepip --upgrade && \
+		pip install --user -r ./config/python/requirements.txt
 
 
 ssh:

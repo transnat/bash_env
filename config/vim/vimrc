@@ -63,6 +63,10 @@ autocmd Filetype python,yaml
     \ set fileformat=unix           |
     \ set textwidth=120
 
+autocmd BufNewFile *.sh
+    \ :0r ~/.vim/templates/sh
+
+
 " Terraform config
 autocmd BufNewFile *.tf
     \ 0r ~/.vim/templates/terraform

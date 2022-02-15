@@ -47,7 +47,8 @@ autocmd BufRead,BufNewfile PKGBUILD
 
 " Python/YAML config ---------------------------------------------
 autocmd BufNewFile *.py
-	\ 0r ~/.vim/templates/python
+	\ 0r ~/.vim/templates/python    |
+    \ call flake8#Flake8()
 
 autocmd BufRead,BufNewfile *.y.ml
     \ setlocal                      |

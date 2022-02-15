@@ -10,3 +10,6 @@
 [submodule "config/vim/pack/terraform/pack/vim-terraform"]
 	path = config/vim/pack/terraform/pack/vim-terraform
 	url = git@github.com:hashivim/vim-terraform
+[submodule "config/vim/pack/nerdtree/start/nerdtree"]
+	path = config/vim/pack/nerdtree/start/nerdtree
+	url = https://github.com/preservim/nerdtree

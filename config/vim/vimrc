@@ -14,6 +14,9 @@ set softtabstop=4			" Sets the number of columns for a TAB.
 set spelllang=en_us			" Set spellcheck language.
 set tabstop=4				" The width of a TAB is set to 4.
 
+cnoreabbrev nt NERDTree
+cnoreabbrev nT NERDTreeToggle
+
 filetype indent on
 
 " Docker config --------------------------------------------------

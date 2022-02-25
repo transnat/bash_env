@@ -51,10 +51,10 @@ autocmd BufRead,BufNewfile PKGBUILD
 " Python/YAML config ---------------------------------------------
 autocmd BufNewFile *.py
 	\ 0r ~/.vim/templates/python    |
-    \ call flake8#Flake8()
+    \ set tabstop=2                 |
+    \ set expandtab
 
 autocmd BufRead,BufNewfile *.y.ml
-    \ setlocal                      |
     \ set tabstop=2                 |
     \ set softtabstop=2             |
     \ set shiftwidth=2              |

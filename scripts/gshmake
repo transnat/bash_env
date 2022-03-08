@@ -9,6 +9,11 @@ A script to create PGP-encrypted scripts.
 Note that decrypted scripts get passed to a bash subshell, so all
 non-POSIX files **must** have a shebang in order to be properly
 interpreted by bash.
+
+It is also required that you have $GPG_KEY_ID set in your environment variables.
+
+Requirements:
+    * PyGnuPG
 '''
 
 import argparse

@@ -1,4 +1,4 @@
-all: env git gpg python ssh vim
+all: env git gpg psql python ssh vim
 
 env:
 	@chown -R $(id -u):$(id -g) ${PWD};
@@ -30,6 +30,9 @@ gpg:
 		gpg --import												\
 		2> /dev/null
 
+
+psql:
+	@ln -s ${PWD}/config/psqlrc ${HOME}/.psqlrc
 
 python:
 	@python -m ensurepip --upgrade &&								\

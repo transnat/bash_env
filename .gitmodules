@@ -1,15 +1,16 @@
-[submodule "config/vim/pack/gnupg/start/vim-gnupg"]
-	path = config/vim/pack/gnupg/start/vim-gnupg
-	url = https://github.com/jamessan/vim-gnupg
-[submodule "config/vim/pack/solidity/start/vim-solidity"]
-	path = config/vim/pack/solidity/start/vim-solidity
-	url = https://github.com/tomlion/vim-solidity
-[submodule "config/vim/pack/flake8/pack/vim-flake8"]
-	path = config/vim/pack/flake8/pack/vim-flake8
-	url = git@github.com:nvie/vim-flake8
-[submodule "config/vim/pack/terraform/pack/vim-terraform"]
-	path = config/vim/pack/terraform/pack/vim-terraform
-	url = git@github.com:hashivim/vim-terraform
-[submodule "config/vim/pack/nerdtree/start/nerdtree"]
+[submodule "vim-gnupg"]
+	path = config/vim/pack/vim-gnupg/start/vim-gnupg
+	url = git@github.com:jamessan/vim-gnupg
+	branch = main
+[submodule "vim-nerdtree"]
 	path = config/vim/pack/nerdtree/start/nerdtree
-	url = https://github.com/preservim/nerdtree
+	url = git@github.com:preservim/nerdtree
+	branch = master
+[submodule "vim-flake8"]
+	path = config/vim/pack/vim-flake8/start/vim-flake8
+	url = git@github.com:nvie/vim-flake8
+	branch = master
+[submodule "vim-terraform"]
+	path = config/vim/pack/vim-terraform/start/vim-terraform
+	url = git@github.com:hashivim/vim-terraform
+	branch = master

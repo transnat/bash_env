@@ -9,28 +9,37 @@ whois for IP locations.
 '''
 
 import locale
+import logging
 import os
 import sys
 import requests
 
+# Enable logging, set locale, set args.
+log = logging.getLogger()
+
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+log.addHandler(logging.StreamHandler())
+log.setLevel(logging.DEBUG)
 
 
 if __name__ == '__main__':
     api_key = os.environ.get('IPSTACK_API_KEY')
 
-    for ip in sys.argv[1:]:
-        ip_info = requests.get(
-            f'http://api.ipstack.com/{ip}',
-            params={'access_key': os.environ.get('IPSTACK_API_KEY')}
-        ).json()
+    if api_key is None:
+        log.critical('No API key.')
+    else:
+        for ip in sys.argv[1:]:
+            ip_info = requests.get(
+                f'http://api.ipstack.com/{ip}',
+                params={'access_key': os.environ.get('IPSTACK_API_KEY')}
+            ).json()
 
-        print(
-            f'{ip_info["ip"]}\n'
-            f'{ip_info["city"]}\n'
-            f'{ip_info["region_name"]}    '
-            f'{ip_info["zip"]}\n'
-            f'{ip_info["country_name"]}\n'
-            f'{ip_info["latitude"]}, {ip_info["longitude"]}'
-            '\n'
-        )
+            print(
+                f'{ip_info["ip"]}\n'
+                f'{ip_info["city"]}\n'
+                f'{ip_info["region_name"]}    '
+                f'{ip_info["zip"]}\n'
+                f'{ip_info["country_name"]}\n'
+                f'{ip_info["latitude"]}, {ip_info["longitude"]}'
+                '\n'
+            )

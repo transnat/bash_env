@@ -19,7 +19,7 @@ log = logging.getLogger()
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 log.addHandler(logging.StreamHandler())
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.WARN)
 
 
 if __name__ == '__main__':
@@ -34,12 +34,14 @@ if __name__ == '__main__':
                 params={'access_key': os.environ.get('IPSTACK_API_KEY')}
             ).json()
 
-            print(
-                f'{ip_info["ip"]}\n'
-                f'{ip_info["city"]}\n'
-                f'{ip_info["region_name"]}    '
-                f'{ip_info["zip"]}\n'
-                f'{ip_info["country_name"]}\n'
-                f'{ip_info["latitude"]}, {ip_info["longitude"]}'
-                '\n'
-            )
+            location_table = [
+                ['IP:', ip_info["ip"]],
+                ['City:', ip_info["city"]],
+                ['Region:', ip_info["region_name"]],
+                ['ZIP:', ip_info["zip"]],
+                ['Country:', ip_info["country_name"]],
+                ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
+            ]
+
+            for row in location_table:
+                print('{: <16} {: >0}'.format(*row))

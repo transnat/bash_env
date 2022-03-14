@@ -67,8 +67,8 @@ if [ -x $(which dircolors) ]; then                                  # Enable col
     alias egrep='egrep --color=auto'
 fi
 
-if [ -f ${HOME}/.env/vars.sh ]; then                                # Source env vars.
-  source ${HOME}/.env/vars.sh
+if [ -f ${HOME}/.env/config/bash/vars.sh ]; then                                # Source env vars.
+  source ${HOME}/.env/config/bash/vars.sh
 fi
 
 if [ -f ${ALIASES} ]; then                                          # Source alias definitions.

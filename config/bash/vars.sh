@@ -5,7 +5,7 @@ export EDITOR=vim
 export TERM=xterm-256color
 
 # Personal defaults.
-export ALIASES="${HOME}/.env/config/aliases"
+export ALIASES="${HOME}/.env/config/bash/aliases"
 export ENV="${HOME}/.env"
 export FUNCTIONS="${HOME}/.env/functions"
 export GSH="${HOME}/.env/gsh"

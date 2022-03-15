@@ -15,13 +15,15 @@ Lastly, it bears noting that certain functions, scripts, and/or aliases are usef
 
 ## Directory Structure ##
 This repository and its installation scripts add three directories to ${PATH}:
-* `~/.env/scripts` (`$SCRIPTS`)
-* `~/.env/functions` (`$FUNCTIONS`)
-* `~/.env/gsh` (`$GSH`)
+* `~/.env/config` (`$CONFIG`) - Config files and runcommands for Bash, GNU screen, Vim, etc.
+* `~/.env/functions` (`$FUNCTIONS`) - Contains custom Bash functions. Consumed by bashrc.
+* `~/.env/gsh` (`$GSH`) - PGP-encrypted scripts. Decrypted at runtime and consumed by Bash.
+* `~/.env/scripts` (`$SCRIPTS`) - Contains all scripts (Python3 and Bash) to be consumed by the shell. Exists in `$PATH`.)
 
 The scripts and functions directories are largely self-explanitory; the gsh directory contains PGP-encrypted scripts which are decrypted and interpreted by a bash subshell. These scripts will not be usable without the public key used to encrypt them, but you can create your own gsh scripts with the 'gshmake' script located in env/scripts.
 
 ## File Structure ##
 As previously noted, running `make all` will:
-* Replace the user's profile, bash, vim, and GNU screen run commands.
+* Replace the user's profile, bash, vim, git, psql, and GNU screen run commands.
+* Sets default configs for GNUpg, SSH, etc.
 * `.bashrc` also loads `~/.env/aliases`, `~/.env/vars.sh`, and `~/.env/functions/*`, which set user aliases, environment variables, and bash functions respectively.

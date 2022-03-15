@@ -6,6 +6,7 @@ export TERM=xterm-256color
 
 # Personal defaults.
 export ALIASES="${HOME}/.env/config/bash/aliases"
+export CONFIG="${HOME}/.env/config"
 export ENV="${HOME}/.env"
 export FUNCTIONS="${HOME}/.env/functions"
 export GSH="${HOME}/.env/gsh"
@@ -20,4 +21,4 @@ export VARS="${HOME}/.env/vars.sh"
 ## GPG variables.
 export GPG_KEY_ID="0x3260255327CBCDA1"
 export GPG_TTY="$(tty)"
-export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"

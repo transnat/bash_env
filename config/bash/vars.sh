@@ -8,12 +8,12 @@ export TERM=xterm-256color
 export ALIASES="${HOME}/.env/config/bash/aliases"
 export CONFIG="${HOME}/.env/config"
 export ENV="${HOME}/.env"
-export FUNCTIONS="${HOME}/.env/functions"
+export FUNCTIONS="${HOME}/.env/config/bash/functions"
 export GSH="${HOME}/.env/gsh"
 export SCREENSHOTS="${HOME}/Pictures/screenshots"
 export SCRIPTS="${HOME}/.env/scripts"
-export SECRETS="${HOME}/.env/secrets.asc"
-export VARS="${HOME}/.env/vars.sh"
+export SECRETS="${HOME}/.env/config/bash/secrets.asc"
+export VARS="${HOME}/.env/config/bash/vars.sh"
 
 ## Docker variables.
 #export DOCKER_BUILDKIT=1

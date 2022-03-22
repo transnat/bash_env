@@ -1,3 +1,4 @@
+alias back="cd ${OLDPWD}"
 alias c="clear"
 alias chr="chmod 644"
 alias chx="chmod 755"

@@ -38,6 +38,7 @@ alias qlaunch="qemu-system-x86_64 -hda $(basename ${PWD}).img -cdrom $(basename 
 
 alias rmf="rm -rf"
 
+alias s="screen"
 alias speed="speedtest-cli"
 alias src="source ${HOME}/.profile && source ${HOME}/.bashrc"
 

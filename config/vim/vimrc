@@ -60,6 +60,12 @@ autocmd BufRead,BufNewfile *.y.ml
     \ set shiftwidth=2              |
     \ set expandtab
 
+autocmd BufRead,BufNewfile *.ps1
+    \ set tabstop=2                 |
+    \ set softtabstop=2             |
+    \ set shiftwidth=2              |
+    \ set expandtab
+
 autocmd Filetype python,yaml
 	\ set modeline                  |
     \ set autoindent                |

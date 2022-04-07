@@ -14,8 +14,12 @@
 [init]
     defaultBranch = main
 [pull]
-    rebase = false
+    rebase = true
 [push]
     default = current
 [ssh]
     postBuffer = 1048576000
+[diff]
+	colorMoved = zebra
+[gc]
+	pruneexpire = 14 days

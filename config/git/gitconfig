@@ -2,24 +2,24 @@
     email = himself@caseyspar.kz
     name = caseysparkz
     signingKey = 0x3260255327CBCDA1
-[commit]
-    gpgsign = true
 [core]
     editor = vim
+[init]
+    defaultBranch = main
 [fetch]
     prune = true
     pruneTags = true
-[http]
-    postBuffer = 1048576000
-[init]
-    defaultBranch = main
 [pull]
     rebase = true
+[commit]
+    gpgsign = true
 [push]
-    default = current
-[ssh]
-    postBuffer = 1048576000
+	default = current
 [diff]
 	colorMoved = zebra
+[http]
+    postBuffer = 1048576000
+[ssh]
+    postBuffer = 1048576000
 [gc]
 	pruneexpire = 14 days

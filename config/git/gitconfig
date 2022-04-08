@@ -11,6 +11,7 @@
     pruneTags = true
 [pull]
     rebase = true
+	default = current
 [commit]
     gpgsign = true
 [push]

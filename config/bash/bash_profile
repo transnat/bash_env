@@ -1,6 +1,0 @@
-#
-# ~/.bash_profile
-#
-
-[[ -f ~/.bashrc ]] && . ~/.bashrc
-source /home/user/.rvm/scripts/rvm

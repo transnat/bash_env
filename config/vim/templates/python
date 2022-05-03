@@ -33,12 +33,14 @@ def get_arguments() -> argparse.Namespace:
         help='Set log level to DEBUG.'
     )
 
+    args = parser.parse_args()
+
+    if args.loglevel:                                           # Set debug output.
+        log.setLevel(args.loglevel)
+        #logging.basicConfig(filename=f'./{__name__}.log')
+
     return parser.parse_args()
 
 
 if __name__ == '__main__':
     args = get_arguments()                                      # Get cmdline arguments.
-
-    if args.loglevel:                                           # Set debug output.
-        log.setLevel(args.loglevel)
-        logging.basicConfig(filename=f'./{__name__}.log')

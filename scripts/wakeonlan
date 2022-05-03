@@ -11,7 +11,11 @@ Send a wake-on-LAN packet to the specified IP addresses.
 import argparse
 import locale
 import logging
+import pathlib
 import socket
+import yaml
+from pprint import pp
+from typing import NoReturn, Tuple
 
 # Enable logging, set locale, set args.
 log = logging.getLogger()
@@ -27,7 +31,7 @@ def get_arguments() -> argparse.Namespace:
         description='Send a wake-on-LAN packet to specified MAC addresses.'
     )
     parser.add_argument(                                        # The broadcast IP address.
-        '--IP', '-I',
+        '--broadcast', '-b',
         dest='broadcast',
         nargs=1,
         default='255.255.255.255',
@@ -40,11 +44,24 @@ def get_arguments() -> argparse.Namespace:
         default=None,
         help='Specify the broadcast IP address.'
     )
+    parser.add_argument(                                        # The port to use.
+        '--port', '-p',
+        dest='port',
+        nargs=1,
+        default=9,
+        help='Specify the port to use.'
+    )
     parser.add_argument(                                        # STDIN-specified MAC addresses.
-        '--MAC', '-m',
+        '--macs', '-M',
         dest='macs',
         nargs='+',
         help='Specify a list of MAC addresses to send WoL packets to.'
+    )
+    parser.add_argument(                                        # STDIN-specified hosts.
+        '--hosts', '-H',
+        dest='hosts',
+        nargs='+',
+        help='Specify a list of known hosts to send WoL packets to.'
     )
     parser.add_argument(                                        # Enable DEBUG logging.
         '--verbose', '-v',
@@ -54,30 +71,87 @@ def get_arguments() -> argparse.Namespace:
         help='Set log level to DEBUG.'
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    if args.loglevel:                                           # Set verbose logging.
+        log.setLevel(args.loglevel)
+
+    return args
+
+
+def file_checks() -> Tuple[dict, pathlib.PosixPath]:
+    '''Check for config directory/file, and create them if they do not exists.'''
+    config_dir = pathlib.Path(                                  # Directory for config files.
+        pathlib.Path.home()/'.config/wakeonlan'
+    )
+    hostsfile = config_dir / 'known_hosts.yml'                  # File containing known host mappings.
+    known_hosts = list()
+
+    if not config_dir.exists():                                 # Create config dir.
+        log.debug(f'Creating config directory at {config_dir}.')
+        config_dir.mkdir(
+            parents=True,
+            mode=0o755,
+            exist_ok=True
+        )
+
+    if not hostsfile.exists():                                  # Create known hosts file.
+        log.debug(f'Creating config file at {hostsfile}.')
+        hostsfile.touch(mode=0o644, exist_ok=True)
+
+    known_hosts = yaml.safe_load(open(hostsfile, 'rb'))         # Read hosts file into var.
+    breakpoint()
+
+    return known_hosts, hostsfile
+
+
+def get_mac_addresses(args: argparse.Namespace) -> list:
+    '''Grok STDIN and config files for the hosts to wake.'''
+    known_hosts, hostsfile = file_checks()                      # Get known hosts from config file.
+    mac_addresses = list()
+    breakpoint()
+
+    if args.macs:                                               # Set hosts based on MACs from STDIN.
+        mac_addresses = args.macs
+
+    elif args.hosts:                                            # Set hosts based on hostnames from STDIN.
+        for host in args.hosts:
+            try:
+                mac_addresses.append(known_hosts[host])
+            except TypeError:
+                log.critical(f'Config file {hostsfile} is empty.')
+
+    else:                                                       # Exit.
+        log.info('No hosts/MAC addresses provided. Exiting.')
+        exit()
+
+    log.debug(f'MAC addresses: {pp(mac_addresses)}')
+
+    return mac_addresses
 
 
 def magic_packet(mac_address: str) -> bytes:
     '''
     Create a magic packet.
-    A magic packet is a packet that can be used with the for wake-on-LAN protocol to
-    wake up a computer. The packet is constructed from the MAC address given as a parameter.
         :param macaddress: The MAC address that should be parsed into a magic packet.
     '''
-    if len(mac_address) == 17:                                  # Check MAC address format.
+    log.debug(f'Checking validity of MAC address: {mac_address}')
+
+    if len(mac_address) == 17:                                  # Check/reformat MAC address.
         mac_address = mac_address.replace(mac_address[2], '')
     elif len(mac_address) != 12:
+        log.critical(f'Invalid MAC address: {mac_address}')
         raise ValueError('Incorrect MAC address format.')
 
     return bytes.fromhex('F' * 12 + mac_address * 16)           # Magic packet.
 
 
 def send_packet(
-    mac_address: str,
-    broadcast_ip: str,                                      # Default broadcast address.
-    port: int,                                              # Default WoL port.
-    interface: str = None                                   # Network interface.
-        ):
+        mac_addresses: list,
+        broadcast_ip: str,                                      # Default broadcast address.
+        port: int,                                              # Default WoL port.
+        interface: str = None                                   # Network interface.
+        ) -> NoReturn:
     '''
     Send a network packet to a socket.
         :param mac_address:     The MAC address to send the packet to.
@@ -85,29 +159,40 @@ def send_packet(
         :param port:            The port to send the packet to.
         :param interface:       The network interface to bind the socket to.
     '''
+    log.debug('Instantiating socket.')
+
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         if interface is not None:
+            log.debug(f'Binding to interface {interface}.')
             sock.bind((interface, 0))                           # Bind to the specified interface.
 
+        log.debug('Setting socket options.')
         sock.setsockopt(                                        # Set socket options.
             socket.SOL_SOCKET,
             socket.SO_BROADCAST, 1
         )
+        log.debug(f'Created {sock.type.name} socket.')
+        log.debug('Connecting to socket.')
         sock.connect((broadcast_ip, port))                      # Connect to socket.
-        sock.send(magic_packet(mac_address))                    # Send magic packet.
+        log.debug('Connected.')
+
+        for mac_address in mac_addresses:
+            packet = magic_packet(mac_address)
+
+            log.debug(f'Packet: {packet}')
+            log.info(f'Sending wake-on-LAN packet to {mac_address} on port {port}.')
+
+            sent = sock.send(packet)                            # Send magic packet.
+
+            log.info(f'Sent: {sent}')
 
 
 if __name__ == '__main__':
     args = get_arguments()                                      # Get cmdline arguments.
 
-    if args.loglevel:                                           # Set debug output.
-        log.setLevel(args.loglevel)
-
-    if args.macs:                                               # Send WoL packet to MAC list.
-        for mac_address in args.macs:
-            send_packet(
-                mac_address=mac_address,
-                broadcast_ip=args.broadcast,
-                port=args.port,
-                interface=args.interface
-            )
+    send_packet(                                                # Send magic packet to hosts.
+        mac_addresses=get_mac_addresses(args),
+        broadcast_ip=args.broadcast,
+        port=args.port,
+        interface=args.interface
+    )

@@ -1,3 +1,4 @@
+filetype indent on
 syntax on
 
 set expandtab				" Expand tabs to spaces.
@@ -5,6 +6,7 @@ set filetype=text
 set foldenable				" Enable tab folding
 set foldmethod=indent		" Set fold for indented lines.
 set hlsearch				" Highlight search results.
+set fileformat=unix
 set incsearch				" Start highlighting at search.
 set lazyredraw				" Don't rerender the screen.
 set number					" Enable line numbers.
@@ -17,8 +19,6 @@ set tabstop=4				" The width of a TAB is set to 4.
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle
 
-filetype indent on
-
 " Docker config --------------------------------------------------
 autocmd BufNewFile docker-compose.y*ml
 	\ :0r ~/.vim/templates/docker-compose.yml
@@ -30,7 +30,7 @@ autocmd BufRead *.json
 " LaTeX config ---------------------------------------------------
 autocmd BufNewFile *.tex
     \ :0!mkdir ./images             |
-    \ :0r ~/.vim/templates/latex
+    \ 0r ~/.vim/templates/latex
 
 " Makefile config ------------------------------------------------
 autocmd FileType make
@@ -41,7 +41,6 @@ autocmd FileType make
 " Pkgbuild config ------------------------------------------------
 autocmd BufRead,BufNewfile PKGBUILD
     \ set autoindent                |
-    \ set expandtab                 |
     \ set fileformat=unix           |
     \ set filetype=PKGBUILD         |
     \ set noexpandtab               |
@@ -52,7 +51,7 @@ autocmd BufRead,BufNewfile PKGBUILD
 autocmd BufNewFile *.py
 	\ 0r ~/.vim/templates/python
 
-autocmd BufRead,BufNewfile *.ps1
+autocmd BufRead *.ps1
     \ set tabstop=2                 |
     \ set softtabstop=2             |
     \ set shiftwidth=2              |
@@ -65,10 +64,10 @@ autocmd Filetype python,yaml
     \ set fileformat=unix           |
     \ set textwidth=120
 
+" Shell scripts --------------------------------------------------
 autocmd BufNewFile *.sh
     \ :0r ~/.vim/templates/sh
 
-
-" Terraform config
+" Terraform config -----------------------------------------------
 autocmd BufNewFile *.tf
     \ 0r ~/.vim/templates/terraform

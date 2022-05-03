@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 03, 2022
+# Description:
+'''
+Send a wake-on-LAN packet to the specified IP addresses.
+'''
+
+import argparse
+import locale
+import logging
+import socket
+
+# Enable logging, set locale, set args.
+log = logging.getLogger()
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+log.addHandler(logging.StreamHandler())
+log.setLevel(logging.INFO)
+
+
+def get_arguments() -> argparse.Namespace:
+    '''Get cmdline arguments.'''
+    parser = argparse.ArgumentParser(
+        description='Send a wake-on-LAN packet to specified MAC addresses.'
+    )
+    parser.add_argument(                                        # The broadcast IP address.
+        '--IP', '-I',
+        dest='broadcast',
+        nargs=1,
+        default='255.255.255.255',
+        help='Specify the broadcast IP address.'
+    )
+    parser.add_argument(                                        # The broadcast IP address.
+        '--interface', '-i',
+        dest='interface',
+        nargs=1,
+        default=None,
+        help='Specify the broadcast IP address.'
+    )
+    parser.add_argument(                                        # STDIN-specified MAC addresses.
+        '--MAC', '-m',
+        dest='macs',
+        nargs='+',
+        help='Specify a list of MAC addresses to send WoL packets to.'
+    )
+    parser.add_argument(                                        # Enable DEBUG logging.
+        '--verbose', '-v',
+        action='store_const',
+        dest='loglevel',
+        const=logging.DEBUG,
+        help='Set log level to DEBUG.'
+    )
+
+    return parser.parse_args()
+
+
+def magic_packet(mac_address: str) -> bytes:
+    '''
+    Create a magic packet.
+    A magic packet is a packet that can be used with the for wake-on-LAN protocol to
+    wake up a computer. The packet is constructed from the MAC address given as a parameter.
+        :param macaddress: The MAC address that should be parsed into a magic packet.
+    '''
+    if len(mac_address) == 17:                                  # Check MAC address format.
+        mac_address = mac_address.replace(mac_address[2], '')
+    elif len(mac_address) != 12:
+        raise ValueError('Incorrect MAC address format.')
+
+    return bytes.fromhex('F' * 12 + mac_address * 16)           # Magic packet.
+
+
+def send_packet(
+    mac_address: str,
+    broadcast_ip: str,                                      # Default broadcast address.
+    port: int,                                              # Default WoL port.
+    interface: str = None                                   # Network interface.
+        ):
+    '''
+    Send a network packet to a socket.
+        :param mac_address:     The MAC address to send the packet to.
+        :param broadcast_ip:    The broadcast IP of your subnet.
+        :param port:            The port to send the packet to.
+        :param interface:       The network interface to bind the socket to.
+    '''
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+        if interface is not None:
+            sock.bind((interface, 0))                           # Bind to the specified interface.
+
+        sock.setsockopt(                                        # Set socket options.
+            socket.SOL_SOCKET,
+            socket.SO_BROADCAST, 1
+        )
+        sock.connect((broadcast_ip, port))                      # Connect to socket.
+        sock.send(magic_packet(mac_address))                    # Send magic packet.
+
+
+if __name__ == '__main__':
+    args = get_arguments()                                      # Get cmdline arguments.
+
+    if args.loglevel:                                           # Set debug output.
+        log.setLevel(args.loglevel)
+
+    if args.macs:                                               # Send WoL packet to MAC list.
+        for mac_address in args.macs:
+            send_packet(
+                mac_address=mac_address,
+                broadcast_ip=args.broadcast,
+                port=args.port,
+                interface=args.interface
+            )

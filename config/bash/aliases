@@ -1,42 +1,43 @@
 alias ..="cd .."
 alias ...="cd ..."
 alias ....="cd ...."
+
 alias back="cd ${OLDPWD}"
+
 alias c="clear"
 alias chr="chmod 644"
 alias chx="chmod 755"
+alias cl="clear;ls -lFh"
 alias cla="clear;ls -lFha"
 alias clip="xclip -sel clip"
-alias cl="clear;ls -lFh"
 alias cputemp="sensors | grep Core"
 
 alias df='df -h'
+alias dgrep='l|grep'
 alias dirs="dirs -p"
 
+alias F="fuck"
 alias flake8="flake8 --max-line-length=120"
 alias free="free -h"
-alias F="fuck"
 
 alias gca="gpg-connect-agent updatestartuptty /bye"
 alias grEp="grep -E"
 alias greP="grep -P"
-alias grip="grep -i"
 alias griP="grep -iP"
+alias grip="grep -i"
 alias grvp="grep -v"
 
-alias hgrep="history|grep -E"
 alias h='history'
+alias hgrep="history|grep -E"
 
+alias l='ls -lFh'
 alias la='ls -lFha'
-alias lgrep='ls|grep'
-alias ll='ls -lFh'
-alias l='ls -CF'
 
 alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
 alias mysql="mysql -u $(whoami) -p"
 
-alias qconnect="vncviewer localhost::5900"
 alias q="exit"
+alias qconnect="vncviewer localhost::5900"
 alias qlaunch="qemu-system-x86_64 -hda $(basename ${PWD}).img -cdrom $(basename ${PWD}).iso -m 4096 -net nic -net user"
 
 alias rmf="rm -rf"
@@ -46,7 +47,6 @@ alias speed="speedtest-cli"
 alias src="source ${HOME}/.profile && source ${HOME}/.bashrc"
 
 alias tf="terraform"
-
 alias va="source ./venv/bin/activate"
 alias ve="python3 -m venv ./venv"
 

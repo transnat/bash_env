@@ -1,0 +1,218 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 13, 2022
+# Description:
+'''
+Monitor advertised SSIDs and find matches.
+'''
+
+import argparse
+import locale
+import logging
+import re
+import subprocess
+from os import system
+from time import sleep
+
+# Enable logging, set locale, set args.
+log = logging.getLogger()
+
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+log.addHandler(logging.StreamHandler())
+log.setLevel(logging.INFO)
+
+
+def get_arguments() -> argparse.Namespace:
+    '''Get cmdline arguments.'''
+    parser = argparse.ArgumentParser(                           # Instantiate argument parser.
+        description='A tool to scan and catch SSIDs.'
+    )
+    parser.add_argument(                                        # Set wireless interface.
+        '--interface', '-i',
+        dest='interface',
+        default='wlan0',
+        help='Set the wireless interface to scan from.'
+    )
+    parser.add_argument(                                        # Scan interval.
+        '--interval', '-n',
+        dest='interval',
+        type=int,
+        default=2,
+        help='Set the scan interval (seconds).'
+    )
+    parser.add_argument(                                        # Enable DEBUG logging.
+        '--verbose', '-v',
+        action='store_const',
+        dest='loglevel',
+        const=logging.DEBUG,
+        help='Set log level to DEBUG.'
+    )
+
+    scan_type = parser.add_mutually_exclusive_group()           # Specify passive scan, or matched scan.
+
+    scan_type.add_argument(                                     # SSIDs to match.
+        '--match', '-m',
+        dest='ssids',
+        nargs='+',
+        help='Specify the SSIDs to catch.'
+    )
+    scan_type.add_argument(                                     # Grab all SSIDs.
+        '--passive', '-p',
+        action='store_true',
+        dest='passive',
+        help='Print all SSIDs to STDOUT.'
+    )
+
+    args = parser.parse_args()
+
+    if args.loglevel:                                           # Set debug output.
+        log.setLevel(args.loglevel)
+
+    return parser.parse_args()
+
+
+class IWList():
+    def __init__(self, interface: str = 'wlan0'):
+        '''
+        A client for the `iwlist` subprocess.
+        Scans SSIDs and parses subprocess output.
+            :param interface: The network interface on which to run the scan.
+        '''
+        self.cell_number_regex = re.compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
+        self.interface = interface
+        self.regexps = [
+            re.compile(r"^ESSID:\"(?P<essid>.*)\"$"),
+            re.compile(r"^Protocol:(?P<protocol>.+)$"),
+            re.compile(r"^Mode:(?P<mode>.+)$"),
+            re.compile(r"^Frequency:(?P<frequency>[\d.]+) (?P<frequency_units>.+) \(Channel (?P<channel>\d+)\)$"),
+            re.compile(r"^Encryption key:(?P<encryption>.+)$"),
+            re.compile(r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"),
+            re.compile(r"^Signal level=(?P<signal_quality>\d+)/(?P<signal_total>\d+).*$"),
+        ]
+        self.wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
+        self.wpa2_regex = re.compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
+
+        log.debug('Instantiated iwlist client.')
+
+    def scan(self):
+        '''
+        Runs scans all advertised SSIDs from `self.interface`.
+        '''
+        with subprocess.Popen(
+            [
+                'iwlist',
+                self.interface,
+                'scan'
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        ) as proc:
+            stdout = proc.stdout.read().decode('utf-8')
+            stderr = proc.stderr.read().decode('utf-8')
+
+            log.debug(stdout)
+            log.error(stderr)
+
+            return stdout
+
+    def parse(self, content: str):
+        '''
+        Parses the response from the command `iwlist scan`.
+            :param content: The output of IWList.scan().
+        '''
+        cells = list()                                          # List of SSIDs.
+        lines = content.split('\n')                             # List of lines returned by scan.
+
+        for line in lines:
+            line = line.strip()
+            cell_number = self.cell_number_regex.search(line)
+            wpa = self.wpa_regex.search(line)
+            wpa2 = self.wpa2_regex.search(line)
+
+            if cell_number is not None:
+                log.debug(f'Found cell: {cell_number}.')
+                cells.append(cell_number.groupdict())
+                continue
+
+            if wpa is not None:
+                log.debug(f'Found wpa: {wpa}.')
+                cells[-1].update({'encryption': 'wpa'})
+
+            if wpa2 is not None:
+                log.debug(f'Found wpa2: {wpa2}.')
+                cells[-1].update({'encryption': 'wpa2'})
+
+            for expression in self.regexps:
+                result = expression.search(line)
+
+                if result is not None:
+                    log.debug(f'Found result: {result}.')
+
+                    if 'encryption' in result.groupdict():
+                        if result.groupdict()['encryption'] == 'on':
+                            cells[-1].update({'encryption': 'wep'})
+                        else:
+                            cells[-1].update({'encryption': 'off'})
+                    else:
+                        cells[-1].update(result.groupdict())
+                        log.debug('Cells:\n{cells}')
+
+                    continue
+
+        return cells
+
+
+def printout(ssids: list):
+    '''
+    Format and print the passed list of SSIDs.
+        :param ssids: The list of SSIDs to print.
+    '''
+    ssid_string = '\n'.join(ssids)                              # Formatted list.
+
+    print(
+        'StreetShark\n'
+        '--------------------\n'
+        f'{ssid_string}'
+    )
+
+
+if __name__ == '__main__':
+    args = get_arguments()                                      # Get cmdline arguments.
+    iwlist = IWList(args.interface)                             # iwlist client.
+    advertised = set()                                          # Found SSIDs.
+    matched = set()                                             # Matched SSIDs.
+
+    while True:
+        system('clear')                                         # Clear terminal.
+
+        for name in [                                           # Grab SSIDs.
+            ssid['essid'] for ssid in iwlist.parse(iwlist.scan())
+        ]:
+            if name != '':
+                advertised.add(f'* {name}')                     # Add found SSID to set.
+
+                if args.ssids and name in args.ssids:           # Add matched SSID to set.
+                    matched.add(f'* {name}')
+
+        log.debug(f'Found: {advertised}')
+        log.debug(f'Matched: {matched}')
+
+        if args.ssids:                                          # Print matched SSIDs.
+            if len(matched) == 0:
+                print('No SSIDs matched yet.')
+            else:
+                printout(matched)
+
+        elif args.passive:                                      # Print found SSIDs.
+            if len(advertised) == 0:
+                print('No SSIDs found yet.')
+            else:
+                printout(advertised)
+
+        else:                                                   # Exit.
+            log.critical('Invalid input. Exiting.')
+            exit()
+
+        sleep(args.interval)                                    # Sleep.

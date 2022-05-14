@@ -5,7 +5,7 @@
 # Date:         May 13, 2022
 # Description:
 '''
-Monitor advertised SSIDs and find matches.
+Monitor advertised SSIDs and (optionally) find matches.
 '''
 
 import argparse
@@ -27,7 +27,7 @@ log.setLevel(logging.INFO)
 def get_arguments() -> argparse.Namespace:
     '''Get cmdline arguments.'''
     parser = argparse.ArgumentParser(                           # Instantiate argument parser.
-        description='A tool to scan and catch SSIDs.'
+        description='Monitor advertised SSIDs and (optionally) find matches.'
     )
     parser.add_argument(                                        # Set wireless interface.
         '--interface', '-i',
@@ -50,22 +50,22 @@ def get_arguments() -> argparse.Namespace:
         help='Set log level to DEBUG.'
     )
 
-    scan_type = parser.add_mutually_exclusive_group()           # Specify passive scan, or matched scan.
+    scan_type = parser.add_mutually_exclusive_group()           # Specify passive or matched scan.
 
-    scan_type.add_argument(                                     # SSIDs to match.
+    scan_type.add_argument(                                     # Matched scan.
         '--match', '-m',
         dest='ssids',
         nargs='+',
         help='Specify the SSIDs to catch.'
     )
-    scan_type.add_argument(                                     # Grab all SSIDs.
+    scan_type.add_argument(                                     # Passive scan.
         '--passive', '-p',
         action='store_true',
         dest='passive',
         help='Print all SSIDs to STDOUT.'
     )
 
-    args = parser.parse_args()
+    args = parser.parse_args()                                  # Parse CMDline arguments.
 
     if args.loglevel:                                           # Set debug output.
         log.setLevel(args.loglevel)
@@ -73,95 +73,74 @@ def get_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-class IWList():
-    def __init__(self, interface: str = 'wlan0'):
-        '''
-        A client for the `iwlist` subprocess.
-        Scans SSIDs and parses subprocess output.
-            :param interface: The network interface on which to run the scan.
-        '''
-        self.cell_number_regex = re.compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
-        self.interface = interface
-        self.regexps = [
-            re.compile(r"^ESSID:\"(?P<essid>.*)\"$"),
-            re.compile(r"^Protocol:(?P<protocol>.+)$"),
-            re.compile(r"^Mode:(?P<mode>.+)$"),
-            re.compile(r"^Frequency:(?P<frequency>[\d.]+) (?P<frequency_units>.+) \(Channel (?P<channel>\d+)\)$"),
-            re.compile(r"^Encryption key:(?P<encryption>.+)$"),
-            re.compile(r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"),
-            re.compile(r"^Signal level=(?P<signal_quality>\d+)/(?P<signal_total>\d+).*$"),
-        ]
-        self.wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
-        self.wpa2_regex = re.compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
+def iwlist(interface: str = 'wlan0') -> list:
+    '''
+    Runs scans all advertised SSIDs from `interface`.
+        :param interface: The network interface on which to run the scan.
+    '''
+    cells = list()                                          # List of SSIDs.
+    cell_number_regex = re.compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
+    regexps = [
+        re.compile(r"^ESSID:\"(?P<essid>.*)\"$"),
+        re.compile(r"^Protocol:(?P<protocol>.+)$"),
+        re.compile(r"^Mode:(?P<mode>.+)$"),
+        re.compile(r"^Frequency:(?P<frequency>[\d.]+) (?P<frequency_units>.+) \(Channel (?P<channel>\d+)\)$"),
+        re.compile(r"^Encryption key:(?P<encryption>.+)$"),
+        re.compile(r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"),
+        re.compile(r"^Signal level=(?P<signal_quality>\d+)/(?P<signal_total>\d+).*$"),
+    ]
+    wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
+    wpa2_regex = re.compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
+    proc = subprocess.Popen(                                # Run `iwlist` subprocess.
+        [
+            'iwlist',
+            interface,
+            'scan'
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE
+    )
+    stdout = proc.stdout.read().decode('utf-8')             # STDOUT.
+    stderr = proc.stderr.read().decode('utf-8')             # STDERR.
+    lines = stdout.split('\n')                              # List of lines returned by scan.
 
-        log.debug('Instantiated iwlist client.')
+    log.debug(stdout)
+    log.error(stderr)
 
-    def scan(self):
-        '''
-        Runs scans all advertised SSIDs from `self.interface`.
-        '''
-        with subprocess.Popen(
-            [
-                'iwlist',
-                self.interface,
-                'scan'
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        ) as proc:
-            stdout = proc.stdout.read().decode('utf-8')
-            stderr = proc.stderr.read().decode('utf-8')
+    for line in lines:                                      # Iterate STDOUT and format to list.
+        line = line.strip()
+        cell_number = cell_number_regex.search(line)
+        wpa = wpa_regex.search(line)
+        wpa2 = wpa2_regex.search(line)
 
-            log.debug(stdout)
-            log.error(stderr)
+        if cell_number is not None:
+            log.debug(f'Found cell: {cell_number}.')
+            cells.append(cell_number.groupdict())
 
-            return stdout
+        if wpa is not None:
+            log.debug(f'Found wpa: {wpa}.')
+            cells[-1].update({'encryption': 'wpa'})
 
-    def parse(self, content: str):
-        '''
-        Parses the response from the command `iwlist scan`.
-            :param content: The output of IWList.scan().
-        '''
-        cells = list()                                          # List of SSIDs.
-        lines = content.split('\n')                             # List of lines returned by scan.
+        if wpa2 is not None:
+            log.debug(f'Found wpa2: {wpa2}.')
+            cells[-1].update({'encryption': 'wpa2'})
 
-        for line in lines:
-            line = line.strip()
-            cell_number = self.cell_number_regex.search(line)
-            wpa = self.wpa_regex.search(line)
-            wpa2 = self.wpa2_regex.search(line)
+        for expression in regexps:
+            result = expression.search(line)
 
-            if cell_number is not None:
-                log.debug(f'Found cell: {cell_number}.')
-                cells.append(cell_number.groupdict())
-                continue
+            if result is not None:
+                log.debug(f'Found result: {result}.')
 
-            if wpa is not None:
-                log.debug(f'Found wpa: {wpa}.')
-                cells[-1].update({'encryption': 'wpa'})
-
-            if wpa2 is not None:
-                log.debug(f'Found wpa2: {wpa2}.')
-                cells[-1].update({'encryption': 'wpa2'})
-
-            for expression in self.regexps:
-                result = expression.search(line)
-
-                if result is not None:
-                    log.debug(f'Found result: {result}.')
-
-                    if 'encryption' in result.groupdict():
-                        if result.groupdict()['encryption'] == 'on':
-                            cells[-1].update({'encryption': 'wep'})
-                        else:
-                            cells[-1].update({'encryption': 'off'})
+                if 'encryption' in result.groupdict():
+                    if result.groupdict()['encryption'] == 'on':
+                        cells[-1].update({'encryption': 'wep'})
                     else:
-                        cells[-1].update(result.groupdict())
-                        log.debug('Cells:\n{cells}')
+                        cells[-1].update({'encryption': 'off'})
+                else:
+                    cells[-1].update(result.groupdict())
+                    log.debug('Cells:\n{cells}')
 
-                    continue
-
-        return cells
+    return cells
 
 
 def printout(ssids: list):
@@ -180,7 +159,6 @@ def printout(ssids: list):
 
 if __name__ == '__main__':
     args = get_arguments()                                      # Get cmdline arguments.
-    iwlist = IWList(args.interface)                             # iwlist client.
     advertised = set()                                          # Found SSIDs.
     matched = set()                                             # Matched SSIDs.
 
@@ -188,9 +166,9 @@ if __name__ == '__main__':
         system('clear')                                         # Clear terminal.
 
         for name in [                                           # Grab SSIDs.
-            ssid['essid'] for ssid in iwlist.parse(iwlist.scan())
+            ssid['essid'] for ssid in iwlist(args.interface)
         ]:
-            if name != '':
+            if name != '':                                      # Ignore unnamed SSIDs.
                 advertised.add(f'* {name}')                     # Add found SSID to set.
 
                 if args.ssids and name in args.ssids:           # Add matched SSID to set.

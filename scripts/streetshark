@@ -13,6 +13,7 @@ import locale
 import logging
 import re
 import subprocess
+from datetime import datetime
 from os import system
 from time import sleep
 
@@ -143,51 +144,60 @@ def iwlist(interface: str = 'wlan0') -> list:
     return cells
 
 
-def printout(ssids: list):
+def printout(ssids: dict):
     '''
     Format and print the passed list of SSIDs.
         :param ssids: The list of SSIDs to print.
     '''
-    ssid_string = '\n'.join(ssids)                              # Formatted list.
+    for key in ssids:
+        print(f'{ssids[key]} - {key}')
 
-    print(
-        'StreetShark\n'
-        '--------------------\n'
-        f'{ssid_string}'
-    )
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                      # Get cmdline arguments.
     advertised = set()                                          # Found SSIDs.
+    args = get_arguments()                                      # Get cmdline arguments.
     matched = set()                                             # Matched SSIDs.
+    timestamp = {                                               # SSIDs + first time seen.
+        'advertised': dict(),
+        'matched': dict()
+    }
 
     while True:
         system('clear')                                         # Clear terminal.
+        now = datetime.now().strftime('%H:%M:%S')
 
         for name in [                                           # Grab SSIDs.
             ssid['essid'] for ssid in iwlist(args.interface)
         ]:
-            if name != '':                                      # Ignore unnamed SSIDs.
-                advertised.add(f'* {name}')                     # Add found SSID to set.
+            if name != '':
+                if name not in advertised:
+                    advertised.add(name)                            # Add found SSID to set.
+                    timestamp['advertised'][name] = now
 
                 if args.ssids and name in args.ssids:           # Add matched SSID to set.
-                    matched.add(f'* {name}')
+                    if name not in matched:
+                        matched.add(name)
+                        timestamp['matched'][name] = now
 
         log.debug(f'Found: {advertised}')
         log.debug(f'Matched: {matched}')
+        print(
+            f'StreetShark                                 {now}\n'
+            '----------------------------------------------------'
+        )
 
         if args.ssids:                                          # Print matched SSIDs.
             if len(matched) == 0:
                 print('No SSIDs matched yet.')
             else:
-                printout(matched)
+                printout(timestamp['matched'])
 
         elif args.passive:                                      # Print found SSIDs.
             if len(advertised) == 0:
                 print('No SSIDs found yet.')
             else:
-                printout(advertised)
+                printout(timestamp['advertised'])
 
         else:                                                   # Exit.
             log.critical('Invalid input. Exiting.')

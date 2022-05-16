@@ -1,12 +1,13 @@
 filetype indent on
 syntax on
 
+set encoding=utf-8          " Set encoding.
 set expandtab				" Expand tabs to spaces.
+set fileformat=unix
 set filetype=text
 set foldenable				" Enable tab folding
 set foldmethod=indent		" Set fold for indented lines.
 set hlsearch				" Highlight search results.
-set fileformat=unix
 set incsearch				" Start highlighting at search.
 set lazyredraw				" Don't rerender the screen.
 set number					" Enable line numbers.

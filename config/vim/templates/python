@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 # Author:       Casey Sparks
-# Date:
+# Date:         
 # Description:
 '''
-The `help()` description of the script goes here.
+The description of the script goes here.                        # EDIT.
 '''
 
 import argparse
@@ -22,8 +22,8 @@ log.setLevel(logging.INFO)
 
 def get_arguments() -> argparse.Namespace:
     '''Get cmdline arguments.'''
-    parser = argparse.ArgumentParser(
-        description='Add a useful description here.'
+    parser = argparse.ArgumentParser(                           # EDIT.
+        description='The `help()` description of the application goes here.'
     )
     parser.add_argument(                                        # Enable DEBUG logging.
         '--verbose', '-v',
@@ -37,7 +37,6 @@ def get_arguments() -> argparse.Namespace:
 
     if args.loglevel:                                           # Set debug output.
         log.setLevel(args.loglevel)
-        #logging.basicConfig(filename=f'./{__name__}.log')
 
     return parser.parse_args()
 

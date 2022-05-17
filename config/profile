@@ -10,19 +10,16 @@ fi
 # PATH directories below listed from lowest to highest priority.
 
 # User-defined dirs (for scripts, etc.).
-# Set PATH so it includes script directory, if it exists.
+# Set PATH so it includes script directories, if they exist.
 if [ -d "$HOME/.env/scripts" ] ; then
-  PATH="$HOME/.env/scripts:$PATH"
+  PATH="$HOME/.env/scripts/bash:$PATH"      # Bash scripts.
+  PATH="$HOME/.env/scripts/python:$PATH"    # Python3 scripts.
+  PATH="$HOME/.env/scripts/pgp:$PATH"       # PGP-encrypted scripts.
 fi
 
 # Misc. scripts.
 if [ -d "$HOME/Documents/scripts/ad_hoc" ]; then
   PATH="$PATH:${HOME}/Documents/scripts/ad_hoc"
-fi
-
-# Set PATH so it includes gpg-encrypted script directory, if it exists.
-if [ -d "$HOME/.env/gsh" ]; then
-  PATH="$HOME/.env/gsh:$PATH"
 fi
 
 # System-defined dirs.

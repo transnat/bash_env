@@ -32,6 +32,7 @@ alias hgrep="history|grep -E"
 
 alias l='ls -lFh'
 alias la='ls -lFha'
+alias ll='ls -lFh'
 
 alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
 alias mysql="mysql -u $(whoami) -p"

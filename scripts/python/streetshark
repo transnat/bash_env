@@ -16,6 +16,7 @@ import subprocess
 from datetime import datetime
 from os import system
 from time import sleep
+from typing import NoReturn
 
 # Enable logging, set locale, set args.
 log = logging.getLogger()
@@ -144,14 +145,13 @@ def iwlist(interface: str = 'wlan0') -> list:
     return cells
 
 
-def printout(ssids: dict):
+def printout(ssids: dict) -> NoReturn:
     '''
     Format and print the passed list of SSIDs.
         :param ssids: The list of SSIDs to print.
     '''
     for key in ssids:
         print(f'{ssids[key]} - {key}')
-
 
 
 if __name__ == '__main__':

@@ -21,6 +21,7 @@ def get_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='Display information about a network interface.'
     )
+
     parser.add_argument(
         '--interface', '-I',
         dest='interface',
@@ -46,7 +47,10 @@ def wan_interface() -> str:
 
 
 def interface_info(interface: str) -> list:
-    '''Get the default gateway.'''
+    '''
+    Get the default gateway.
+        :param interface: The network interface to query.
+    '''
     with open('/proc/net/route') as fh:
         for line in fh:
             fields = line.strip().split()
@@ -55,12 +59,15 @@ def interface_info(interface: str) -> list:
 
 
 def local_ip(interface: str) -> str:
-    '''Get the local IP address of an interface.'''
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
+    '''
+    Get the local IP address of an interface.
+        :param interface: The network interface to query.
+    '''
     return socket.inet_ntoa(fcntl.ioctl(
-        s.fileno(),
-        0x8915,  # SIOCGIFADDR
+        socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM
+        ).fileno(),
+        0x8915,                                 # SIOCGIFADDR
         struct.pack(
             '256s',
             bytes(interface[:15], 'utf-8')
@@ -69,12 +76,15 @@ def local_ip(interface: str) -> str:
 
 
 def netmask(interface: str) -> str:
-    '''Read the default gateway directly from /proc.'''
+    '''
+    Read the default gateway directly from /proc.
+        :param interface: The network interface to query.
+    '''
     return socket.inet_ntoa(struct.pack('<L', int(interface_info(interface)[7], 16)))
 
 
 if __name__ == '__main__':
-    interface = get_arguments().interface       # Get cmdline arguments.
+    interface = get_arguments().interface       # Get interface from arguments.
     network_table = [                           # Instantiate netinfo array.
         ['Network Information', ''],
         ['============================', ''],

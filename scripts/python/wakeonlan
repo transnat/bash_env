@@ -30,6 +30,7 @@ def get_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description='Send a wake-on-LAN packet to specified MAC addresses.'
     )
+
     parser.add_argument(                                        # The broadcast IP address.
         '--broadcast', '-b',
         dest='broadcast',
@@ -82,7 +83,7 @@ def get_arguments() -> argparse.Namespace:
 def file_checks() -> Tuple[dict, pathlib.PosixPath]:
     '''Check for config directory/file, and create them if they do not exists.'''
     config_dir = pathlib.Path(                                  # Directory for config files.
-        pathlib.Path.home()/'.config/wakeonlan'
+        pathlib.Path.home() / '.config/wakeonlan'
     )
     hostsfile = config_dir / 'known_hosts.yml'                  # File containing known host mappings.
     known_hosts = list()
@@ -100,16 +101,17 @@ def file_checks() -> Tuple[dict, pathlib.PosixPath]:
         hostsfile.touch(mode=0o644, exist_ok=True)
 
     known_hosts = yaml.safe_load(open(hostsfile, 'rb'))         # Read hosts file into var.
-    breakpoint()
 
     return known_hosts, hostsfile
 
 
 def get_mac_addresses(args: argparse.Namespace) -> list:
-    '''Grok STDIN and config files for the hosts to wake.'''
+    '''
+    Grok STDIN and config files for the hosts to wake.
+        :param args: User-provided cmdline arguments.
+    '''
     known_hosts, hostsfile = file_checks()                      # Get known hosts from config file.
     mac_addresses = list()
-    breakpoint()
 
     if args.macs:                                               # Set hosts based on MACs from STDIN.
         mac_addresses = args.macs
@@ -148,9 +150,9 @@ def magic_packet(mac_address: str) -> bytes:
 
 def send_packet(
         mac_addresses: list,
-        broadcast_ip: str,                                      # Default broadcast address.
-        port: int,                                              # Default WoL port.
-        interface: str = None                                   # Network interface.
+        broadcast_ip: str,
+        port: int,
+        interface: str = None
         ) -> NoReturn:
     '''
     Send a network packet to a socket.
@@ -162,9 +164,9 @@ def send_packet(
     log.debug('Instantiating socket.')
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        if interface is not None:
+        if interface is not None:                               # Bind to the specified interface.
             log.debug(f'Binding to interface {interface}.')
-            sock.bind((interface, 0))                           # Bind to the specified interface.
+            sock.bind((interface, 0))
 
         log.debug('Setting socket options.')
         sock.setsockopt(                                        # Set socket options.
@@ -177,12 +179,7 @@ def send_packet(
         log.debug('Connected.')
 
         for mac_address in mac_addresses:
-            packet = magic_packet(mac_address)
-
-            log.debug(f'Packet: {packet}')
-            log.info(f'Sending wake-on-LAN packet to {mac_address} on port {port}.')
-
-            sent = sock.send(packet)                            # Send magic packet.
+            sent = sock.send(magic_packet(mac_address))         # Send magic packet.
 
             log.info(f'Sent: {sent}')
 

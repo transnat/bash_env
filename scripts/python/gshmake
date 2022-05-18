@@ -23,6 +23,7 @@ import os
 import pathlib
 import psutil
 import gnupg
+from typing import NoReturn
 
 # Enable logging, set locale, set args.
 handler = logging.StreamHandler()
@@ -41,6 +42,7 @@ def get_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(                           # Instantiate parser.
         description='Create executable PGP-encrypted scripts.'
     )
+
     parser.add_argument(                                        # Specify recipients.
         '--recipients', '-r',
         dest='recipients',
@@ -55,14 +57,15 @@ def get_arguments() -> argparse.Namespace:
         help='Specify files to encrypt.'
     )
 
-    return parser.parse_args()
+    return munge_arguments(parser.parse_args())
 
 
 def munge_arguments(args: argparse.Namespace) -> argparse.Namespace:
-    '''Resolve inputs > filepaths.'''
-    pwd = pathlib.Path()                                        # Define current directory.
-
-    args.recipients.append(os.environ.get('GPG_KEY_ID'))        # Add ourselves to the recipients.
+    '''
+    Resolve inputs to filepaths.
+        :param args: User-specified cmdline arguments.
+    '''
+    args.recipients.append(os.getenv('GPG_KEY_ID'))             # Add ourselves to the recipients.
 
     for file in args.file:
         index = args.file.index(file)
@@ -70,11 +73,14 @@ def munge_arguments(args: argparse.Namespace) -> argparse.Namespace:
         if file[0] == '/':                                      # Define the path
             args.file[index] = pathlib.Path(file)               # if it's absolute, and
         else:
-            args.file[index] = pwd/file                         # if it's relative.
+            args.file[index] = pathlib.Path() / file            # if it's relative.
 
 
 def prechecks_pass(args: argparse.Namespace) -> bool:
-    '''Check that inputs and processes are as expected.'''
+    '''
+    Check that inputs and processes are as expected.
+        :param args: User-specified cmdline arguments.
+    '''
     gpg_procs = ['gpg-agent', 'gpgconf']
 
     for gpg_proc in gpg_procs:                                  # Check that a GPG agent is running.
@@ -97,7 +103,11 @@ def prechecks_pass(args: argparse.Namespace) -> bool:
 
 
 def encrypt(file: pathlib.PosixPath, recipients: list) -> pathlib.PosixPath:
-    '''Decrypt seed phrase and return its value.'''
+    '''
+    Decrypt seed phrase and return its value.
+        :param file:        The path of the file to be encrypted.
+        :param recipients:  The recipient emails of the cipherfile.
+    '''
     out_file = file.with_suffix('')                             # Strip suffix, if exists.
 
     log.debug(f'Encrypting file: {file}.')
@@ -119,8 +129,11 @@ def encrypt(file: pathlib.PosixPath, recipients: list) -> pathlib.PosixPath:
     return out_file
 
 
-def munge_cipherfile(cipherfile: pathlib.PosixPath):
-    '''Add lines to cipherfile needed for shell interpretation.'''
+def munge_cipherfile(cipherfile: pathlib.PosixPath) -> NoReturn:
+    '''
+    Add lines to cipherfile needed for shell interpretation.
+        :param cipherfile: The path of the file to be encrypted.
+    '''
     newlines = [                                                # Cleartext header.
         '#!/bin/env bash\n',                                    # Shebang.
         'gpg2 --decrypt 2> /dev/null << EOF | bash -s $@\n',    # Decrypt cipher heredoc and pipe to subshell.
@@ -142,8 +155,6 @@ if __name__ == '__main__':
         use_agent=True,
         verbose=False
     )
-
-    munge_arguments(args)
 
     if prechecks_pass(args):
         for clearfile in args.file:

@@ -1,5 +1,10 @@
-#!/bin/env bash
-### order: Renames all files of a given extension in a directory to a number sequence starting with a given number.
+#!/usr/bin/env bash
+# -*- coding:utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 18, 2022
+# Description:  Renames all files of a given extension in a directory to a
+#               number sequence starting with a given number.
 
 printf "Start numbering at:\n"
 read START

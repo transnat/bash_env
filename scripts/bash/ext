@@ -1,5 +1,10 @@
-#!/bin/env bash
-# Extract any compressed file or compress any uncompressed file
+#!/usr/bin/env bash
+# -*- coding:utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 18, 2022
+# Description:  Extract any compressed file or compress any uncompressed file.
+
 for FILE in $@; do
     if [ -f ${FILE} ] ; then
         case ${FILE} in

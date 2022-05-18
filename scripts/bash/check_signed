@@ -1,3 +1,10 @@
+#!/usr/bin/env bash
+# -*- coding:utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 18, 2022
+# Description:  Checks for signed commits in the git log.
+
 chkafter="${1+$1..}"
 t=$( echo "  " )
 git log --pretty="format:%H$t%aN$t%s$t%G?" "${chkafter:-HEAD}" | grep -v "${t}G$"

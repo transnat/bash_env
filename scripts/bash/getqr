@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
+# -*- coding:utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 18, 2022.
+# Description:  Read QR codes from a screenshot.
 
 TMP_FILE='/tmp/scrotscriptout.png'
+
 scrot ${TMP_FILE} -f -s
 
 SCAN_RESULT=$(zbarimg --quiet --raw ${TMP_FILE} | tr -d '\n')

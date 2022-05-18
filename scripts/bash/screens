@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# -*- coding:utf-8 -*-
+
+# Author:       Casey Sparks
+# Date:         May 18, 2022.
+# Description:  A simple wrapper for xrandr scripts.
+
+SCREENS="$@"
+
+${HOME}/.env/config/xrandr/${HOSTNAME}/${SCREENS}

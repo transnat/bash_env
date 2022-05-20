@@ -31,6 +31,8 @@ def get_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(                           # Instantiate argument parser.
         description='Monitor advertised SSIDs and (optionally) find matches.'
     )
+    scan_type = parser.add_mutually_exclusive_group()           # Specify passive or matched scan.
+
     parser.add_argument(                                        # Set wireless interface.
         '--interface', '-i',
         dest='interface',
@@ -51,9 +53,6 @@ def get_arguments() -> argparse.Namespace:
         const=logging.DEBUG,
         help='Set log level to DEBUG.'
     )
-
-    scan_type = parser.add_mutually_exclusive_group()           # Specify passive or matched scan.
-
     scan_type.add_argument(                                     # Matched scan.
         '--match', '-m',
         dest='ssids',
@@ -80,7 +79,7 @@ def iwlist(interface: str = 'wlan0') -> list:
     Runs scans all advertised SSIDs from `interface`.
         :param interface: The network interface on which to run the scan.
     '''
-    cells = list()                                          # List of SSIDs.
+    cells = list()                                              # List of SSIDs.
     cell_number_regex = re.compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
     regexps = [
         re.compile(r"^ESSID:\"(?P<essid>.*)\"$"),
@@ -93,7 +92,7 @@ def iwlist(interface: str = 'wlan0') -> list:
     ]
     wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
     wpa2_regex = re.compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
-    proc = subprocess.Popen(                                # Run `iwlist` subprocess.
+    proc = subprocess.Popen(                                    # Run `iwlist` subprocess.
         [
             'iwlist',
             interface,
@@ -102,14 +101,14 @@ def iwlist(interface: str = 'wlan0') -> list:
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
     )
-    stdout = proc.stdout.read().decode('utf-8')             # STDOUT.
-    stderr = proc.stderr.read().decode('utf-8')             # STDERR.
-    lines = stdout.split('\n')                              # List of lines returned by scan.
+    stdout = proc.stdout.read().decode('utf-8')                 # STDOUT.
+    stderr = proc.stderr.read().decode('utf-8')                 # STDERR.
+    lines = stdout.split('\n')                                  # List of lines returned by scan.
 
     log.debug(stdout)
     log.error(stderr)
 
-    for line in lines:                                      # Iterate STDOUT and format to list.
+    for line in lines:                                          # Iterate STDOUT and format to list.
         line = line.strip()
         cell_number = cell_number_regex.search(line)
         wpa = wpa_regex.search(line)
@@ -150,7 +149,7 @@ def printout(ssids: dict) -> NoReturn:
     Format and print the passed list of SSIDs.
         :param ssids: The list of SSIDs to print.
     '''
-    for key in ssids:
+    for key in ssids:                                           # Iterate ssids and print name/timestamp.
         print(f'{ssids[key]} - {key}')
 
 
@@ -165,14 +164,15 @@ if __name__ == '__main__':
 
     while True:
         system('clear')                                         # Clear terminal.
-        now = datetime.now().strftime('%H:%M:%S')
+
+        now = datetime.now().strftime('%H:%M:%S')               # Set timestamp.
 
         for name in [                                           # Grab SSIDs.
             ssid['essid'] for ssid in iwlist(args.interface)
         ]:
-            if name != '':
-                if name not in advertised:
-                    advertised.add(name)                            # Add found SSID to set.
+            if name != '':                                      # Ignore hidden SSIDs.
+                if name not in advertised:                      # Add found SSID to set.
+                    advertised.add(name)
                     timestamp['advertised'][name] = now
 
                 if args.ssids and name in args.ssids:           # Add matched SSID to set.
@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
         log.debug(f'Found: {advertised}')
         log.debug(f'Matched: {matched}')
-        print(
+        print(                                                  # Print header.
             f'StreetShark                                 {now}\n'
             '----------------------------------------------------'
         )

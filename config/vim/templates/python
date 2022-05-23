@@ -12,7 +12,7 @@ import argparse
 import locale
 import logging
 
-# Enable logging, set locale, set args.
+# Enable logging, set locale.
 log = logging.getLogger()
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')

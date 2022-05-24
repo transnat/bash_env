@@ -36,7 +36,7 @@ def get_arguments() -> argparse.Namespace:
     parser.add_argument(                                        # Set wireless interface.
         '--interface', '-i',
         dest='interface',
-        default='wlan0',
+        default=get_default_interface(),
         help='Set the wireless interface to scan from.'
     )
     parser.add_argument(                                        # Scan interval.
@@ -72,6 +72,15 @@ def get_arguments() -> argparse.Namespace:
         log.setLevel(args.loglevel)
 
     return parser.parse_args()
+
+
+def get_default_interface() -> str:
+    interface = subprocess.run(
+        ['ip', 'route', 'show'],
+        capture_output=True
+    ).stdout.decode('utf-8').split()[4]
+
+    return interface
 
 
 def iwlist(interface: str = 'wlan0') -> list:

@@ -23,7 +23,7 @@ log.addHandler(logging.StreamHandler())
 log.setLevel(logging.INFO)
 
 
-def get_location_table(ip_address: str, api_key: str):
+def get_location_table(ip_address: str, api_key: str) -> list:
     '''
     Gets location data from IPStack.com and returns it as a list of lists.
         :param ip_address:  The IP address to get location info for.

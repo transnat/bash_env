@@ -13,9 +13,10 @@ import locale
 import logging
 import pathlib
 import socket
-import yaml
 from pprint import pp
+from subprocess import run
 from typing import NoReturn, Tuple
+import yaml
 
 # Enable logging, set locale, set args.
 log = logging.getLogger()
@@ -31,18 +32,18 @@ def get_arguments() -> argparse.Namespace:
         description='Send a wake-on-LAN packet to specified MAC addresses.'
     )
 
+    parser.add_argument(                                        # The LAN interface.
+        '--interface', '-i',
+        dest='interface',
+        nargs=1,
+        default=get_default_interface(),
+        help='Specify the broadcast IP address.'
+    )
     parser.add_argument(                                        # The broadcast IP address.
         '--broadcast', '-b',
         dest='broadcast',
         nargs=1,
         default='255.255.255.255',
-        help='Specify the broadcast IP address.'
-    )
-    parser.add_argument(                                        # The broadcast IP address.
-        '--interface', '-i',
-        dest='interface',
-        nargs=1,
-        default=None,
         help='Specify the broadcast IP address.'
     )
     parser.add_argument(                                        # The port to use.
@@ -64,6 +65,12 @@ def get_arguments() -> argparse.Namespace:
         nargs='+',
         help='Specify a list of known hosts to send WoL packets to.'
     )
+    parser.add_argument(                                        # Get application info.
+        '--info',
+        action='store_true',
+        dest='info',
+        help='Print the default configuration and exit.'
+    )
     parser.add_argument(                                        # Enable DEBUG logging.
         '--verbose', '-v',
         action='store_const',
@@ -74,10 +81,39 @@ def get_arguments() -> argparse.Namespace:
 
     args = parser.parse_args()
 
+    if args.info:                                               # Print application info and exit.
+        print_info(args)
+        exit()
+
     if args.loglevel:                                           # Set verbose logging.
         log.setLevel(args.loglevel)
 
     return args
+
+
+def get_default_interface() -> str:
+    interface = run(
+        ['ip', 'route', 'show'],
+        capture_output=True
+    ).stdout.decode('utf-8').split()[4]
+
+    return interface
+
+
+def print_info(args: argparse.Namespace) -> NoReturn:
+    known_hosts, hostsfile = file_checks()
+
+    info_table = [
+        ['Interface', args.interface],
+        ['Broadcast', args.broadcast],
+        ['Port', args.port]
+    ]
+
+    for row in info_table:
+        print('{: <16} {: >0}'.format(*row))
+
+    print('\nKnown Hosts:')
+    pp(known_hosts)
 
 
 def file_checks() -> Tuple[dict, pathlib.PosixPath]:

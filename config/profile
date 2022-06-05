@@ -22,6 +22,11 @@ if [ -d /usr/local/go/bin ]; then
   PATH="/usr/local/go/bin:${PATH}"
 fi
 
+## Include gems, if exists.
+if [ -d "${HOME}/.local/share/gem/ruby/3.0.0/bin" ] ; then
+  PATH="${HOME}/.local/share/gem/ruby/3.0.0/bin:${PATH}"
+fi
+
 ## Include snap, if exists.
 if [ -d "${HOME}/.local/bin" ] ; then
   PATH="/var/lib/snapd/snap/bin:${PATH}"

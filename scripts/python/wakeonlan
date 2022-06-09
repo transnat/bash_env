@@ -92,7 +92,7 @@ def get_arguments() -> argparse.Namespace:
 
 
 def get_default_interface() -> str:
-    interface = run(
+    interface = run(                                            # Run subprocess to capture interface.
         ['ip', 'route', 'show'],
         capture_output=True
     ).stdout.decode('utf-8').split()[4]
@@ -103,17 +103,24 @@ def get_default_interface() -> str:
 def print_info(args: argparse.Namespace) -> NoReturn:
     known_hosts, hostsfile = file_checks()
 
-    info_table = [
+    iface_table = [                                             # Interface information.
         ['Interface', args.interface],
         ['Broadcast', args.broadcast],
         ['Port', args.port]
     ]
+    known_hosts = [[k, v] for k, v in known_hosts.items()]      # Known hosts information.
 
-    for row in info_table:
-        print('{: <16} {: >0}'.format(*row))
+    print('---------------------------------')                  # Print formatted tables.
+    print('''Interface Info\n---------------------------------''')
 
-    print('\nKnown Hosts:')
-    pp(known_hosts)
+    for row in iface_table:
+        print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(23))
+
+    print('\n---------------------------------')
+    print('''Known Hosts\n---------------------------------''')
+
+    for row in known_hosts:
+        print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(21))
 
 
 def file_checks() -> Tuple[dict, pathlib.PosixPath]:
@@ -141,7 +148,9 @@ def file_checks() -> Tuple[dict, pathlib.PosixPath]:
     return known_hosts, hostsfile
 
 
-def get_mac_addresses(args: argparse.Namespace) -> list:
+def get_mac_addresses(
+        args: argparse.Namespace
+        ) -> list:
     '''
     Grok STDIN and config files for the hosts to wake.
         :param args: User-provided cmdline arguments.
@@ -168,7 +177,9 @@ def get_mac_addresses(args: argparse.Namespace) -> list:
     return mac_addresses
 
 
-def magic_packet(mac_address: str) -> bytes:
+def magic_packet(
+        mac_address: str
+        ) -> bytes:
     '''
     Create a magic packet.
         :param macaddress: The MAC address that should be parsed into a magic packet.

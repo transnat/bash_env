@@ -37,6 +37,8 @@ alias ll='ls -lFh'
 alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
 alias mysql="mysql -u $(whoami) -p"
 
+alias pclip="pwd | clip"
+
 alias q="exit"
 alias qconnect="vncviewer localhost::5900"
 alias qlaunch="qemu-system-x86_64 -hda $(basename ${PWD}).img -cdrom $(basename ${PWD}).iso -m 4096 -net nic -net user"

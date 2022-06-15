@@ -37,6 +37,7 @@ def get_arguments() -> argparse.Namespace:
 
     if args.loglevel:                                           # Set debug output.
         log.setLevel(args.loglevel)
+        log.debug(f'Log level set to {logging.getLevelName(log.level)}.')
 
     return parser.parse_args()
 

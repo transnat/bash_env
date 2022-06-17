@@ -67,6 +67,12 @@ if [ -x $(which dircolors) ]; then                                  # Enable col
     alias egrep='egrep --color=auto'
 fi
 
+if [ -x /usr/bin/gpgconf ]; then                                    # Launch gpg-agent.
+  gpgconf --launch gpg-agent
+fi
+
+getsecrets                                                          # Get encrypted env vars if Yubikey is connected.
+
 if [ -f ${HOME}/.env/config/bash/vars.sh ]; then                    # Source env vars.
   source ${HOME}/.env/config/bash/vars.sh
 fi
@@ -81,10 +87,6 @@ if [ -d ${FUNCTIONS} ]; then                                        # Source fun
   done
 fi
 
-if [ -x /usr/bin/gpgconf ]; then                                    # Launch gpg-agent.
-  gpgconf --launch gpg-agent
-fi
-
 if [ -x $(which thefuck) ]; then                                    # Enable thefuck.
   eval $(thefuck --alias)
 fi
@@ -93,7 +95,5 @@ if [ -x $(which wal) ]; then                                        # Enable wal
   wal -i $(grep file ${HOME}/.config/nitrogen/bg-saved.cfg | \
       cut -c 6-99) -q -b 000000
 fi
-
-getsecrets                                                          # Get encrypted env vars if Yubikey is connected.
 
 complete -C /usr/bin/terraform terraform

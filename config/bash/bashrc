@@ -71,8 +71,6 @@ if [ -x /usr/bin/gpgconf ]; then                                    # Launch gpg
   gpgconf --launch gpg-agent
 fi
 
-getsecrets                                                          # Get encrypted env vars if Yubikey is connected.
-
 if [ -f ${HOME}/.env/config/bash/vars.sh ]; then                    # Source env vars.
   source ${HOME}/.env/config/bash/vars.sh
 fi
@@ -96,4 +94,6 @@ if [ -x $(which wal) ]; then                                        # Enable wal
       cut -c 6-99) -q -b 000000
 fi
 
-complete -C /usr/bin/terraform terraform
+complete -C /usr/bin/terraform terraform                            # Enable bash completion for terraform.
+
+getsecrets                                                          # Get encrypted env vars if Yubikey is connected.

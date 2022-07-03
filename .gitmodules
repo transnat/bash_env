@@ -14,3 +14,6 @@
 	path = config/vim/pack/vim-terraform/start/vim-terraform
 	url = git@github.com:hashivim/vim-terraform
 	branch = master
+[submodule "config/vim/pack/YouCompleteMe/start"]
+	path = config/vim/pack/YouCompleteMe/start
+	url = https://github.com/ycm-core/YouCompleteMe.git

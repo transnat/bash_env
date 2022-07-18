@@ -47,7 +47,7 @@ alias rmf="rm -rf"
 
 alias s="screen"
 alias speed="speedtest-cli"
-alias src="source ${HOME}/.profile && source ${HOME}/.bashrc"
+alias src="source ${HOME}/.bashrc"
 
 alias tf="terraform"
 alias va="source ./venv/bin/activate"

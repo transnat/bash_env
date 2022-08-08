@@ -7,4 +7,5 @@
 
 SCREENS="$@"
 
-${HOME}/.env/config/xrandr/${HOSTNAME}/${SCREENS}
+${HOME}/.env/config/xrandr/${HOSTNAME}/${SCREENS} &&
+    command source ${HOME}/.bashrc

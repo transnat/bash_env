@@ -37,7 +37,7 @@ alias ll='ls -lFh'
 alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
 alias mysql="mysql -u $(whoami) -p"
 
-alias pclip="pwd | clip"
+alias pclip="pwd | xclip -sel clip"
 
 alias q="exit"
 alias qconnect="vncviewer localhost::5900"

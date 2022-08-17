@@ -11,8 +11,8 @@ A simple CLI clock.
 import argparse
 import locale
 from datetime import datetime
-from time import sleep
 from os import system
+from time import sleep
 
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')

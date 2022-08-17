@@ -92,6 +92,7 @@ def get_arguments() -> argparse.Namespace:
 
 
 def get_default_interface() -> str:
+    '''Return the default network interface.'''
     interface = run(                                            # Run subprocess to capture interface.
         ['ip', 'route', 'show'],
         capture_output=True
@@ -100,7 +101,13 @@ def get_default_interface() -> str:
     return interface
 
 
-def print_info(args: argparse.Namespace) -> NoReturn:
+def print_info(
+    args: argparse.Namespace
+        ) -> NoReturn:
+    '''
+    Print known hosts and configuration.
+        :param args: User-specified commandline arguments.
+    '''
     known_hosts, hostsfile = file_checks()
 
     iface_table = [                                             # Interface information.
@@ -124,7 +131,7 @@ def print_info(args: argparse.Namespace) -> NoReturn:
 
 
 def file_checks() -> Tuple[dict, pathlib.PosixPath]:
-    '''Check for config directory/file, and create them if they do not exists.'''
+    '''Check for config directory/file, and create them if they do not exist.'''
     config_dir = pathlib.Path(                                  # Directory for config files.
         pathlib.Path.home() / '.config/wakeonlan'
     )
@@ -149,10 +156,10 @@ def file_checks() -> Tuple[dict, pathlib.PosixPath]:
 
 
 def get_mac_addresses(
-        args: argparse.Namespace
+    args: argparse.Namespace
         ) -> list:
     '''
-    Grok STDIN and config files for the hosts to wake.
+    Grok stdin and config files for the hosts to wake.
         :param args: User-provided cmdline arguments.
     '''
     known_hosts, hostsfile = file_checks()                      # Get known hosts from config file.
@@ -178,10 +185,10 @@ def get_mac_addresses(
 
 
 def magic_packet(
-        mac_address: str
+    mac_address: str
         ) -> bytes:
     '''
-    Create a magic packet.
+    Create a magic packet used to wake a LAN device.
         :param macaddress: The MAC address that should be parsed into a magic packet.
     '''
     log.debug(f'Checking validity of MAC address: {mac_address}')
@@ -196,10 +203,10 @@ def magic_packet(
 
 
 def send_packet(
-        mac_addresses: list,
-        broadcast_ip: str,
-        port: int,
-        interface: str = None
+    mac_addresses: list,
+    broadcast_ip: str,
+    port: int,
+    interface: str = None
         ) -> NoReturn:
     '''
     Send a network packet to a socket.
@@ -232,9 +239,9 @@ def send_packet(
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                      # Get cmdline arguments.
+    args = get_arguments()
 
-    send_packet(                                                # Send magic packet to hosts.
+    send_packet(
         mac_addresses=get_mac_addresses(args),
         broadcast_ip=args.broadcast,
         port=args.port,

@@ -46,7 +46,9 @@ def wan_interface() -> str:
                 return fields[0], socket.inet_ntoa(struct.pack('<L', int(fields[2], 16)))
 
 
-def interface_info(interface: str) -> list:
+def interface_info(
+    interface: str
+        ) -> list:
     '''
     Get the default gateway.
         :param interface: The network interface to query.
@@ -58,7 +60,9 @@ def interface_info(interface: str) -> list:
                 return fields
 
 
-def local_ip(interface: str) -> str:
+def local_ip(
+    interface: str
+        ) -> str:
     '''
     Get the local IP address of an interface.
         :param interface: The network interface to query.
@@ -75,7 +79,9 @@ def local_ip(interface: str) -> str:
     )[20:24])
 
 
-def netmask(interface: str) -> str:
+def netmask(
+    interface: str
+        ) -> str:
     '''
     Read the default gateway directly from /proc.
         :param interface: The network interface to query.

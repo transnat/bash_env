@@ -29,9 +29,7 @@ from typing import NoReturn
 handler = logging.StreamHandler()
 log = logging.getLogger()
 
-handler.setFormatter(logging.Formatter(
-    '%(asctime)s: %(name)s | %(lineno)d - %(levelname)s %(message)s'
-))
+handler.setFormatter(logging.Formatter('%(asctime)s: %(name)s | %(lineno)d - %(levelname)s %(message)s'))
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 log.addHandler(handler)
 log.setLevel(logging.INFO)
@@ -60,7 +58,9 @@ def get_arguments() -> argparse.Namespace:
     return munge_arguments(parser.parse_args())
 
 
-def munge_arguments(args: argparse.Namespace) -> argparse.Namespace:
+def munge_arguments(
+    args: argparse.Namespace
+        ) -> argparse.Namespace:
     '''
     Resolve inputs to filepaths.
         :param args: User-specified cmdline arguments.
@@ -76,7 +76,9 @@ def munge_arguments(args: argparse.Namespace) -> argparse.Namespace:
             args.file[index] = pathlib.Path() / file            # if it's relative.
 
 
-def prechecks_pass(args: argparse.Namespace) -> bool:
+def prechecks_pass(
+    args: argparse.Namespace
+        ) -> bool:
     '''
     Check that inputs and processes are as expected.
         :param args: User-specified cmdline arguments.
@@ -102,7 +104,10 @@ def prechecks_pass(args: argparse.Namespace) -> bool:
     return True
 
 
-def encrypt(file: pathlib.PosixPath, recipients: list) -> pathlib.PosixPath:
+def encrypt(
+    file: pathlib.PosixPath,
+    recipients: list
+        ) -> pathlib.PosixPath:
     '''
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
@@ -129,7 +134,9 @@ def encrypt(file: pathlib.PosixPath, recipients: list) -> pathlib.PosixPath:
     return out_file
 
 
-def munge_cipherfile(cipherfile: pathlib.PosixPath) -> NoReturn:
+def munge_cipherfile(
+    cipherfile: pathlib.PosixPath
+        ) -> NoReturn:
     '''
     Add lines to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.

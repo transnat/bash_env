@@ -5,9 +5,10 @@
 # Date:         January 25, 2022
 # Description:
 '''
-whois for IP locations.
+whois for IP physical locations.
 '''
 
+import argparse
 import locale
 import logging
 import os
@@ -20,33 +21,71 @@ log = logging.getLogger()
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 log.addHandler(logging.StreamHandler())
-log.setLevel(logging.INFO)
 
 
-def get_location_table(ip_address: str, api_key: str) -> list:
+def get_arguments() -> argparse.Namespace:
+    '''Get cmdline arguments.'''
+    parser = argparse.ArgumentParser(                               # Instantiate argument parser.
+        description='The `help()` description of the application goes here.'
+    )
+    parser.add_argument(                                            # Specify an IPstack API key.
+        '-k', '--api_key',
+        dest='api_key',
+        default=os.getenv('IPSTACK_API_KEY'),
+        type=str,
+        help='API key for ipstack.com.'
+    )
+    parser.add_argument(                                            # Enable DEBUG logging.
+        '-v', '--verbose',
+        action='store_const',
+        dest='loglevel',
+        const=logging.DEBUG,
+        default=logging.INFO,
+        help='Set log level to DEBUG.'
+    )
+
+    args = parser.parse_args()
+
+    log.setLevel(args.loglevel)
+
+    return parser.parse_args()
+
+
+def get_location_table(
+    api_key: str,
+    ip_address: str
+        ) -> list:
     '''
     Gets location data from IPStack.com and returns it as a list of lists.
-        :param ip_address:  The IP address to get location info for.
         :param api_key:     The IPStack API key for the request.
+        :param ip_address:  The IP address to get location info for.
     '''
-    ip_info = requests.get(
-        f'http://api.ipstack.com/{ip}',
-        params={'access_key': api_key}
-    ).json()
+    if api_key is None:
+        log.critical('No API key.')
 
-    location_table = [
-        ['IP:', ip_info["ip"]],
-        ['City:', ip_info["city"]],
-        ['Region:', ip_info["region_name"]],
-        ['ZIP:', ip_info["zip"]],
-        ['Country:', ip_info["country_name"]],
-        ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
-    ]
+        sys.exit(1)
+
+    else:
+        ip_info = requests.get(
+            f'http://api.ipstack.com/{ip}',
+            params={'access_key': api_key}
+        ).json()
+
+        location_table = [
+            ['IP:', ip_info["ip"]],
+            ['City:', ip_info["city"]],
+            ['Region:', ip_info["region_name"]],
+            ['ZIP:', ip_info["zip"]],
+            ['Country:', ip_info["country_name"]],
+            ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
+        ]
 
     return location_table
 
 
-def fprint(location_table: list) -> NoReturn:
+def fprint(
+    location_table: list
+        ) -> NoReturn:
     '''
     Formats and prints a list of lists as a table.
         :param table: The location to format/print.
@@ -56,10 +95,8 @@ def fprint(location_table: list) -> NoReturn:
 
 
 if __name__ == '__main__':
-    api_key = os.getenv('IPSTACK_API_KEY')
-
-    if api_key is None:
-        log.critical('No API key.')
-    else:
-        for ip in sys.argv[1:]:
-            fprint(get_location_table(ip))
+    for ip in sys.argv[1:]:
+        fprint(get_location_table(
+            os.getenv('IPSTACK_API_KEY'),
+            ip
+        ))

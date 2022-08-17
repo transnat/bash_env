@@ -83,7 +83,9 @@ def get_default_interface() -> str:
     return interface
 
 
-def iwlist(interface: str = 'wlan0') -> list:
+def iwlist(
+    interface: str = 'wlan0'
+        ) -> list:
     '''
     Runs scans all advertised SSIDs from `interface`.
         :param interface: The network interface on which to run the scan.
@@ -96,7 +98,9 @@ def iwlist(interface: str = 'wlan0') -> list:
         re.compile(r"^Mode:(?P<mode>.+)$"),
         re.compile(r"^Frequency:(?P<frequency>[\d.]+) (?P<frequency_units>.+) \(Channel (?P<channel>\d+)\)$"),
         re.compile(r"^Encryption key:(?P<encryption>.+)$"),
-        re.compile(r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"),
+        re.compile(
+            r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"
+        ),
         re.compile(r"^Signal level=(?P<signal_quality>\d+)/(?P<signal_total>\d+).*$"),
     ]
     wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
@@ -153,7 +157,9 @@ def iwlist(interface: str = 'wlan0') -> list:
     return cells
 
 
-def printout(ssids: dict) -> NoReturn:
+def printout(
+    ssids: dict
+        ) -> NoReturn:
     '''
     Format and print the passed list of SSIDs.
         :param ssids: The list of SSIDs to print.

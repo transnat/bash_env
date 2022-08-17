@@ -5,7 +5,7 @@
 # Date:         August 09, 2022
 # Description:
 '''
-Convert structured data between JSON and YAML.
+Convert structured data between JSON, YAML, and XML.
 
 Requirements:
     * dict2xml
@@ -19,11 +19,12 @@ import locale
 import logging
 import pathlib
 import sys
-import json
-import yaml
-import xmltodict
-from dict2xml import dict2xml
 from typing import NoReturn
+import json
+import xmltodict
+import yaml
+from configparser import ConfigParser
+from dict2xml import dict2xml
 
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')                      # Set locale.
@@ -43,6 +44,7 @@ def get_arguments() -> argparse.Namespace:
     parser.add_argument(                                            # Output data to file.
         '-f', '--format',
         dest='format',
+        choices=['ini', 'json', 'xml', 'yaml'],
         default='yaml',
         type=str,
         help='Data format to write to.'
@@ -72,17 +74,8 @@ def enable_logging(
     Enable logging and handle outputs.
         :param args:    User-specified commandline arguments.
     '''
-    formatter = logging.Formatter(                                      # Useful format header.
-        '%(asctime)s '
-        '[%(threadName)-12.12s] '
-        '[%(levelname)-5.5s] '
-        '%(message)s'
-    )
-    handler = logging.StreamHandler()                                   # File handler.
     log = logging.getLogger()                                           # Log to screen.
 
-    handler.setFormatter(formatter)                                     # Format header for console log.
-    log.addHandler(handler)                                             # Add handler to logger.
     log.setLevel(args.loglevel)                                         # User-specified loglevel.
     log.debug('Debug logging enabled.')
 
@@ -106,7 +99,15 @@ def ingest_data(
         infiletype = 'xml'
         payload = xmltodict.parse(open(args.infile).read())
 
-    except xmltodict.expat.XpatError:                               # Ingest YAML.
+    except xmltodict.expat.XpatError:                               # Try to ingest INI.
+        config = ConfigParser.ConfigParser()
+        infile = 'ini'
+
+        config.read(args.infile)
+
+        payload = config._sections
+
+    except MissingSectionHeader:                                    # Ingest YAML.
         # Note that yaml.safeload() will ingest **any** textfile as YAML without errors,
         # so it must always remain the last option.
         infiletype = 'yaml'
@@ -129,27 +130,52 @@ def output_data(
         :param args:        User-specified commandline arguments.
         :param payload:     The Python dict to format and output.
     '''
-    if args.write:
+    if args.write:                                                  # Write to file.
         filename = args.infile.with_suffix(f'.{args.format}')
         outfile = open(filename, 'w')
 
         log.debug(f'Writing {args.format.upper()} output to {filename}.')
 
-    else:
+    else:                                                           # Write to stdout.
         outfile = sys.stdout
         log.debug(f'Writing {args.format.upper()} output to stdout.')
 
     match args.format.lower():
-        case 'json':
+        case 'ini':
+            config = ConfigParser()                                 # Instantiate parser.
+            nested_keys = False                                     # Validity checker.
+
+            for key in payload.keys():
+                if iter(key):                                       # Check if keys are invalid types.
+                    nested_keys = True                              # Mark invalid.
+
+            if nested_keys:                                         # Warn the user.
+                log.warning(
+                    'Warning! INI does not support nested values.\n'
+                    'Values will be flattened to strings.'
+                )
+
+                if input(                                           # Proceed anyway.
+                    'Proceed? [y/N] '
+                ).lower().startswith('y'):
+                    pass
+                else:
+                    sys.exit(1)
+
+
+            config._sections = payload
+            config.write(outfile)
+
+        case 'json':                                                # JSON.
             outfile.write(json.dumps(
                 payload,
                 indent=2
             ))
 
-        case 'xml':
+        case 'xml':                                                 # XML.
             outfile.write(dict2xml(payload))
 
-        case _:
+        case _:                                                     # Default to YAML.
             outfile.write(yaml.dump(payload))
 
 

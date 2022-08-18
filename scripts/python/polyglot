@@ -76,40 +76,40 @@ def get_arguments() -> argparse.Namespace:
 
 
 def ingest_data(
-    args: argparse.Namespace,
+    infile: pathlib.PosixPath
         ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
         :param args:    User-specified commandline arguments.
     '''
-    log.debug(f'Reading from file: {args.infile.name}')
+    log.debug(f'Reading from file: {infile.name}')
 
-    infiletype = args.infile.suffix.replace('.', '')
+    file_suffix = infile.suffix
 
-    match infiletype:
-        case 'json':                                                # JSON.
-            payload = json.load(open(args.infile, 'r'))
+    match file_suffix:
+        case '.json':                                               # JSON.
+            payload = json.load(open(infile, 'r'))
 
-        case 'ini':                                                 # INI.
+        case '.ini':                                                # INI.
             config = ConfigParser()
 
-            config.read(args.infile)
+            config.read(infile)
 
             payload = config._sections
 
-        case 'html' | 'xml':                                        # HTML/XML.
-            payload = xmltodict.parse(open(args.infile).read())
+        case '.html' | '.xml':                                       # HTML/XML.
+            payload = xmltodict.parse(open(infile).read())
 
-        case 'yaml' | 'yml':                                        # Default to YAML.
-            payload = yaml.safe_load(open(args.infile, 'r'))
+        case '.yaml' | '.yml':                                       # Default to YAML.
+            payload = yaml.safe_load(open(infile, 'r'))
 
         case _:
             print('Unsupported filetype. Please check the extension and try again.')
             sys.exit(1)
 
     log.debug(
-        f'Input: {args.infile}\n',
-        f'Input filetype: {infiletype.upper()}\n\n',
+        f'Input: {infile}\n',
+        f'Input filetype: {file_suffix.upper().replace('.', '')}\n\n',
         payload
     )
 
@@ -171,6 +171,6 @@ def output_data(
 
 if __name__ == '__main__':
     args = get_arguments()
-    payload = ingest_data(args)
+    payload = ingest_data(args.infile)
 
     output_data(args, payload)

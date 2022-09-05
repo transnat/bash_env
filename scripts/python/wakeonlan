@@ -13,6 +13,7 @@ import locale
 import logging
 import pathlib
 import socket
+import sys
 from pprint import pp
 from subprocess import run
 from typing import NoReturn, Tuple
@@ -36,7 +37,7 @@ def get_arguments() -> argparse.Namespace:
         '--interface', '-i',
         dest='interface',
         nargs=1,
-        default=get_default_interface(),
+        default=Network.get_default_interface(),
         help='Specify the broadcast IP address.'
     )
     parser.add_argument(                                        # The broadcast IP address.
@@ -88,17 +89,11 @@ def get_arguments() -> argparse.Namespace:
     if args.loglevel:                                           # Set verbose logging.
         log.setLevel(args.loglevel)
 
+    if not args.hosts and not args.macs:
+        parser.print_help(sys.stderr)
+        exit()
+
     return args
-
-
-def get_default_interface() -> str:
-    '''Return the default network interface.'''
-    interface = run(                                            # Run subprocess to capture interface.
-        ['ip', 'route', 'show'],
-        capture_output=True
-    ).stdout.decode('utf-8').split()[4]
-
-    return interface
 
 
 def print_info(
@@ -155,94 +150,104 @@ def file_checks() -> Tuple[dict, pathlib.PosixPath]:
     return known_hosts, hostsfile
 
 
-def get_mac_addresses(
-    args: argparse.Namespace
-        ) -> list:
-    '''
-    Grok stdin and config files for the hosts to wake.
-        :param args: User-provided cmdline arguments.
-    '''
-    known_hosts, hostsfile = file_checks()                      # Get known hosts from config file.
-    mac_addresses = list()
+class Network():
+    @staticmethod
+    def get_mac_addresses(
+        args: argparse.Namespace
+            ) -> list:
+        '''
+        Grok stdin and config files for the hosts to wake.
+            :param args: User-provided cmdline arguments.
+        '''
+        known_hosts, hostsfile = file_checks()                      # Get known hosts from config file.
+        mac_addresses = list()
 
-    if args.macs:                                               # Set hosts based on MACs from STDIN.
-        mac_addresses = args.macs
+        if args.macs:                                               # Set hosts based on MACs from STDIN.
+            mac_addresses.append(args.macs)
 
-    elif args.hosts:                                            # Set hosts based on hostnames from STDIN.
-        for host in args.hosts:
-            try:
-                mac_addresses.append(known_hosts[host])
-            except TypeError:
-                log.critical(f'Config file {hostsfile} is empty.')
+        if args.hosts:                                              # Set hosts based on hostnames from STDIN.
+            for host in args.hosts:
+                try:
+                    mac_addresses.append(known_hosts[host])
+                except TypeError:
+                    log.critical(f'Config file {hostsfile} is empty.')
 
-    else:                                                       # Exit.
-        log.info('No hosts/MAC addresses provided. Exiting.')
-        exit()
+        log.debug(f'MAC addresses: {pp(mac_addresses)}')
 
-    log.debug(f'MAC addresses: {pp(mac_addresses)}')
+        return mac_addresses
 
-    return mac_addresses
+    @staticmethod
+    def get_default_interface() -> str:
+        '''Return the default network interface.'''
+        interface = run(                                            # Run subprocess to capture interface.
+            ['ip', 'route', 'show'],
+            capture_output=True
+        ).stdout.decode('utf-8').split()[4]
 
+        return interface
 
-def magic_packet(
-    mac_address: str
-        ) -> bytes:
-    '''
-    Create a magic packet used to wake a LAN device.
-        :param macaddress: The MAC address that should be parsed into a magic packet.
-    '''
-    log.debug(f'Checking validity of MAC address: {mac_address}')
+    @staticmethod
+    def magic_packet(
+        mac_address: str
+            ) -> bytes:
+        '''
+        Create a magic packet used to wake a LAN device.
+            :param macaddress: The MAC address that should be parsed into a magic packet.
+        '''
+        log.debug(f'Checking validity of MAC address: {mac_address}')
 
-    if len(mac_address) == 17:                                  # Check/reformat MAC address.
-        mac_address = mac_address.replace(mac_address[2], '')
-    elif len(mac_address) != 12:
-        log.critical(f'Invalid MAC address: {mac_address}')
-        raise ValueError('Incorrect MAC address format.')
+        if len(mac_address) == 17:                                  # Check/reformat MAC address.
+            mac_address = mac_address.replace(mac_address[2], '')
+        elif len(mac_address) != 12:
+            log.critical(f'Invalid MAC address: {mac_address}')
+            raise ValueError('Incorrect MAC address format.')
 
-    return bytes.fromhex('F' * 12 + mac_address * 16)           # Magic packet.
+        return bytes.fromhex('F' * 12 + mac_address * 16)           # Magic packet.
 
+    @staticmethod
+    def send_packet(
+        mac_addresses: list,
+        broadcast_ip: str,
+        port: int,
+        interface: str = None
+            ) -> NoReturn:
+        '''
+        Send a network packet to a socket.
+            :param mac_address:     The MAC address to send the packet to.
+            :param broadcast_ip:    The broadcast IP of your subnet.
+            :param port:            The port to send the packet to.
+            :param interface:       The network interface to bind the socket to.
+        '''
+        log.debug('Instantiating socket.')
 
-def send_packet(
-    mac_addresses: list,
-    broadcast_ip: str,
-    port: int,
-    interface: str = None
-        ) -> NoReturn:
-    '''
-    Send a network packet to a socket.
-        :param mac_address:     The MAC address to send the packet to.
-        :param broadcast_ip:    The broadcast IP of your subnet.
-        :param port:            The port to send the packet to.
-        :param interface:       The network interface to bind the socket to.
-    '''
-    log.debug('Instantiating socket.')
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            if interface is not None:                               # Bind to the specified interface.
+                log.debug(f'Binding to interface {interface}.')
+                sock.bind((interface, 0))
 
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-        if interface is not None:                               # Bind to the specified interface.
-            log.debug(f'Binding to interface {interface}.')
-            sock.bind((interface, 0))
+            log.debug('Setting socket options.')
+            sock.setsockopt(                                        # Set socket options.
+                socket.SOL_SOCKET,
+                socket.SO_BROADCAST, 1
+            )
+            log.debug(f'Created {sock.type.name} socket.')
+            log.debug('Connecting to socket.')
+            sock.connect((broadcast_ip, port))                      # Connect to socket.
+            log.debug('Connected.')
 
-        log.debug('Setting socket options.')
-        sock.setsockopt(                                        # Set socket options.
-            socket.SOL_SOCKET,
-            socket.SO_BROADCAST, 1
-        )
-        log.debug(f'Created {sock.type.name} socket.')
-        log.debug('Connecting to socket.')
-        sock.connect((broadcast_ip, port))                      # Connect to socket.
-        log.debug('Connected.')
+            for mac_address in mac_addresses:                       # Send magic packet.
+                sent = sock.send(
+                    Network.magic_packet(mac_address)
+                )
 
-        for mac_address in mac_addresses:
-            sent = sock.send(magic_packet(mac_address))         # Send magic packet.
-
-            log.info(f'Sent: {sent}')
+                log.info(f'Sent: {sent}')
 
 
 if __name__ == '__main__':
     args = get_arguments()
 
-    send_packet(
-        mac_addresses=get_mac_addresses(args),
+    Network.send_packet(
+        mac_addresses=Network.get_mac_addresses(args),
         broadcast_ip=args.broadcast,
         port=args.port,
         interface=args.interface

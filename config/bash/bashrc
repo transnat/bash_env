@@ -97,3 +97,4 @@ fi
 complete -C /usr/bin/terraform terraform                            # Enable bash completion for terraform.
 
 getsecrets                                                          # Get encrypted env vars if Yubikey is connected.
+export OP_DEVICE="dodhcl7cuve5bjtc2icx66vjvy"

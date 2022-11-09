@@ -12,4 +12,4 @@ ffmpeg                                                \
   -i :0.0                                             \
   -q:v 0                                              \
   -q:a 0                                              \
-  ${HOME}/Videos/screen_recordings/%Y-%m-%d_%H:%M.mpg
+  "${HOME}"/Videos/screen_recordings/%Y-%m-%d_%H:%M.mpg

@@ -98,6 +98,6 @@ complete -C /usr/bin/terraform terraform                            # Enable bas
 
 getsecrets                                                          # Get encrypted env vars if Yubikey is connected.
 
-if [ -d $(xclip -o -sel clip) ]; then                               # If clipboard contains a directory, cd to it.
-    cd $(xclip -o -sel clip)
-fi
+function gam() { "/home/caseysparkz/bin/gam/gam" "$@" ; }
+export OP_DEVICE="wv4txrblzgjnwpc64qqwuxicju"
+export OP_SESSION_primetrust="'"

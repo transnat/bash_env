@@ -8,13 +8,19 @@
 Procedurally generate a name for a sprint.
 '''
 
-import locale
-import pathlib
+from locale import setlocale, LC_ALL
+from os.path import exists
 from random import choice
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')                      # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                      # Set locale.
 
 if __name__ == '__main__':
-    words = open('/usr/share/dict/words', 'r').read().splitlines()
+    wordfile = '/usr/share/dict/words'
 
-    print(f'{choice(words)} {choice(words)}')
+    if exists(wordfile):
+        words = open(wordfile, 'r').read().splitlines()
+
+        print(f'{choice(words)} {choice(words)}')
+
+    else:
+        print('Install `words`.')

@@ -6,5 +6,5 @@
 # Description:  Plays the Happy Birthday song.
 
 for i in {D,D,E,D,G,F\#,D,D,E,D,A,G,D,D,D5,B,G,F\#,E,C5,B,G,A,G}; do
-  play -qn synth 10 pluck $i fade h 0.1 0.5 0.1 & sleep 0.25;
+  play -qn synth 10 pluck "$i" fade h 0.1 0.5 0.1 & sleep 0.25;
 done

@@ -7,13 +7,13 @@
 #               number sequence starting with a given number.
 
 printf "Start numbering at:\n"
-read START
+read -r START
 
 printf "File extension:\n"
-read FILETYPE
+read -r FILETYPE
 
-for FILE in *${FILETYPE}; do
+for FILE in *"${FILETYPE}"; do
   NEW=$(printf "%02d$FILETYPE" "$START")
   mv -i -- "$FILE" "$NEW"
-  let START=START+1
+  (( START=START+1 ))
 done

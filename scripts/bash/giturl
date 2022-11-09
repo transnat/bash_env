@@ -5,7 +5,7 @@
 # Date:         x
 # Description:  x
 
-REPO=$(git config --get remote.$(git remote).url | sed 's;^git@;https://;g' | sed 's;\.git;;g')
+REPO=$(git config --get remote."$(git remote)".url | sed 's;^git@;https://;g' | sed 's;\.git;;g')
 BRANCH=$(git branch --show-current)
 
-echo ${REPO}/tree/${BRANCH}/
+echo "${REPO}"/tree/"${BRANCH}"/

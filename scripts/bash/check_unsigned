@@ -6,6 +6,6 @@
 # Description:  Checks for unsigned commits in the git log.
 
 chkafter="${1+$1..}"
-t=$( echo "  " )
+t="  "
 git log --pretty="format:%H$t%aN$t%s$t%G?" "${chkafter:-HEAD}" | grep -v "${t}G$"
 [ $? -gt 0 ]

@@ -5,4 +5,4 @@
 # Date:         May 18, 2022
 # Description:  Counts the number of (unhidden) files in a directory.
 
-echo "$(ls $1 | wc -l)"
+bc<<<"$(find "$1" | wc -l) - 1"

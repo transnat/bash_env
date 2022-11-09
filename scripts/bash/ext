@@ -5,44 +5,44 @@
 # Date:         May 18, 2022
 # Description:  Extract any compressed file or compress any uncompressed file.
 
-for FILE in $@; do
-    if [ -f ${FILE} ] ; then
-        case ${FILE} in
+for FILE in "$@"; do
+    if [ -f "${FILE}" ] ; then
+        case "${FILE}" in
             *.tar|*.tar.xz)
-                tar -xf ${FILE};;
+                tar -xf "${FILE}";;
 
             *.tbz2|*.tar.bz2)
-                tar -xjf ${FILE};;
+                tar -xjf "${FILE}";;
 
             *.tgz|*.tar.gz)
-                tar -xzf ${FILE};;
+                tar -xzf "${FILE}";;
 
             *.bz2)
-                bunzip2 ${FILE};;
+                bunzip2 "${FILE}";;
 
             *.rar)
-                unrar x ${FILE};;
+                unrar x "${FILE}";;
 
             *.gz)
-                gunzip ${FILE};;
+                gunzip "${FILE}";;
 
             *.xz)
-                xz -d ${FILE};;
+                xz -d "${FILE}";;
 
             *.zip)
-                unzip ${FILE};;
+                unzip "${FILE}";;
 
             *.zst)
-                zstd -d ${FILE};;
+                zstd -d "${FILE}";;
 
             *.Z)
-                uncompress ${FILE};;
+                uncompress "${FILE}";;
 
             *.7z)
-                7z x ${FILE};;
+                7z x "${FILE}";;
 
             *)
-                tar -zcvf ${FILE}.tar.gz ${FILE};;
+                tar -zcvf "${FILE}".tar.gz "${FILE}";;
         esac
     fi
 done

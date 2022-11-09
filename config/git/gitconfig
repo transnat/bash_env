@@ -24,3 +24,5 @@
     postBuffer = 1048576000
 [gc]
 	pruneexpire = 14 days
+[advice]
+	addIgnoredFile = false

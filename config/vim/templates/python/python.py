@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 # Author:       Casey Sparks
 # Date:         x
 # Description:
@@ -9,12 +8,12 @@ The description of the script goes here.
 '''
 
 import argparse
-import locale
 import logging
 import pathlib
+from locale import setlocale, LC_ALL
 
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')                      # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                        # Set locale.
 
 
 def get_arguments() -> argparse.Namespace:

@@ -5,9 +5,10 @@
 # Description:
 '''DESCRIPTION'''
 
-workdir = 'WORKDIR'
-
-from setuptools import setup, find_packages
+from setuptools import (
+    find_packages,
+    setup
+)
 from {DIRECTORY} import (
     __title__,
     __description__,
@@ -25,10 +26,13 @@ setup(
     author_email=__author_email__,
     version=__version__,
     url=__url__,
-    packages=find_packages(include=[
-        workdir,
-        f'{workdir}.*',
-    ]),
-    install_requires=[]
+    packages=find_packages(
+        include=[
+            __title__,
+            f'{__title__}.*',
+        ]
+    ),
+    install_requires=[
+    ]
 )
 

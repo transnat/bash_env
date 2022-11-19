@@ -31,6 +31,7 @@ alias grvp="grep -v"
 alias h='history'
 alias hgrep="history|grep -E"
 
+alias l='ls -1'
 alias la='ls -lFha'
 alias ll='ls -lFh'
 

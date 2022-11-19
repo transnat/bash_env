@@ -4,9 +4,7 @@
 # Date:         x
 
 from types import ModuleType
-from . import (
-    # MODULE
-)
+from . import *
 from .__version__ import (
     __title__,
     __description__,

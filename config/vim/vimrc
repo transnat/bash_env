@@ -49,20 +49,11 @@ autocmd BufRead,BufNewfile PKGBUILD
     \ set softtabstop=2
 
 " Python/YAML config ---------------------------------------------
-autocmd BufNewFile __init__.py
-	\ 0r ~/.vim/templates/python/__init__.py
-autocmd BufNewFile __version__.py
-	\ 0r ~/.vim/templates/python/__version__.py
-autocmd BufNewFile setup.py
-	\ 0r ~/.vim/templates/python/setup.py
 autocmd BufNewFile *.py
 	\ 0r ~/.vim/templates/python/python.py
 
-autocmd BufRead *.ps1
-    \ set tabstop=2                 |
-    \ set softtabstop=2             |
-    \ set shiftwidth=2              |
-    \ set expandtab
+autocmd Filetype python
+    \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>
 
 autocmd Filetype python,yaml
 	\ set modeline                  |
@@ -74,6 +65,12 @@ autocmd Filetype python,yaml
 " Shell scripts --------------------------------------------------
 autocmd BufNewFile *.sh
     \ :0r ~/.vim/templates/sh
+
+autocmd BufRead *.ps1
+    \ set tabstop=2                 |
+    \ set softtabstop=2             |
+    \ set shiftwidth=2              |
+    \ set expandtab
 
 " Terraform config -----------------------------------------------
 autocmd BufNewFile *.tf

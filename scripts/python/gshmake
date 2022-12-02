@@ -9,46 +9,48 @@ Note that decrypted scripts get passed to a bash subshell, so all
 non-POSIX files **must** have a shebang in order to be properly
 interpreted by bash.
 
-It is also required that you have $GPG_KEY_ID set in your environment variables.
+To encrypt the resultant script to yourself:
+    * Optionally set $PGP_KEY_ID in your environment, or
+    * Set default-recipient to your uid in ~/.gnupg/gpg.conf
 
 Requirements:
     * PyGnuPG
 '''
 
 from argparse import Namespace, ArgumentParser
+from datetime import datetime
 from locale import setlocale, LC_ALL
 from logging import getLogger, StreamHandler, DEBUG, INFO
 from os import getenv, stat, chmod
 from pathlib import Path, PosixPath
 from psutil import process_iter, NoSuchProcess, AccessDenied, ZombieProcess
-from typing import NoReturn
+from typing import NoReturn, Union
 from gnupg import GPG
 
-# Enable logging, set locale, set args.
-log = getLogger()
+log = getLogger()                                               # Instantiate logger.
 
-setlocale(LC_ALL, 'en_US.UTF-8')
-log.addHandler(StreamHandler())
+log.addHandler(StreamHandler())                                 # Log to screen.
+setlocale(LC_ALL, 'en_US.UTF-8')                                # Set locale.
 
 
 def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
     parser = ArgumentParser(                                    # Instantiate parser.
-        description='Create executable PGP-encrypted scripts.'
+        description='Create executable and arbitrary PGP-encrypted scripts.'
     )
 
+    parser.add_argument(                                        # Specify input files.
+        '--inputs', '-i',
+        dest='file',
+        nargs='+',
+        help='Specify files to encrypt.'
+    )
     parser.add_argument(                                        # Specify recipients.
         '--recipients', '-r',
         dest='recipients',
         nargs='+',
         default=[],
         help='Specify who can decrypt the file.'
-    )
-    parser.add_argument(                                        # Specify input files.
-        '--inputs', '-i',
-        dest='file',
-        nargs='+',
-        help='Specify files to encrypt.'
     )
     parser.add_argument(                                        # Enable DEBUG logging.
         '--verbose', '-v',
@@ -59,25 +61,27 @@ def get_arguments() -> Namespace:
         help='Set log level to DEBUG.'
     )
 
-    args = parser.parse_args()
-
-    log.setLevel(args.loglevel)
-
     return munge_arguments(parser.parse_args())
 
 
-def munge_arguments(
-    args: Namespace
-        ) -> Namespace:
+def munge_arguments(args: Namespace) -> Namespace:
     '''
-    Resolve inputs to filepaths.
+    Resolve inputs to filepaths, set log level, and add default recipient.
         :param args: User-specified cmdline arguments.
     '''
-    args.recipients.append(getenv('GPG_KEY_ID'))                # Add ourselves to the recipients.
+    log.setLevel(args.loglevel)                                 # Set log level.
 
-    for file in args.file:
-        index = args.file.index(file)
-        args.file[index] = Path(file).absolute()
+    default_recipient = getenv('PGP_KEY_ID')                    # Env var for user's PGP key ID.
+
+    if default_recipient:                                       # Add ourselves to the recipients.
+        log.debug(f'Adding {default_recipient} to recipients.')
+        args.recipients.append(getenv('GPG_KEY_ID'))
+
+    for file in args.file:                                      # Change arg type from str -> Path.
+        log.debug(f'Munging {file}.')
+        args.file[args.file.index(file)] = Path(file).absolute()
+
+    log.debug(f'Arguments:\n{args}')
 
     return args
 
@@ -93,6 +97,7 @@ def prechecks_pass(
         for proc in process_iter():
             try:
                 if gpg_proc in proc.name():
+                    log.debug(f'Found process {gpg_proc}.')
                     pass
 
             except (NoSuchProcess, AccessDenied, ZombieProcess) as err:
@@ -102,6 +107,7 @@ def prechecks_pass(
     for file in args.file:                                      # Check that the input files exist.
         try:
             file.resolve(strict=True)
+            log.debug(f'Found file {file}.')
 
         except FileNotFoundError as file_err:
             log.exception(f'File {file} not found: {file_err}')
@@ -111,7 +117,7 @@ def prechecks_pass(
 
 
 def encrypt(
-    file: PosixPath,
+    file: Union[Path, PosixPath],
     recipients: list
         ) -> PosixPath:
     '''
@@ -119,9 +125,14 @@ def encrypt(
         :param file:        The path of the file to be encrypted.
         :param recipients:  The recipient emails of the cipherfile.
     '''
+    gpg = GPG(                                                  # Instantiate GPG agent class.
+        gpgbinary='/usr/bin/gpg2',
+        use_agent=True,
+        verbose=False
+    )
     outfile = file.with_suffix('')                              # Strip suffix, if exists.
 
-    log.debug(f'Encrypting file: {file}.')
+    log.debug(f'Encrypting file {file} to {outfile.name}')
 
     try:
         cipherfile = gpg.encrypt_file(                          # Encrypt the file.
@@ -134,8 +145,7 @@ def encrypt(
         log.debug(f'{file} encrypted as {cipherfile}.')
 
     except BaseException as err:
-        log.exception('Unhandled exception occured.')
-        print(f'Encryption failed for {file}.')
+        log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
 
         raise err
 
@@ -149,35 +159,32 @@ def munge_cipherfile(
     Add lines to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.
     '''
-    newlines = [                                                # Cleartext header.
-        '#!/bin/env bash\n',                                    # Shebang.
-        'gpg2 --decrypt 2> /dev/null << EOF | bash -s $@\n',    # Decrypt cipher heredoc and pipe to subshell.
+    newlines = [                                                # GSHscript cleartext header.
+        '#!/usr/bin/env bash\n',
+        '# -*- coding:utf-8 -*-\n',
+        '# Author:       Casey Sparks\n',
+        f'# Date:         {datetime.now().strftime("%B %d, %Y")}\n',
+        '\n',
+        'gpg2 --decrypt 2> /dev/null << EOF | bash -s $@\n',
+        '\n',
     ]
 
-    newlines.extend(open(cipherfile, 'r').readlines())          # Add ciphertext to header.
-    newlines.extend(['EOF'])                                    # Append footer to header+ciphertext.
+    newlines.extend(open(cipherfile, 'r').readlines())          # Ciphertext.
+    newlines.extend('\nEOF\n')                                  # Heredoc delimiter.
+
+    with open(cipherfile, 'w') as file:
+        file.writelines(newlines)                               # Write header/ciphertext/footer to file.
+
     chmod(                                                      # Make file executable.
         cipherfile,
         stat(cipherfile).st_mode | 0o111                        # Get the file mode.
     )
 
-    with open(cipherfile, 'w') as file:
-        file.writelines(newlines)                               # Write header/ciphertext/footer to file.
-
 
 if __name__ == '__main__':
     args = get_arguments()
-    gpg = GPG(
-        gpgbinary='/usr/bin/gpg2',
-        use_agent=True,
-        verbose=False
-    )
 
     if prechecks_pass(args):
         for clearfile in args.file:
-            cipherfile = encrypt(clearfile, args.recipients)
-            munge_cipherfile(cipherfile)
-            print(
-                f'{clearfile} encrypted. '
-                'You may now delete the original, if it still exists.'
-            )
+            munge_cipherfile(encrypt(clearfile, args.recipients))
+            print(f'{clearfile} encrypted.\nYou may now delete the original, if it still exists.')

@@ -71,7 +71,3 @@ autocmd BufRead *.ps1
     \ set softtabstop=2             |
     \ set shiftwidth=2              |
     \ set expandtab
-
-" Terraform config -----------------------------------------------
-autocmd BufNewFile *.tf
-    \ 0r ~/.vim/templates/terraform

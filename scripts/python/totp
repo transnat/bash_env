@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Author:       Casey Sparks
+# Date:         December 06, 2022
+# Description:
+'''
+Call the ykman subprocess to get a TOTP code.
+'''
+
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, StreamHandler, DEBUG, INFO
+from subprocess import run, PIPE
+from typing import NoReturn
+
+
+log = getLogger()
+
+log.addHandler(StreamHandler())
+setlocale(LC_ALL, 'en_US.UTF-8')                                    # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''Get cmdline arguments.'''
+    parser = ArgumentParser(                                        # Instantiate argument parser.
+        description='Call the ykman subprocess to get a TOTP code.'
+    )
+    parser.add_argument(
+        '--account', '-a',
+        dest='account',
+        type=str,
+        help='Name of the service to retrieve a TOTP code for.'
+    )
+    parser.add_argument(                                            # Enable DEBUG logging.
+        '--verbose', '-v',
+        action='store_const',
+        dest='loglevel',
+        const=DEBUG,
+        default=INFO,
+        help='Set log level to DEBUG.'
+    )
+
+    args = parser.parse_args()
+
+    log.setLevel(args.loglevel)
+
+    return args
+
+
+def get_totp(account: str) -> NoReturn:
+    '''
+    Call the ykman subprocess and extract a TOTP code for an account.
+        :param account: The account to grab a code for.
+    '''
+    print('Touch your Yubikey...')
+
+    proc = run(                                                     # Call ykman subprocess.
+        [
+            'ykman',
+            'oath',
+            'accounts',
+            'code',
+            args.account
+        ],
+        stdout=PIPE,
+        stderr=PIPE
+    )
+    code = proc.stdout.decode('utf-8').strip().split(' ').pop()     # Extract code from string.
+
+    return code                                                     # Code to STDOUT.
+
+
+if __name__ == '__main__':
+    args = get_arguments()                                          # Get cmdline arguments.
+    print(get_totp(args.account))                                   # Get TOTP code.

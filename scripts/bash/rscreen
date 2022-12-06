@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # -*- coding:utf-8 -*-
-
 # Author:       Casey Sparks
 # Date:         May 18, 2022
 # Description:  Record primary display.

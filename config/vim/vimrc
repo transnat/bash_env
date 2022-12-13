@@ -1,24 +1,23 @@
-filetype indent on
-syntax on
+filetype indent on                     " Turn indent, filetype checking.
+syntax on                              " Turn on syntax highlighting.
 
-set colorcolumn=121       " Set colorcolumn at width 120.
-set encoding=utf-8        " Set encoding.
-set expandtab             " Expand tabs to spaces.
-set fileformat=unix       " Duh.
-set foldenable            " Enable tab folding
-set foldmethod=indent     " Set fold for indented lines.
-set hlsearch              " Highlight search results.
-set incsearch             " Start highlighting at search.
-set lazyredraw            " Don't rerender the screen.
-set number                " Enable line numbers.
-set shiftwidth=4          " Indents will have a width of 4.
-set showmatch             " Match brackets.
-set spelllang=en_us       " Set spellcheck language.
-set tabstop=4             " The width of a TAB is set to 4.
-set softtabstop=4         " Sets the number of columns for a TAB.
+set encoding=utf-8                     " Set encoding.
+set expandtab                          " Expand tabs to spaces.
+set fileformat=unix                    " Duh.
+set foldenable                         " Enable tab folding
+set foldmethod=indent                  " Set fold for indented lines.
+set hlsearch                           " Highlight search results.
+set incsearch                          " Start highlighting at search.
+set lazyredraw                         " Don't rerender the screen.
+set number                             " Enable line numbers.
+set shiftwidth=4                       " Indents will have a width of 4.
+set showmatch                          " Match brackets.
+set spelllang=en_us                    " Set spellcheck language.
+set tabstop=4                          " The width of a TAB is set to 4.
+set softtabstop=4                      " Sets the number of columns for a TAB.
 
-cnoreabbrev nt NERDTree
-cnoreabbrev nT NERDTreeToggle
+cnoreabbrev nt NERDTree                " Enable NerdTree.
+cnoreabbrev nT NERDTreeToggle          " Toggle NerdTree.
 
 " Docker config ---------------------------------------------------------------
 autocmd BufNewFile docker-compose.y*ml
@@ -55,8 +54,9 @@ autocmd Filetype python
     \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>
 
 autocmd Filetype python,yaml
-    \ set modeline                                                          |
     \ set autoindent                                                        |
+    \ set colorcolumn=121                                                   |
+    \ set modeline                                                          |
     \ set textwidth=120
 
 " Shell scripts ---------------------------------------------------------------

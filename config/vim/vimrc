@@ -1,73 +1,74 @@
 filetype indent on
 syntax on
 
-set encoding=utf-8          " Set encoding.
-set expandtab				" Expand tabs to spaces.
-set fileformat=unix
-set filetype=text
-set foldenable				" Enable tab folding
-set foldmethod=indent		" Set fold for indented lines.
-set hlsearch				" Highlight search results.
-set incsearch				" Start highlighting at search.
-set lazyredraw				" Don't rerender the screen.
-set number					" Enable line numbers.
-set shiftwidth=4			" Indents will have a width of 4.
-set showmatch				" Match brackets.
-set softtabstop=4			" Sets the number of columns for a TAB.
-set spelllang=en_us			" Set spellcheck language.
-set tabstop=4				" The width of a TAB is set to 4.
+set colorcolumn=121       " Set colorcolumn at width 120.
+set encoding=utf-8        " Set encoding.
+set expandtab             " Expand tabs to spaces.
+set fileformat=unix       " Duh.
+set foldenable            " Enable tab folding
+set foldmethod=indent     " Set fold for indented lines.
+set hlsearch              " Highlight search results.
+set incsearch             " Start highlighting at search.
+set lazyredraw            " Don't rerender the screen.
+set number                " Enable line numbers.
+set shiftwidth=4          " Indents will have a width of 4.
+set showmatch             " Match brackets.
+set spelllang=en_us       " Set spellcheck language.
+set tabstop=4             " The width of a TAB is set to 4.
+set softtabstop=4         " Sets the number of columns for a TAB.
 
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle
 
-" Docker config --------------------------------------------------
+" Docker config ---------------------------------------------------------------
 autocmd BufNewFile docker-compose.y*ml
-	\ :0r ~/.vim/templates/docker-compose.yml
+    \ :0r ~/.vim/templates/docker-compose.yml
 
-" JSON config ----------------------------------------------------
+" JSON config -----------------------------------------------------------------
 autocmd BufRead *.json
-	\ set filetype=json
+    \ set filetype=json
 
-" LaTeX config ---------------------------------------------------
+" LaTeX config ----------------------------------------------------------------
 autocmd BufNewFile *.tex
-    \ :0!mkdir ./images             |
+    \ :0!mkdir ./images                                                     |
     \ 0r ~/.vim/templates/latex
 
-" Makefile config ------------------------------------------------
+" Makefile config -------------------------------------------------------------
 autocmd FileType make
-	\ set noexpandtab               |
-	\ set shiftwidth=8              |
-	\ set softtabstop=0
+    \ set noexpandtab                                                       |
+    \ set shiftwidth=8                                                      |
+    \ set softtabstop=0
 
-" Pkgbuild config ------------------------------------------------
+" Pkgbuild config -------------------------------------------------------------
 autocmd BufRead,BufNewfile PKGBUILD
-    \ set autoindent                |
-    \ set fileformat=unix           |
-    \ set filetype=PKGBUILD         |
-    \ set noexpandtab               |
-    \ set shiftwidth=2              |
+    \ set autoindent                                                        |
+    \ set filetype=PKGBUILD                                                 |
+    \ set noexpandtab                                                       |
+    \ set shiftwidth=2                                                      |
     \ set softtabstop=2
 
-" Python/YAML config ---------------------------------------------
+" Python/YAML config ----------------------------------------------------------
 autocmd BufNewFile *.py
-	\ 0r ~/.vim/templates/python/python.py
+    \ 0r ~/.vim/templates/python/python.py
 
 autocmd Filetype python
     \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>
 
 autocmd Filetype python,yaml
-	\ set modeline                  |
-    \ set autoindent                |
-    \ set expandtab                 |
-    \ set fileformat=unix           |
+    \ set modeline                                                          |
+    \ set autoindent                                                        |
     \ set textwidth=120
 
-" Shell scripts --------------------------------------------------
+" Shell scripts ---------------------------------------------------------------
 autocmd BufNewFile *.sh
     \ :0r ~/.vim/templates/sh
 
 autocmd BufRead *.ps1
-    \ set tabstop=2                 |
-    \ set softtabstop=2             |
-    \ set shiftwidth=2              |
-    \ set expandtab
+    \ set tabstop=2                                                         |
+    \ set softtabstop=2                                                     |
+    \ set shiftwidth=2                                                      |
+
+" Plaintext config ------------------------------------------------------------
+autocmd BufRead,BufNewfile *.txt,*.md
+    \ set textwidth=80                                                      |
+    \ set colorcolumn=81

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 # Author:       Casey Sparks
 # Date:         September 13, 2022
 # Description:
@@ -11,16 +10,29 @@ Procedurally generate a name for a sprint.
 from locale import setlocale, LC_ALL
 from os.path import exists
 from random import choice
+from string import punctuation
 
-setlocale(LC_ALL, 'en_US.UTF-8')                      # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                            # Set locale.
 
-if __name__ == '__main__':
-    wordfile = '/usr/share/dict/words'
 
-    if exists(wordfile):
+def get_word(words: list) -> str:
+    '''Pull a word from list and format.'''
+    return choice(words).lower().translate(str.maketrans('', '', punctuation))
+
+
+def create_sprint_name() -> str:
+    '''Generate a sprint name from two random words.'''
+    wordfile = '/usr/share/dict/words'                      # Installed by `words` package.
+
+    if exists(wordfile):                                    # Check file is there.
         words = open(wordfile, 'r').read().splitlines()
-
-        print(f'{choice(words)} {choice(words)}')
+        string = f'{get_word(words)}-{get_word(words)}'
 
     else:
-        print('Install `words`.')
+        string = 'Install `words` package.'
+
+    return string
+
+
+if __name__ == '__main__':
+    print(create_sprint_name())

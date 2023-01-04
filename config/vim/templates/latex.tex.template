@@ -6,12 +6,9 @@
 \setlength{\headheight}{40pt} 
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
-\newcommand{\documenttitle}{Information Security Policy}
+\newcommand{\documenttitle}{}
 \newcommand{\documentauthor}{Casey Sparks}
-\newcommand{\documentowner}{Casey Sparks}
 \newcommand{\documentversion}{1.0}
-\newcommand{\documentapprover}{}
-\newcommand{\documentapprovaldate}{}
 
 
 \begin{document}

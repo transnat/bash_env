@@ -10,6 +10,7 @@ Should be cron on sensitive systems.
 
 from locale import setlocale, LC_ALL
 from logging import getLogger, StreamHandler, INFO
+from os import getlogin
 from pathlib import Path
 from shutil import rmtree
 from socket import gethostname
@@ -24,14 +25,14 @@ log.addHandler(StreamHandler())                                     # Log to scr
 log.setLevel(INFO)                                                  # Set log level.
 
 
-def is_match() -> bool:
+def remote_flag() -> bool:
     '''Checks remote for hostname match and returns true if true.'''
     try:
         flag = eval(get(
             f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}'
         ).text.capitalize())
 
-    except TypeError:
+    except:
         flag = False
 
     log.debug(flag)
@@ -62,11 +63,20 @@ def destroy_user_data() -> NoReturn:
         ]
     ]
 
+    dir_list.extend([
+        Path('/etc/wireguard'),
+        Path('/var/spool/cron/{getlogin()}')
+    ])
+
     for directory in dir_list:
-        rmtree(directory)
-        log.debug(f'Removed {directory}.')
+        try:
+            rmtree(directory)
+            log.debug(f'Removed {directory}.')
+
+        except:
+            log.warning(f'Failed to remove {directory}.')
 
 
 if __name__ == '__main__':
-    if is_match():
+    if remote_flag():
         destroy_user_data()

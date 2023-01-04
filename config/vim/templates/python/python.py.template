@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         DATE
+# Description:
+'''
+The description of the script goes here.
+'''
+
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, RootLogger, FileHandler, Formatter, StreamHandler, CRITICAL, INFO, DEBUG
+from pathlib import Path
+
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                    # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''Get cmdline arguments.'''
+    parser = ArgumentParser(                                        # Instantiate argument parser.
+        description='The `help()` description of the application goes here.'
+    )
+    verbosity = parser.add_mutually_exclusive_group()
+
+    parser.add_argument(                                            # Log to file.
+        '--logfile',
+        dest='logfile',
+        type=Path,
+        help='Absolute path to write the logfile to.'
+    )
+    verbosity.add_argument(                                         # Enable DEBUG logging.
+        '--verbose', '-v',
+        action='store_true',
+        dest='loglevel',
+        help='Set log level to DEBUG.'
+    )
+    verbosity.add_argument(                                         # Enable CRIT logging.
+        '--quiet', '-q',
+        action='store_true',
+        dest='quiet',
+        help='Set log level to CRITICAL.'
+    )
+
+    return parser.parse_args()
+
+
+def enable_logging(
+    args: Namespace
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param args:    User-specified commandline arguments.
+    '''
+    match True:                                                     # Get log level from args.
+        case args.verbose:
+            loglevel = DEBUG
+        case args.quiet:
+            loglevel = CRITICAL
+        case _:
+            loglevel = INFO
+
+    # Root logger/formatter
+    formatter = Formatter(                                          # Useful format header.
+        '%(asctime)s '
+        '[%(threadName)-12.12s] '
+        '[%(levelname)-5.5s] '
+        '%(message)s'
+    )
+    root_logger = getLogger()                                       # Root logger class.
+
+    # Console logger.
+    log_console = StreamHandler()                                   # Log to screen.
+
+    log_console.setFormatter(formatter)                             # No format header for console log.
+    root_logger.addHandler(log_console)                             # Add console to root logger.
+
+    # File logger.
+    if args.logfile:
+        log_file = FileHandler(args.logfile)                        # Log to file.
+
+        log_file.setFormatter(formatter)                            # Verbose format header for logfile.
+        root_logger.addHandler(log_file)                            # Add logfile to root logger.
+
+    root_logger.setLevel(loglevel)                                  # User-specified loglevel.
+
+    return root_logger
+
+
+if __name__ == '__main__':
+    args = get_arguments()                                          # Get cmdline arguments.
+    log = enable_logging(args)                                      # Enable logging.

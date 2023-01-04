@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Author:       Casey Sparks
 # Date:         x
+# Description:
+'''Universal __init__.py. No need to change anything.'''
 
 from types import ModuleType
 from . import *

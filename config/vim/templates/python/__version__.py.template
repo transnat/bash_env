@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -*- coding:utf-8 -*-
 # Author:       Casey Sparks
 # Date:         x
 # Description:
 '''DESCRIPTION'''
 
-__title__ = ''
-__description__ = ''
+__title__ = 'TITLE'
+__description__ = 'DESCRIPTION'
 __author__ = 'caseyspar.kz'
 __author_email__ = 'python@caseyspar.kz'
 __version__ = '0.0.1'

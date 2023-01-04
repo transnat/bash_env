@@ -1,27 +1,28 @@
-filetype indent on                     " Turn indent, filetype checking.
-syntax on                              " Turn on syntax highlighting.
+filetype indent on                      " Turn indent, filetype checking.
+syntax on                               " Turn on syntax highlighting.
 
-set encoding=utf-8                     " Set encoding.
-set expandtab                          " Expand tabs to spaces.
-set fileformat=unix                    " Duh.
-set foldenable                         " Enable tab folding
-set foldmethod=indent                  " Set fold for indented lines.
-set hlsearch                           " Highlight search results.
-set incsearch                          " Start highlighting at search.
-set lazyredraw                         " Don't rerender the screen.
-set number                             " Enable line numbers.
-set shiftwidth=4                       " Indents will have a width of 4.
-set showmatch                          " Match brackets.
-set spelllang=en_us                    " Set spellcheck language.
-set tabstop=4                          " The width of a TAB is set to 4.
-set softtabstop=4                      " Sets the number of columns for a TAB.
+set encoding=utf-8                      " Set encoding.
+set expandtab                           " Expand tabs to spaces.
+set fileformat=unix                     " Duh.
+set foldenable                          " Enable tab folding
+set foldmethod=indent                   " Set fold for indented lines.
+set hlsearch                            " Highlight search results.
+set incsearch                           " Start highlighting at search.
+set wrap linebreak nolist               " Don't break in the middle of a word.
+set lazyredraw                          " Don't rerender the screen.
+set number                              " Enable line numbers.
+set shiftwidth=4                        " Indents will have a width of 4.
+set showmatch                           " Match brackets.
+set spelllang=en_us                     " Set spellcheck language.
+set tabstop=4                           " The width of a TAB is set to 4.
+set softtabstop=4                       " Sets the number of columns for a TAB.
 
-cnoreabbrev nt NERDTree                " Enable NerdTree.
-cnoreabbrev nT NERDTreeToggle          " Toggle NerdTree.
+cnoreabbrev nt NERDTree
+cnoreabbrev nT NERDTreeToggle
 
 " Docker config ---------------------------------------------------------------
 autocmd BufNewFile docker-compose.y*ml
-    \ :0r ~/.vim/templates/docker-compose.yml
+    \ :0r ~/.vim/templates/docker-compose.yml.template
 
 " JSON config -----------------------------------------------------------------
 autocmd BufRead *.json
@@ -29,8 +30,7 @@ autocmd BufRead *.json
 
 " LaTeX config ----------------------------------------------------------------
 autocmd BufNewFile *.tex
-    \ :0!mkdir ./images                                                     |
-    \ 0r ~/.vim/templates/latex
+    \ :0r ~/.vim/templates/latex.tex.template
 
 " Makefile config -------------------------------------------------------------
 autocmd FileType make
@@ -48,7 +48,8 @@ autocmd BufRead,BufNewfile PKGBUILD
 
 " Python/YAML config ----------------------------------------------------------
 autocmd BufNewFile *.py
-    \ 0r ~/.vim/templates/python/python.py
+    \ :0r ~/.vim/templates/python/python.py.template                        |
+    \ :4s/\<DATE\>/\=strftime("%B %d, %Y")/
 
 autocmd Filetype python
     \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>
@@ -61,7 +62,7 @@ autocmd Filetype python,yaml
 
 " Shell scripts ---------------------------------------------------------------
 autocmd BufNewFile *.sh
-    \ :0r ~/.vim/templates/sh
+    \ :0r ~/.vim/templates/sh.sh.template
 
 autocmd BufRead *.ps1
     \ set tabstop=2                                                         |
@@ -70,5 +71,7 @@ autocmd BufRead *.ps1
 
 " Plaintext config ------------------------------------------------------------
 autocmd BufRead,BufNewfile *.txt,*.md
-    \ set textwidth=80                                                      |
-    \ set colorcolumn=81
+    \ set colorcolumn=121                                                   |
+    \ set textwidth=120                                                     |
+    \ set wrap linebreak                                                    |
+    \ set spell spelllang=en_us

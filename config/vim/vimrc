@@ -62,7 +62,8 @@ autocmd Filetype python,yaml
 
 " Shell scripts ---------------------------------------------------------------
 autocmd BufNewFile *.sh
-    \ :0r ~/.vim/templates/sh.sh.template
+    \ :0r ~/.vim/templates/sh.sh.template                                   |
+    \ :3s/\<DATE\>/\=strftime("%B %d, %Y")/
 
 autocmd BufRead *.ps1
     \ set tabstop=2                                                         |

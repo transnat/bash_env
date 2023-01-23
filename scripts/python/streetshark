@@ -7,74 +7,74 @@
 Monitor advertised SSIDs and (optionally) find matches.
 '''
 
-import argparse
-import locale
-import logging
 import re
-import subprocess
+from argparse import ArgumentParser, Namespace
 from datetime import datetime
+from locale import setlocale, LC_ALL
+from logging import getLogger, StreamHandler, DEBUG, INFO
 from os import system
+from subprocess import run, Popen, PIPE
 from time import sleep
 from typing import NoReturn
 
 # Enable logging, set locale, set args.
-log = logging.getLogger()
+log = getLogger()
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-log.addHandler(logging.StreamHandler())
-log.setLevel(logging.INFO)
+setlocale(LC_ALL, 'en_US.UTF-8')
+log.addHandler(StreamHandler())
+log.setLevel(INFO)
 
 
-def get_arguments() -> argparse.Namespace:
+def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = argparse.ArgumentParser(                           # Instantiate argument parser.
+    parser = ArgumentParser(                                                # Instantiate argument parser.
         description='Monitor advertised SSIDs and (optionally) find matches.'
     )
-    scan_type = parser.add_mutually_exclusive_group()           # Specify passive or matched scan.
+    scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
 
-    parser.add_argument(                                        # Set wireless interface.
+    parser.add_argument(                                                    # Set wireless interface.
         '--interface', '-i',
         dest='interface',
         default=get_default_interface(),
         help='Set the wireless interface to scan from.'
     )
-    parser.add_argument(                                        # Scan interval.
+    parser.add_argument(                                                    # Scan interval.
         '--interval', '-n',
         dest='interval',
         type=int,
         default=2,
         help='Set the scan interval (seconds).'
     )
-    parser.add_argument(                                        # Enable DEBUG logging.
+    parser.add_argument(                                                    # Enable DEBUG logging.
         '--verbose', '-v',
         action='store_const',
         dest='loglevel',
-        const=logging.DEBUG,
+        const=DEBUG,
         help='Set log level to DEBUG.'
     )
-    scan_type.add_argument(                                     # Matched scan.
+    scan_type.add_argument(                                                 # Matched scan.
         '--match', '-m',
         dest='ssids',
         nargs='+',
         help='Specify the SSIDs to catch.'
     )
-    scan_type.add_argument(                                     # Passive scan.
+    scan_type.add_argument(                                                 # Passive scan.
         '--passive', '-p',
         action='store_true',
         dest='passive',
         help='Print all SSIDs to STDOUT.'
     )
 
-    args = parser.parse_args()                                  # Parse CMDline arguments.
+    args = parser.parse_args()                                              # Parse CMDline arguments.
 
-    if args.loglevel:                                           # Set debug output.
+    if args.loglevel:                                                       # Set debug output.
         log.setLevel(args.loglevel)
 
     return parser.parse_args()
 
 
 def get_default_interface() -> str:
-    interface = subprocess.run(
+    interface = run(
         ['ip', 'route', 'show'],
         capture_output=True
     ).stdout.decode('utf-8').split()[4]
@@ -89,7 +89,7 @@ def iwlist(
     Runs scans all advertised SSIDs from `interface`.
         :param interface: The network interface on which to run the scan.
     '''
-    cells = list()                                              # List of SSIDs.
+    cells = list()                                                          # List of SSIDs.
     cell_number_regex = re.compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
     regexps = [
         re.compile(r"^ESSID:\"(?P<essid>.*)\"$"),
@@ -104,18 +104,18 @@ def iwlist(
     ]
     wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
     wpa2_regex = re.compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
-    proc = subprocess.Popen(                                    # Run `iwlist` subprocess.
+    proc = Popen(                                                           # Run `iwlist` subprocess.
         [
             'iwlist',
             interface,
             'scan'
         ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE
+        stdout=PIPE,
+        stderr=PIPE
     )
-    stdout = proc.stdout.read().decode('utf-8')                 # STDOUT.
-    stderr = proc.stderr.read().decode('utf-8')                 # STDERR.
-    lines = stdout.split('\n')                                  # List of lines returned by scan.
+    stdout = proc.stdout.read().decode('utf-8')                             # STDOUT.
+    stderr = proc.stderr.read().decode('utf-8')                             # STDERR.
+    lines = stdout.split('\n')                                              # List of lines returned by scan.
 
     log.debug(stdout)
     log.error(stderr)
@@ -163,58 +163,58 @@ def printout(
     Format and print the passed list of SSIDs.
         :param ssids: The list of SSIDs to print.
     '''
-    for key in ssids:                                           # Iterate ssids and print name/timestamp.
+    for key in ssids:                                                       # Iterate ssids and print name/timestamp.
         print(f'{ssids[key]} - {key}')
 
 
 if __name__ == '__main__':
-    advertised = set()                                          # Found SSIDs.
-    args = get_arguments()                                      # Get cmdline arguments.
-    matched = set()                                             # Matched SSIDs.
-    timestamp = {                                               # SSIDs + first time seen.
+    advertised = set()                                                      # Found SSIDs.
+    args = get_arguments()                                                  # Get cmdline arguments.
+    matched = set()                                                         # Matched SSIDs.
+    timestamp = {                                                           # SSIDs + first time seen.
         'advertised': dict(),
         'matched': dict()
     }
 
     while True:
-        system('clear')                                         # Clear terminal.
+        system('clear')                                                     # Clear terminal.
 
-        now = datetime.now().strftime('%H:%M:%S')               # Set timestamp.
+        now = datetime.now().strftime('%H:%M:%S')                           # Set timestamp.
 
-        for name in [                                           # Grab SSIDs.
+        for name in [                                                       # Grab SSIDs.
             ssid['essid'] for ssid in iwlist(args.interface)
         ]:
-            if name != '':                                      # Ignore hidden SSIDs.
-                if name not in advertised:                      # Add found SSID to set.
+            if name != '':                                                  # Ignore hidden SSIDs.
+                if name not in advertised:                                  # Add found SSID to set.
                     advertised.add(name)
                     timestamp['advertised'][name] = now
 
-                if args.ssids and name in args.ssids:           # Add matched SSID to set.
+                if args.ssids and name in args.ssids:                       # Add matched SSID to set.
                     if name not in matched:
                         matched.add(name)
                         timestamp['matched'][name] = now
 
         log.debug(f'Found: {advertised}')
         log.debug(f'Matched: {matched}')
-        print(                                                  # Print header.
+        print(                                                              # Print header.
             f'StreetShark                                 {now}\n'
             '----------------------------------------------------'
         )
 
-        if args.ssids:                                          # Print matched SSIDs.
+        if args.ssids:                                                      # Print matched SSIDs.
             if len(matched) == 0:
                 print('No SSIDs matched yet.')
             else:
                 printout(timestamp['matched'])
 
-        elif args.passive:                                      # Print found SSIDs.
+        elif args.passive:                                                  # Print found SSIDs.
             if len(advertised) == 0:
                 print('No SSIDs found yet.')
             else:
                 printout(timestamp['advertised'])
 
-        else:                                                   # Exit.
+        else:                                                               # Exit.
             log.critical('Invalid input. Exiting.')
             exit()
 
-        sleep(args.interval)                                    # Sleep.
+        sleep(args.interval)                                                # Sleep.

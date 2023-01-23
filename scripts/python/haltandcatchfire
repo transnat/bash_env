@@ -18,11 +18,11 @@ from typing import NoReturn
 from requests import get
 
 
-log = getLogger()                                                   # Instantiate logger.
+log = getLogger()                                                           # Instantiate logger.
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                    # Set locale.
-log.addHandler(StreamHandler())                                     # Log to screen.
-log.setLevel(INFO)                                                  # Set log level.
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+log.addHandler(StreamHandler())                                             # Log to screen.
+log.setLevel(INFO)                                                          # Set log level.
 
 
 def remote_flag() -> bool:
@@ -32,7 +32,7 @@ def remote_flag() -> bool:
             f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}'
         ).text.capitalize())
 
-    except:
+    except BaseException:
         flag = False
 
     log.debug(flag)
@@ -65,7 +65,7 @@ def destroy_user_data() -> NoReturn:
 
     dir_list.extend([
         Path('/etc/wireguard'),
-        Path('/var/spool/cron/{getlogin()}')
+        Path(f'/var/spool/cron/{getlogin()}')
     ])
 
     for directory in dir_list:
@@ -73,7 +73,7 @@ def destroy_user_data() -> NoReturn:
             rmtree(directory)
             log.debug(f'Removed {directory}.')
 
-        except:
+        except BaseException:
             log.warning(f'Failed to remove {directory}.')
 
 

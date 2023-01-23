@@ -17,42 +17,42 @@ Requirements:
     * PyGnuPG
 '''
 
-from argparse import Namespace, ArgumentParser
+from argparse import ArgumentParser, Namespace
 from datetime import datetime
+from gnupg import GPG
 from locale import setlocale, LC_ALL
 from logging import getLogger, StreamHandler, DEBUG, INFO
 from os import getenv, stat, chmod
 from pathlib import Path, PosixPath
 from psutil import process_iter, NoSuchProcess, AccessDenied, ZombieProcess
 from typing import NoReturn, Union
-from gnupg import GPG
 
-log = getLogger()                                               # Instantiate logger.
+log = getLogger()                                                           # Instantiate logger.
 
-log.addHandler(StreamHandler())                                 # Log to screen.
-setlocale(LC_ALL, 'en_US.UTF-8')                                # Set locale.
+log.addHandler(StreamHandler())                                             # Log to screen.
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                    # Instantiate parser.
+    parser = ArgumentParser(                                                # Instantiate parser.
         description='Create executable and arbitrary PGP-encrypted scripts.'
     )
 
-    parser.add_argument(                                        # Specify input files.
+    parser.add_argument(                                                    # Specify input files.
         '--inputs', '-i',
         dest='file',
         nargs='+',
         help='Specify files to encrypt.'
     )
-    parser.add_argument(                                        # Specify recipients.
+    parser.add_argument(                                                    # Specify recipients.
         '--recipients', '-r',
         dest='recipients',
         nargs='+',
         default=[],
         help='Specify who can decrypt the file.'
     )
-    parser.add_argument(                                        # Enable DEBUG logging.
+    parser.add_argument(                                                    # Enable DEBUG logging.
         '--verbose', '-v',
         action='store_const',
         dest='loglevel',
@@ -69,15 +69,15 @@ def munge_arguments(args: Namespace) -> Namespace:
     Resolve inputs to filepaths, set log level, and add default recipient.
         :param args: User-specified cmdline arguments.
     '''
-    log.setLevel(args.loglevel)                                 # Set log level.
+    log.setLevel(args.loglevel)                                             # Set log level.
 
-    default_recipient = getenv('PGP_KEY_ID')                    # Env var for user's PGP key ID.
+    default_recipient = getenv('PGP_KEY_ID')                                # Env var for user's PGP key ID.
 
-    if default_recipient:                                       # Add ourselves to the recipients.
+    if default_recipient:                                                   # Add ourselves to the recipients.
         log.debug(f'Adding {default_recipient} to recipients.')
         args.recipients.append(getenv('GPG_KEY_ID'))
 
-    for file in args.file:                                      # Change arg type from str -> Path.
+    for file in args.file:                                                  # Change arg type from str -> Path.
         log.debug(f'Munging {file}.')
         args.file[args.file.index(file)] = Path(file).absolute()
 
@@ -93,7 +93,7 @@ def prechecks_pass(
     Check that inputs and processes are as expected.
         :param args: User-specified cmdline arguments.
     '''
-    for gpg_proc in ['gpg-agent', 'gpgconf']:                   # Check that a GPG agent is running.
+    for gpg_proc in ['gpg-agent', 'gpgconf']:                               # Check that a GPG agent is running.
         for proc in process_iter():
             try:
                 if gpg_proc in proc.name():
@@ -104,7 +104,7 @@ def prechecks_pass(
                 log.exception(f'{gpg_proc} not running on host.')
                 raise err
 
-    for file in args.file:                                      # Check that the input files exist.
+    for file in args.file:                                                  # Check that the input files exist.
         try:
             file.resolve(strict=True)
             log.debug(f'Found file {file}.')
@@ -125,20 +125,20 @@ def encrypt(
         :param file:        The path of the file to be encrypted.
         :param recipients:  The recipient emails of the cipherfile.
     '''
-    gpg = GPG(                                                  # Instantiate GPG agent class.
+    gpg = GPG(                                                              # Instantiate GPG agent class.
         gpgbinary='/usr/bin/gpg2',
         use_agent=True,
         verbose=False
     )
-    outfile = file.with_suffix('')                              # Strip suffix, if exists.
+    outfile = file.with_suffix('')                                          # Strip suffix, if exists.
 
     log.debug(f'Encrypting file {file} to {outfile.name}')
 
     try:
-        cipherfile = gpg.encrypt_file(                          # Encrypt the file.
+        cipherfile = gpg.encrypt_file(                                      # Encrypt the file.
             open(file, 'rb'),
             recipients=recipients,
-            armor=True,                                         # Output as ASCII text.
+            armor=True,                                                     # Output as ASCII text.
             always_trust=True,
             output=outfile
         )
@@ -159,7 +159,7 @@ def munge_cipherfile(
     Add lines to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.
     '''
-    newlines = [                                                # GSHscript cleartext header.
+    newlines = [                                                            # GSHscript cleartext header.
         '#!/usr/bin/env bash\n',
         '# -*- coding:utf-8 -*-\n',
         '# Author:       Casey Sparks\n',
@@ -169,15 +169,15 @@ def munge_cipherfile(
         '\n',
     ]
 
-    newlines.extend(open(cipherfile, 'r').readlines())          # Ciphertext.
-    newlines.extend('\nEOF\n')                                  # Heredoc delimiter.
+    newlines.extend(open(cipherfile, 'r').readlines())                      # Ciphertext.
+    newlines.extend('\nEOF\n')                                              # Heredoc delimiter.
 
     with open(cipherfile, 'w') as file:
-        file.writelines(newlines)                               # Write header/ciphertext/footer to file.
+        file.writelines(newlines)                                           # Write header/ciphertext/footer to file.
 
-    chmod(                                                      # Make file executable.
+    chmod(                                                                  # Make file executable.
         cipherfile,
-        stat(cipherfile).st_mode | 0o111                        # Get the file mode.
+        stat(cipherfile).st_mode | 0o111                                    # Get the file mode.
     )
 
 

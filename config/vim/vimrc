@@ -56,7 +56,7 @@ autocmd Filetype python
 
 autocmd Filetype python,yaml
     \ set autoindent                                                        |
-    \ set colorcolumn=121                                                   |
+    \ set colorcolumn=76,121                                                |
     \ set modeline                                                          |
     \ set textwidth=120
 
@@ -64,6 +64,9 @@ autocmd Filetype python,yaml
 autocmd BufNewFile *.sh
     \ :0r ~/.vim/templates/sh.sh.template                                   |
     \ :3s/\<DATE\>/\=strftime("%B %d, %Y")/
+
+autocmd Filetype sh
+    \set colorcolumn=76,121
 
 autocmd BufRead *.ps1
     \ set tabstop=2                                                         |

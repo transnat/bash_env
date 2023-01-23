@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# -*- coding:utf-8 -*-
-
 # Author:       Casey Sparks
 # Date:         June 14, 2022
 # Description:  Puts all git branches and remotes at current hostname HEAD.

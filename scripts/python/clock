@@ -7,21 +7,19 @@
 A simple CLI clock.
 '''
 
-import argparse
-import locale
+from argparse import Namespace, ArgumentParser
 from datetime import datetime
+from locale import setlocale, LC_ALL
 from os import system
 from time import sleep
 
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+setlocale(LC_ALL, 'en_US.UTF-8')
 
 
-def get_arguments() -> argparse.Namespace:
+def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = argparse.ArgumentParser(
-        description='Add a useful description here.'
-    )
+    parser = ArgumentParser(description='Prints a simple clock to your terminal.')
     parser.add_argument(
         '-12',
         action='store_true',

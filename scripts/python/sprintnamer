@@ -12,7 +12,7 @@ from os.path import exists
 from random import choice
 from string import punctuation
 
-setlocale(LC_ALL, 'en_US.UTF-8')                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_word(words: list) -> str:
@@ -22,9 +22,9 @@ def get_word(words: list) -> str:
 
 def create_sprint_name() -> str:
     '''Generate a sprint name from two random words.'''
-    wordfile = '/usr/share/dict/words'                      # Installed by `words` package.
+    wordfile = '/usr/share/dict/words'                                      # Installed by `words` package.
 
-    if exists(wordfile):                                    # Check file is there.
+    if exists(wordfile):                                                    # Check file exists.
         words = open(wordfile, 'r').read().splitlines()
         string = f'{get_word(words)}-{get_word(words)}'
 

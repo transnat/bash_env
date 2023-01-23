@@ -7,43 +7,42 @@
 Convert structured data between INI, HTML, JSON, YAML, XML.
 
 Requirements:
-    * >= Python 3.10
     * dict2xml
     * pyjson
     * pyyaml
     * xmltodict
 '''
 
-import argparse
-import locale
-import logging
-import pathlib
-import sys
-from typing import NoReturn
-import json
-import xmltodict
-import yaml
+from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
 from dict2xml import dict2xml
+from json import dumps as jdumps, load
+from locale import setlocale, LC_ALL
+from logging import getLogger, DEBUG, INFO
+from pathlib import Path
+from sys import exit, stdout
+from typing import NoReturn
+from xmltodict import parse
+from yaml import safe_load, dump as ydump
 
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')                      # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
-log = logging.getLogger()                                           # Log to screen.
+log = getLogger()                                                           # Log to screen.
 
 
-def get_arguments() -> argparse.Namespace:
+def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = argparse.ArgumentParser(                               # Instantiate argument parser.
+    parser = ArgumentParser(                                                # Instantiate argument parser.
         description='Convert structured data between JSON and YAML.'
     )
-    parser.add_argument(                                            # Read data from file.
+    parser.add_argument(                                                    # Read data from file.
         '-i', '--infile',
         dest='infile',
-        type=pathlib.Path,
+        type=Path,
         help='File to read from.'
     )
-    parser.add_argument(                                            # Output data to file.
+    parser.add_argument(                                                    # Output data to file.
         '-f', '--format',
         dest='format',
         choices=['ini', 'json', 'xml', 'yaml'],
@@ -51,31 +50,31 @@ def get_arguments() -> argparse.Namespace:
         type=str,
         help='Data format to output.'
     )
-    parser.add_argument(                                            # Output data to file.
+    parser.add_argument(                                                    # Output data to file.
         '-w', '--write',
         dest='write',
         action='store_true',
         help='Write file to disk instead of stdout.'
     )
-    parser.add_argument(                                            # Enable DEBUG logging.
+    parser.add_argument(                                                    # Enable DEBUG logging.
         '-v', '--verbose',
         action='store_const',
         dest='loglevel',
-        const=logging.DEBUG,
-        default=logging.INFO,
+        const=DEBUG,
+        default=INFO,
         help='Set log level to DEBUG.'
     )
 
     args = parser.parse_args()
 
-    log.setLevel(args.loglevel)                                     # User-specified loglevel.
+    log.setLevel(args.loglevel)                                             # User-specified loglevel.
     log.debug('Debug logging enabled.')
 
     return args
 
 
 def ingest_data(
-    infile: pathlib.PosixPath
+    infile: Path
         ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
@@ -86,25 +85,25 @@ def ingest_data(
     file_suffix = infile.suffix
 
     match file_suffix:
-        case '.json':                                               # JSON.
-            payload = json.load(open(infile, 'r'))
+        case '.json':                                                       # JSON.
+            payload = load(open(infile, 'r'))
 
-        case '.ini':                                                # INI.
+        case '.ini':                                                        # INI.
             config = ConfigParser()
 
             config.read(infile)
 
             payload = config._sections
 
-        case '.html' | '.xml':                                       # HTML/XML.
-            payload = xmltodict.parse(open(infile).read())
+        case '.html' | '.xml':                                              # HTML/XML.
+            payload = parse(open(infile).read())
 
-        case '.yaml' | '.yml':                                       # Default to YAML.
-            payload = yaml.safe_load(open(infile, 'r'))
+        case '.yaml' | '.yml':                                              # Default to YAML.
+            payload = safe_load(open(infile, 'r'))
 
         case _:
             print('Unsupported filetype. Please check the extension and try again.')
-            sys.exit(1)
+            exit(1)
 
     log.debug(
         f'Input: {infile}\n',
@@ -116,7 +115,7 @@ def ingest_data(
 
 
 def output_data(
-    args: argparse.Namespace,
+    args: Namespace,
     payload: dict
         ) -> NoReturn:
     '''
@@ -124,48 +123,48 @@ def output_data(
         :param args:        User-specified commandline arguments.
         :param payload:     The Python dict to format and output.
     '''
-    outfile = open(                                                 # Write to file or stdout.
+    outfile = open(                                                         # Write to file or stdout.
         args.infile.with_suffix(f'.{args.format}'), 'w'
-    ) if args.write else sys.stdout
+    ) if args.write else stdout
 
     log.debug(f'Writing {args.format.upper()} output to {outfile.name}.')
 
     match args.format.lower():
-        case 'ini':                                                 # INI.
-            config = ConfigParser()                                 # Instantiate parser.
-            nested_keys = False                                     # Validity checker.
+        case 'ini':                                                         # INI.
+            config = ConfigParser()                                         # Instantiate parser.
+            nested_keys = False                                             # Validity checker.
 
             for key in payload.keys():
-                if iter(key):                                       # Check if keys are invalid types.
-                    nested_keys = True                              # Mark invalid.
+                if iter(key):                                               # Check if keys are invalid types.
+                    nested_keys = True                                      # Mark invalid.
 
-            if nested_keys:                                         # Warn the user.
+            if nested_keys:                                                 # Warn the user.
                 log.warning(
                     'Warning! INI does not support nested values.\n'
                     'Values will be flattened to strings.'
                 )
 
-                if input(                                           # ACK and continue.
+                if input(                                                   # ACK and continue.
                     'Proceed? [y/N] '
                 ).lower().startswith('y'):
                     pass
-                else:                                               # ACK and exit.
-                    sys.exit(1)
+                else:                                                       # ACK and exit.
+                    exit(1)
 
             config._sections = payload
             config.write(outfile)
 
-        case 'json':                                                # JSON.
-            outfile.write(json.dumps(
+        case 'json':                                                        # JSON.
+            outfile.write(jdumps(
                 payload,
                 indent=2
             ))
 
-        case 'html' | 'xml':                                        # XML.
+        case 'html' | 'xml':                                                # XML.
             outfile.write(dict2xml(payload))
 
-        case _:                                                     # Default to YAML.
-            outfile.write(yaml.dump(payload))
+        case _:                                                             # Default to YAML.
+            outfile.write(ydump(payload))
 
 
 if __name__ == '__main__':

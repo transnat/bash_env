@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# -*- coding:utf-8 -*-
 
 xrandr                      \
     --output eDP-1 --off    \

@@ -7,112 +7,112 @@
 Send a wake-on-LAN packet to the specified IP addresses.
 '''
 
-import argparse
-import locale
-import logging
-import pathlib
-import socket
-import sys
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, StreamHandler, DEBUG, INFO
+from pathlib import Path
+from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
+from sys import stderr
 from pprint import pp
 from subprocess import run
 from typing import NoReturn, Tuple
-import yaml
+from yaml import safe_load
 
 # Enable logging, set locale, set args.
-log = logging.getLogger()
+log = getLogger()
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-log.addHandler(logging.StreamHandler())
-log.setLevel(logging.INFO)
+setlocale(LC_ALL, 'en_US.UTF-8')
+log.addHandler(StreamHandler())
+log.setLevel(INFO)
 
 
-def get_arguments() -> argparse.Namespace:
+def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         description='Send a wake-on-LAN packet to specified MAC addresses.'
     )
 
-    parser.add_argument(                                        # The LAN interface.
+    parser.add_argument(                                                    # The LAN interface.
         '--interface', '-i',
         dest='interface',
         nargs=1,
         default=Network.get_default_interface(),
         help='Specify the broadcast IP address.'
     )
-    parser.add_argument(                                        # The broadcast IP address.
+    parser.add_argument(                                                    # The broadcast IP address.
         '--broadcast', '-b',
         dest='broadcast',
         nargs=1,
         default='255.255.255.255',
         help='Specify the broadcast IP address.'
     )
-    parser.add_argument(                                        # The port to use.
+    parser.add_argument(                                                    # The port to use.
         '--port', '-p',
         dest='port',
         nargs=1,
         default=9,
         help='Specify the port to use.'
     )
-    parser.add_argument(                                        # STDIN-specified MAC addresses.
+    parser.add_argument(                                                    # STDIN-specified MAC addresses.
         '--macs', '-M',
         dest='macs',
         nargs='+',
         help='Specify a list of MAC addresses to send WoL packets to.'
     )
-    parser.add_argument(                                        # STDIN-specified hosts.
+    parser.add_argument(                                                    # STDIN-specified hosts.
         '--hosts', '-H',
         dest='hosts',
         nargs='+',
         help='Specify a list of known hosts to send WoL packets to.'
     )
-    parser.add_argument(                                        # Get application info.
+    parser.add_argument(                                                    # Get application info.
         '--info',
         action='store_true',
         dest='info',
         help='Print the default configuration and exit.'
     )
-    parser.add_argument(                                        # Enable DEBUG logging.
+    parser.add_argument(                                                    # Enable DEBUG logging.
         '--verbose', '-v',
         action='store_const',
         dest='loglevel',
-        const=logging.DEBUG,
+        const=DEBUG,
         help='Set log level to DEBUG.'
     )
 
     args = parser.parse_args()
 
-    if args.info:                                               # Print application info and exit.
+    if args.info:                                                           # Print application info and exit.
         print_info(args)
         exit()
 
-    if args.loglevel:                                           # Set verbose logging.
+    if args.loglevel:                                                       # Set verbose logging.
         log.setLevel(args.loglevel)
 
     if not args.hosts and not args.macs:
-        parser.print_help(sys.stderr)
+        parser.print_help(stderr)
         exit()
 
     return args
 
 
 def print_info(
-    args: argparse.Namespace
+    args: Namespace
         ) -> NoReturn:
     '''
     Print known hosts and configuration.
         :param args: User-specified commandline arguments.
     '''
     known_hosts, hostsfile = file_checks()
-
-    iface_table = [                                             # Interface information.
+    iface_table = [                                                         # Interface information.
         ['Interface', args.interface],
         ['Broadcast', args.broadcast],
         ['Port', args.port]
     ]
-    known_hosts = [[k, v] for k, v in known_hosts.items()]      # Known hosts information.
+    known_hosts = [[k, v] for k, v in known_hosts.items()]                  # Known hosts information.
 
-    print('---------------------------------')                  # Print formatted tables.
-    print('''Interface Info\n---------------------------------''')
+    print('---------------------------------')                              # Print formatted tables.
+    print('Interface Info')
+    print('---------------------------------')
 
     for row in iface_table:
         print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(23))
@@ -124,15 +124,13 @@ def print_info(
         print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(21))
 
 
-def file_checks() -> Tuple[dict, pathlib.PosixPath]:
+def file_checks() -> Tuple[dict, Path]:
     '''Check for config directory/file, and create them if they do not exist.'''
-    config_dir = pathlib.Path(                                  # Directory for config files.
-        pathlib.Path.home() / '.config/wakeonlan'
-    )
-    hostsfile = config_dir / 'known_hosts.yml'                  # File containing known host mappings.
+    config_dir = Path(Path.home() / '.config/wakeonlan')                    # Directory for config files.
+    hostsfile = config_dir / 'known_hosts.yml'                              # File containing known host mappings.
     known_hosts = list()
 
-    if not config_dir.exists():                                 # Create config dir.
+    if not config_dir.exists():                                             # Create config dir.
         log.debug(f'Creating config directory at {config_dir}.')
         config_dir.mkdir(
             parents=True,
@@ -140,11 +138,11 @@ def file_checks() -> Tuple[dict, pathlib.PosixPath]:
             exist_ok=True
         )
 
-    if not hostsfile.exists():                                  # Create known hosts file.
+    if not hostsfile.exists():                                              # Create known hosts file.
         log.debug(f'Creating config file at {hostsfile}.')
         hostsfile.touch(mode=0o644, exist_ok=True)
 
-    known_hosts = yaml.safe_load(open(hostsfile, 'rb'))         # Read hosts file into var.
+    known_hosts = safe_load(open(hostsfile, 'rb'))                          # Read hosts file into var.
 
     return known_hosts, hostsfile
 
@@ -152,22 +150,23 @@ def file_checks() -> Tuple[dict, pathlib.PosixPath]:
 class Network():
     @staticmethod
     def get_mac_addresses(
-        args: argparse.Namespace
+        args: Namespace
             ) -> list:
         '''
         Grok stdin and config files for the hosts to wake.
             :param args: User-provided cmdline arguments.
         '''
-        known_hosts, hostsfile = file_checks()                      # Get known hosts from config file.
+        known_hosts, hostsfile = file_checks()                              # Get known hosts from config file.
         mac_addresses = list()
 
-        if args.macs:                                               # Set hosts based on MACs from STDIN.
+        if args.macs:                                                       # Set hosts based on MACs from STDIN.
             mac_addresses.append(args.macs)
 
-        if args.hosts:                                              # Set hosts based on hostnames from STDIN.
+        if args.hosts:                                                      # Set hosts based on hostnames from STDIN.
             for host in args.hosts:
                 try:
                     mac_addresses.append(known_hosts[host])
+
                 except TypeError:
                     log.critical(f'Config file {hostsfile} is empty.')
 
@@ -178,7 +177,7 @@ class Network():
     @staticmethod
     def get_default_interface() -> str:
         '''Return the default network interface.'''
-        interface = run(                                            # Run subprocess to capture interface.
+        interface = run(                                                    # Run subprocess to capture interface.
             ['ip', 'route', 'show'],
             capture_output=True
         ).stdout.decode('utf-8').split()[4]
@@ -195,20 +194,22 @@ class Network():
         '''
         log.debug(f'Checking validity of MAC address: {mac_address}')
 
-        if len(mac_address) == 17:                                  # Check/reformat MAC address.
+        if len(mac_address) == 17:                                          # Check/reformat MAC address.
             mac_address = mac_address.replace(mac_address[2], '')
+
         elif len(mac_address) != 12:
             log.critical(f'Invalid MAC address: {mac_address}')
+
             raise ValueError('Incorrect MAC address format.')
 
-        return bytes.fromhex('F' * 12 + mac_address * 16)           # Magic packet.
+        return bytes.fromhex('F' * 12 + mac_address * 16)                   # Magic packet.
 
     @staticmethod
     def send_packet(
         mac_addresses: list,
         broadcast_ip: str,
         port: int,
-        interface: str = None
+        interface: str
             ) -> NoReturn:
         '''
         Send a network packet to a socket.
@@ -219,25 +220,21 @@ class Network():
         '''
         log.debug('Instantiating socket.')
 
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            if interface is not None:                               # Bind to the specified interface.
-                log.debug(f'Binding to interface {interface}.')
-                sock.bind((interface, 0))
-
+        with socket(AF_INET, SOCK_DGRAM) as sock:
+            log.debug(f'Binding to interface {interface}.')
+            sock.bind((interface, 0))
             log.debug('Setting socket options.')
-            sock.setsockopt(                                        # Set socket options.
-                socket.SOL_SOCKET,
-                socket.SO_BROADCAST, 1
+            sock.setsockopt(                                                # Set socket options.
+                SOL_SOCKET,
+                SO_BROADCAST, 1
             )
             log.debug(f'Created {sock.type.name} socket.')
             log.debug('Connecting to socket.')
-            sock.connect((broadcast_ip, port))                      # Connect to socket.
+            sock.connect((broadcast_ip, port))                              # Connect to socket.
             log.debug('Connected.')
 
-            for mac_address in mac_addresses:                       # Send magic packet.
-                sent = sock.send(
-                    Network.magic_packet(mac_address)
-                )
+            for mac_address in mac_addresses:                               # Send magic packet.
+                sent = sock.send(Network.magic_packet(mac_address))
 
                 log.info(f'Sent: {sent}')
 

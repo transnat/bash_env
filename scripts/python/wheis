@@ -7,39 +7,39 @@
 whois for IP physical locations.
 '''
 
-import argparse
-import locale
-import logging
-import os
-import sys
-import requests
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, StreamHandler, DEBUG, INFO
+from os import getenv
+from sys import argv, exit
+from requests import get
 from typing import NoReturn
 
 # Enable logging, set locale, set args.
-log = logging.getLogger()
+log = getLogger()
 
-locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
-log.addHandler(logging.StreamHandler())
+setlocale(LC_ALL, 'en_US.UTF-8')
+log.addHandler(StreamHandler())
 
 
-def get_arguments() -> argparse.Namespace:
+def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = argparse.ArgumentParser(                               # Instantiate argument parser.
-        description='The `help()` description of the application goes here.'
+    parser = ArgumentParser(                                                # Instantiate argument parser.
+        description='whois for physical IP locations.'
     )
-    parser.add_argument(                                            # Specify an IPstack API key.
+    parser.add_argument(                                                    # Specify an IPstack API key.
         '-k', '--api_key',
         dest='api_key',
-        default=os.getenv('IPSTACK_API_KEY'),
+        default=getenv('IPSTACK_API_KEY'),
         type=str,
         help='API key for ipstack.com.'
     )
-    parser.add_argument(                                            # Enable DEBUG logging.
+    parser.add_argument(                                                    # Enable DEBUG logging.
         '-v', '--verbose',
         action='store_const',
         dest='loglevel',
-        const=logging.DEBUG,
-        default=logging.INFO,
+        const=DEBUG,
+        default=INFO,
         help='Set log level to DEBUG.'
     )
 
@@ -62,10 +62,10 @@ def get_location_table(
     if api_key is None:
         log.critical('No API key.')
 
-        sys.exit(1)
+        exit(1)
 
     else:
-        ip_info = requests.get(
+        ip_info = get(
             f'http://api.ipstack.com/{ip}',
             params={'access_key': api_key}
         ).json()
@@ -94,8 +94,8 @@ def fprint(
 
 
 if __name__ == '__main__':
-    for ip in sys.argv[1:]:
+    for ip in argv[1:]:
         fprint(get_location_table(
-            os.getenv('IPSTACK_API_KEY'),
+            getenv('IPSTACK_API_KEY'),
             ip
         ))

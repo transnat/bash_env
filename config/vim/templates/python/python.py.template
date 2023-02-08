@@ -9,84 +9,66 @@ The description of the script goes here.
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, RootLogger, FileHandler, Formatter, StreamHandler, CRITICAL, INFO, DEBUG
+from logging import getLogger, RootLogger, FileHandler, Formatter, StreamHandler
 from pathlib import Path
+from typing import Optional
 
-
-setlocale(LC_ALL, 'en_US.UTF-8')                                    # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                        # Instantiate argument parser.
-        description='The `help()` description of the application goes here.'
-    )
-    verbosity = parser.add_mutually_exclusive_group()
+    parser = ArgumentParser(description='The description of the script goes here.')
 
-    parser.add_argument(                                            # Log to file.
-        '--logfile',
+    parser.add_argument(                                                    # Optional path for the output log file.
+        '--logfile', '-F',
         dest='logfile',
         type=Path,
         help='Absolute path to write the logfile to.'
     )
-    verbosity.add_argument(                                         # Enable DEBUG logging.
+    parser.add_argument(                                                    # Enable DEBUG logging.
         '--verbose', '-v',
-        action='store_true',
-        dest='loglevel',
-        help='Set log level to DEBUG.'
-    )
-    verbosity.add_argument(                                         # Enable CRIT logging.
-        '--quiet', '-q',
-        action='store_true',
-        dest='quiet',
-        help='Set log level to CRITICAL.'
+        dest='log_level',
+        action='count',
+        default=30,
+        help='Set log level to DEBUG. Defaults to INFO.'
     )
 
-    return parser.parse_args()
+    args = parser.parse_args()                                              # Parse arguments.
+    log_level = 50 - args.log_level * 10                                    # Set log numeric value from -vvv args.
+    args.log_level = log_level if log_level >= 10 else 10                   # Log level should be <= 10.
+
+    return args
 
 
 def enable_logging(
-    args: Namespace
+    log_level: int = 30,
+    log_file_path: Optional[Path] = None
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param args:    User-specified commandline arguments.
+        :param log_level:   User-specified log level (10-50).
+        :param log_file:    User-specified path to write log file.
     '''
-    match True:                                                     # Get log level from args.
-        case args.verbose:
-            loglevel = DEBUG
-        case args.quiet:
-            loglevel = CRITICAL
-        case _:
-            loglevel = INFO
-
-    # Root logger/formatter
-    formatter = Formatter(                                          # Useful format header.
-        '%(asctime)s '
-        '[%(threadName)-12.12s] '
-        '[%(levelname)-5.5s] '
-        '%(message)s'
+    formatter = Formatter(                                                  # Log header.
+        '%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s'
     )
-    root_logger = getLogger()                                       # Root logger class.
+    log_console = StreamHandler()                                           # Log to screen.
+    root_logger = getLogger()                                               # Root logger class.
 
-    # Console logger.
-    log_console = StreamHandler()                                   # Log to screen.
+    log_console.setFormatter(formatter)                                     # No format header for console log.
+    root_logger.addHandler(log_console)                                     # Add console to root logger.
+    root_logger.setLevel(args.log_level)                                    # User-specified log_level.
 
-    log_console.setFormatter(formatter)                             # No format header for console log.
-    root_logger.addHandler(log_console)                             # Add console to root logger.
+    if log_file_path:
+        log_file = FileHandler(log_file_path)                               # Log to file.
 
-    # File logger.
-    if args.logfile:
-        log_file = FileHandler(args.logfile)                        # Log to file.
-
-        log_file.setFormatter(formatter)                            # Verbose format header for logfile.
-        root_logger.addHandler(log_file)                            # Add logfile to root logger.
-
-    root_logger.setLevel(loglevel)                                  # User-specified loglevel.
+        log_file.setFormatter(formatter)                                    # Verbose format header for logfile.
+        root_logger.addHandler(log_file)                                    # Add logfile to root logger.
 
     return root_logger
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                          # Get cmdline arguments.
-    log = enable_logging(args)                                      # Enable logging.
+    args = get_arguments()
+    log = enable_logging(args.log_level, args.log_file)

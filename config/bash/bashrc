@@ -1,18 +1,18 @@
-case $- in                                                          ## If not running interactively, don't do anything.
+case $- in                                                                  # Do nothing if not interactive.
     *i*) ;;
       *) return;;
 esac
 
-HISTCONTROL=ignoreboth                                              # Don't save duplicate lines or lines starting with space in history.
-HISTSIZE=1000                                                       # Set history length.
-HISTFILESIZE=2000                                                   # Set history file size.
+HISTCONTROL=ignoreboth                                                      # Don't save duplicate lines in history.
+HISTSIZE=1000                                                               # Set history length.
+HISTFILESIZE=2000                                                           # Set history file size.
 
 # Shell options.
-shopt -s histappend                                                 # Append to the history file, don't overwrite it.
-shopt -s checkwinsize                                               # Check the window size; update LINES, COLUMNS.
-shopt -s globstar                                                   # Match all files and zero or more directories and subdirectories with "**"
+shopt -s histappend                                                         # Append to the history file.
+shopt -s checkwinsize                                                       # Check the window size; update LIN/COL.
+shopt -s globstar
 
-if ! shopt -oq posix; then                                          # Enable programmable completion features.
+if ! shopt -oq posix; then                                                  # Enable programmable completion features.
   if [ -f /usr/share/bash-completion/bash_completion ]; then
     source /usr/share/bash-completion/bash_completion
   elif [ -f /etc/bash_completion ]; then
@@ -20,17 +20,17 @@ if ! shopt -oq posix; then                                          # Enable pro
   fi
 fi
 
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"        # Make `less` more friendly for non-text input files.
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"                # Make `less` more friendly.
 
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then   # Set variable identifying the chroot you work in (used in the prompt below).
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then           # Set variable identifying the chroot.
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-case "$TERM" in                                                     # Set a fancy prompt.
+case "$TERM" in                                                             # Set a fancy prompt.
     xterm-color|*-256color) color_prompt=yes;;
 esac
 
-force_color_prompt=yes                                              # Set color prompt.
+force_color_prompt=yes                                                      # Set color prompt.
 if [ -n "$force_color_prompt" ]; then
     if [ -x $(which tput) ] && tput setaf 1 &> /dev/null; then
         color_prompt=yes
@@ -46,7 +46,7 @@ else
 fi
 unset color_prompt force_color_prompt
 
-case "$TERM" in                                                     # If this is an xterm set the title to user@host:dir.
+case "$TERM" in                                                             # If this is an xterm set title.
     xterm*|rxvt*)
         PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
         ;;
@@ -55,7 +55,7 @@ case "$TERM" in                                                     # If this is
         ;;
 esac
 
-if [ -x $(which dircolors) ]; then                                  # Enable color support.
+if [ -x $(which dircolors) ]; then                                          # Enable color support.
     test -r ${HOME}/.dircolors && \
         eval "$(dircolors -b ${HOME}/.dircolors)" || \
         eval "$(dircolors -b)"
@@ -67,33 +67,33 @@ if [ -x $(which dircolors) ]; then                                  # Enable col
     alias egrep='egrep --color=auto'
 fi
 
-if [ -x /usr/bin/gpgconf ]; then                                    # Launch gpg-agent.
+if [ -x /usr/bin/gpgconf ]; then                                            # Launch gpg-agent.
   gpgconf --launch gpg-agent
 fi
 
-if [ -f ${HOME}/.env/config/bash/vars.sh ]; then                    # Source env vars.
+if [ -f ${HOME}/.env/config/bash/vars.sh ]; then                    		# Source env vars.
   source ${HOME}/.env/config/bash/vars.sh
 fi
 
-if [ -f ${ALIASES} ]; then                                          # Source alias definitions.
+if [ -f ${ALIASES} ]; then                                          		# Source alias definitions.
     source ${ALIASES}
 fi
 
-if [ -d ${FUNCTIONS} ]; then                                        # Source function definitions.
+if [ -d ${FUNCTIONS} ]; then                                        		# Source function definitions.
   for f in ${FUNCTIONS}/*; do
     source $f;
   done
 fi
 
-if [ -x $(which thefuck) ]; then                                    # Enable thefuck.
+if [ -x $(which thefuck) ]; then                                    		# Enable thefuck.
   eval $(thefuck --alias)
 fi
 
-if [ -x $(which wal) ]; then                                        # Enable wal.
+if [ -x $(which wal) ]; then                                        		# Enable wal.
   wal -i $(grep file ${HOME}/.config/nitrogen/bg-saved.cfg | \
       cut -c 6-99) -q -b 000000
 fi
 
-complete -C /usr/bin/terraform terraform                            # Enable bash completion for terraform.
+complete -C /usr/bin/terraform terraform                            		# Enable bash completion for terraform.
 
-getsecrets                                                          # Get encrypted env vars if Yubikey is connected.
+getsecrets                                                          		# Get encrypted env vars.

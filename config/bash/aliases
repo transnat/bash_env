@@ -1,9 +1,7 @@
 alias ..="cd .."
 alias ...="cd ..."
 alias ....="cd ...."
-
 alias back="cd ${OLDPWD}"
-
 alias c="clear"
 alias chr="chmod 644"
 alias chx="chmod 755"
@@ -11,15 +9,12 @@ alias cl="clear;ls -lFh"
 alias cla="clear;ls -lFha"
 alias clip="xclip -sel clip"
 alias cputemp="sensors | grep Core"
-
 alias df='df -h'
 alias dgrep='l|grep'
 alias dirs="dirs -p"
-
 alias F="fuck"
 alias flake8="flake8 --max-line-length=120"
 alias free="free -h"
-
 alias gca="gpg-connect-agent updatestartuptty /bye"
 alias gnc="gpg-connect-agent \"scd serialno\" \"learn --force\" /bye"
 alias grEp="grep -E"
@@ -27,31 +22,21 @@ alias greP="grep -P"
 alias griP="grep -iP"
 alias grip="grep -i"
 alias grvp="grep -v"
-
 alias h='history'
 alias hgrep="history|grep -E"
-
 alias l='ls -1'
 alias la='ls -lFha'
 alias ll='ls -lFh'
-
 alias msf="msfconsole --quiet -x \"db_connect 'user'@'msf'\""
 alias mysql="mysql -u $(whoami) -p"
-
+alias newpass="openssl rand -base64 32"
 alias pclip="pwd | xclip -sel clip"
 alias ppaste="xclip -o -sel clip | xargs cd"
-
 alias q="exit"
-
 alias rmf="rm -rf"
-
 alias s="screen"
-alias speed="speedtest-cli"
 alias src="source ${HOME}/.bashrc"
-
 alias tf="terraform"
-
 alias va="source ./venv/bin/activate"
 alias ve="python3 -m venv ./venv"
-
 alias www="python3 -m http.server 8000"

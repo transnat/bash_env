@@ -1,0 +1,108 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         February 08, 2023
+# Description:
+'''
+Generate a connection QR code for a wifi SSID.
+'''
+
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, StreamHandler
+from pathlib import Path
+from qrcode import QRCode
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''Get cmdline arguments.'''
+    parser = ArgumentParser(                                                # Instantiate argument parser.
+        description='Generate a QR code to join a wifi network.'
+    )
+
+    parser.add_argument(                                                    # SSID of the wifi network.
+        '--SSID', '-s',
+        dest='ssid',
+        type=str,
+        required=True,
+        help='SSID of the wifi network.'
+    )
+    parser.add_argument(                                                    # Password of the wifi network.
+        '--passwd', '-p',
+        dest='passwd',
+        type=str,
+        required=True,
+        help='Password of the wifi network. (Set to empty string if no password.)'
+    )
+    parser.add_argument(                                                    # Encryption of the wifi network.
+        '--encryption', '-e',
+        dest='encryption',
+        type=str,
+        default='WPA',
+        choices=['WPA', 'WEP'],
+        help='Encryption used by the SSID (default WPA).'
+    )
+    parser.add_argument(                                                    # Output file.
+        '--output', '-o',
+        dest='output',
+        type=Path,
+        help='Encryption used by the SSID (default WPA).'
+    )
+    parser.add_argument(                                                    # Enable DEBUG logging.
+        '--verbose', '-v',
+        dest='log_level',
+        action='count',
+        default=30,
+        help='Set log level to DEBUG. Defaults to INFO.'
+    )
+
+    args = parser.parse_args()                                              # Parse arguments.
+    log_level = 50 - args.log_level * 10                                    # Set log numeric value from -vvv args.
+    args.log_level = log_level if log_level >= 10 else 10                   # Log level should be <= 10.
+
+    return args
+
+
+def enable_logging(
+    log_level: int = 30,
+        ) -> Namespace:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level (10-50).
+    '''
+    log = getLogger()                                                       # Root logger class.
+
+    log.addHandler(                                                         # Format STDOUT output.
+        StreamHandler().setFormatter(
+            '%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s'
+        )
+    )
+    log.setLevel(args.log_level)                                            # Set log to user-specified level.
+    log.debug('Logger instantiated.')
+
+    return log
+
+
+if __name__ == '__main__':
+    args = get_arguments()                                                  # Get cmdline arguments.
+    log = enable_logging(args.log_level)                                    # Enable logging.
+    qr = QRCode()                                                           # Instantiate QR class.
+
+    log.debug(f'Arguments: {args}')
+    qr.add_data(f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd}')  # Add data to the QR class.
+    qr.make()                                                               # Generate the QR code.
+    log.debug('QR code created.')
+
+    if args.output:
+        img = qr.make_image(                                                # Create PNG.
+            fill_color="black",
+            back_color="white"
+        )
+
+        log.debug(qr.print_tty())
+        img.save(args.output)                                               # Save PNG to disk.
+
+    else:
+        qr.print_tty()                                                      # Print to screen.

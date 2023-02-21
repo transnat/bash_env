@@ -12,6 +12,7 @@ alias cputemp="sensors | grep Core"
 alias df='df -h'
 alias dgrep='l|grep'
 alias dirs="dirs -p"
+alias dfimage="docker run -v /var/run/docker.sock:/var/run/docker.sock --rm alpine/dfimage -sV=1.36"
 alias F="fuck"
 alias flake8="flake8 --max-line-length=120"
 alias free="free -h"

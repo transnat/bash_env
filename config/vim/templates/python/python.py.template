@@ -8,8 +8,9 @@ The description of the script goes here.
 '''
 
 from argparse import ArgumentParser, Namespace
+from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, RootLogger, FileHandler, Formatter, StreamHandler
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from typing import Optional
 
@@ -18,31 +19,33 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = ArgumentParser(description='The description of the script goes here.')
+    parser = ArgumentParser(                                                # Instantiate argument parser.
+        description='The description of the script goes here.'
+    )
 
-    parser.add_argument(                                                    # Optional path for the output log file.
-        '--logfile', '-F',
-        dest='logfile',
-        type=Path,
+    parser.add_argument(                                                    # Set path for the output log file.
+        '--logfile',
+        dest='log_file',
+        type=Optional[Path],
+        default=Path(f'{Path(__file__).with_suffix("").name}-{datetime.now().strftime("%s")}.log'),
         help='Absolute path to write the logfile to.'
     )
-    parser.add_argument(                                                    # Enable DEBUG logging.
+    parser.add_argument(                                                    # Set logging verbosity.
         '--verbose', '-v',
         dest='log_level',
         action='count',
-        default=30,
+        default=0,                                                          # Default NOTSET.
         help='Set log level to DEBUG. Defaults to INFO.'
     )
 
     args = parser.parse_args()                                              # Parse arguments.
-    log_level = 50 - args.log_level * 10                                    # Set log numeric value from -vvv args.
-    args.log_level = log_level if log_level >= 10 else 10                   # Log level should be <= 10.
+    args.log_level = max(50 - args.log_level * 10, 10)                      # Log level should always be <=50,>=10.
 
     return args
 
 
 def enable_logging(
-    log_level: int = 30,
+    log_level: int = 30,                                                    # Default INFO.
     log_file_path: Optional[Path] = None
         ) -> RootLogger:
     '''
@@ -51,22 +54,23 @@ def enable_logging(
         :param log_file:    User-specified path to write log file.
     '''
     formatter = Formatter(                                                  # Log header.
-        '%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s] %(message)s'
+          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
+          style='{'                                                         # Set f-string style formating.
     )
-    log_console = StreamHandler()                                           # Log to screen.
-    root_logger = getLogger()                                               # Root logger class.
+    log_console = StreamHandler()                                           # Logging stream handler.
+    log_root = getLogger()                                                  # Root logger class.
 
-    log_console.setFormatter(formatter)                                     # No format header for console log.
-    root_logger.addHandler(log_console)                                     # Add console to root logger.
-    root_logger.setLevel(args.log_level)                                    # User-specified log_level.
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+    log_root.addHandler(log_console)                                        # Log to screen.
 
-    if log_file_path:
-        log_file = FileHandler(log_file_path)                               # Log to file.
+    if log_file_path:                                                       # Logging file handler.
+        log_file = FileHandler(log_file_path)
 
-        log_file.setFormatter(formatter)                                    # Verbose format header for logfile.
-        root_logger.addHandler(log_file)                                    # Add logfile to root logger.
+        log_file.setFormatter(formatter)                                    # Set log file format.
+        log_root.addHandler(log_file)                                       # Log to file.
 
-    return root_logger
+    return log_root
 
 
 if __name__ == '__main__':

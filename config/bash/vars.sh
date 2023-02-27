@@ -12,7 +12,7 @@ export FUNCTIONS="${HOME}/.env/config/bash/functions"
 export GSH="${HOME}/.env/gsh"
 export SCREENSHOTS="${HOME}/Pictures/screenshots"
 export SCRIPTS="${HOME}/.env/scripts"
-export SECRETS="${HOME}/.env/config/bash/secrets.asc"
+export SECRETS="${HOME}/.env/config/secrets"
 export VARS="${HOME}/.env/config/bash/vars.sh"
 
 ## Docker variables.

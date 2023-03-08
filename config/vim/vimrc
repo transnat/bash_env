@@ -77,7 +77,6 @@ autocmd BufRead *.ps1
 
 " Plaintext config ------------------------------------------------------------
 autocmd BufRead,BufNewfile *.txt,*.md
-    \ set spell spelllang=en_us                                             |
     \ set colorcolumn=121                                                   |
     \ set textwidth=120                                                     |
     \ set linebreak                                                         |

@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         March 10, 2023
+# Description:
+'''Print a network table when given a subnet.'''
+
+from argparse import ArgumentParser, Namespace
+from ipaddress import ip_network
+from locale import setlocale, LC_ALL
+from tabulate import tabulate
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''Get cmdline arguments.'''
+    parser = ArgumentParser(                                                # Instantiate argument parser.
+        description='Parse IPv4 and IPv6 addresses between CIDR and netmask.'
+    )
+
+    parser.add_argument(
+        'addresses',
+        type=str,
+        nargs='+',
+        help='List of IP address to parse, like `192.168.0.1/16 10.0.0.1/255.0.0.0`'
+    )
+    parser.add_argument(                                                    # Set logging verbosity.
+        '--verbose', '-v',
+        dest='log_level',
+        action='count',
+        default=0,                                                          # Default NOTSET.
+        help='Set log level to DEBUG. Defaults to INFO.'
+    )
+
+    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments.log_level = max(50 - arguments.log_level * 10, 10)            # Log level should be <=50,>=10.
+
+    return arguments
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    for address in args.addresses:
+        subnet = ip_network(address, strict=False)
+
+        print('--------------------------------')                           # Print network table.
+        print(address)
+        print(tabulate([
+            ['Host Address', address.split('/')[0]],
+            ['Network Address', subnet.network_address],
+            ['Netmask', subnet.netmask],
+            ['CIDR Netmask', f'/{subnet.prefixlen}'],
+            ['Broadcast_address', subnet.broadcast_address],
+            ['Version', f'IPv{subnet.version}'],
+            ['Private', subnet.is_private],
+            ['Reserved', subnet.is_reserved],
+            ['Total Addresses', subnet.num_addresses]
+        ]))

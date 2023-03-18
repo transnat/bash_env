@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Author:       Casey Sparks
 # Date:         March 10, 2023
 # Description:
 '''Print a network table when given a subnet.'''
+__author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from ipaddress import ip_network
@@ -19,11 +19,10 @@ def get_arguments() -> Namespace:
         description='Parse IPv4 and IPv6 addresses between CIDR and netmask.'
     )
 
-    parser.add_argument(
-        'addresses',
+    parser.add_argument(                                                    # Addresses/netmasks to process.
+        'network',
         type=str,
-        nargs='+',
-        help='List of IP address to parse, like `192.168.0.1/16 10.0.0.1/255.0.0.0`'
+        help='Subnet to parse, like `192.168.0.1/16`, `10.0.0.1/255.0.0.0`, or `::1`.'
     )
     parser.add_argument(                                                    # Set logging verbosity.
         '--verbose', '-v',
@@ -41,20 +40,19 @@ def get_arguments() -> Namespace:
 
 if __name__ == '__main__':
     args = get_arguments()
+    subnet = ip_network(args.network, strict=False)
+    host_addr = args.network.split('/')[0]
+    table = [                                                               # Subnet info table.
+        ['Host Address', host_addr if host_addr[-1] != '0' else 'N/A'],     # Only set if host bits set.
+        ['Network Address', subnet.network_address],
+        ['Broadcast_address', subnet.broadcast_address],
+        ['Hostmask', subnet.hostmask],
+        ['Netmask', subnet.netmask],
+        ['CIDR Netmask', f'/{subnet.prefixlen}'],
+        ['Version', f'IPv{subnet.version}'],
+        ['Private', subnet.is_private],
+        ['Reserved', subnet.is_reserved],
+        ['Total Addresses', f'{subnet.num_addresses:,}']
+    ]
 
-    for address in args.addresses:
-        subnet = ip_network(address, strict=False)
-
-        print('--------------------------------')                           # Print network table.
-        print(address)
-        print(tabulate([
-            ['Host Address', address.split('/')[0]],
-            ['Network Address', subnet.network_address],
-            ['Netmask', subnet.netmask],
-            ['CIDR Netmask', f'/{subnet.prefixlen}'],
-            ['Broadcast_address', subnet.broadcast_address],
-            ['Version', f'IPv{subnet.version}'],
-            ['Private', subnet.is_private],
-            ['Reserved', subnet.is_reserved],
-            ['Total Addresses', subnet.num_addresses]
-        ]))
+    print(tabulate(table, ['Network', args.network], 'fancy_grid'))

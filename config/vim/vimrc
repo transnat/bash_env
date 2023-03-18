@@ -49,7 +49,7 @@ autocmd BufRead,BufNewfile PKGBUILD
 " Python/YAML config ----------------------------------------------------------
 autocmd BufNewFile *.py
     \ :0r ~/.vim/templates/python/python.py.template                        |
-    \ :4s/\<DATE\>/\=strftime("%B %d, %Y")/
+    \ :3s/\<DATE\>/\=strftime("%B %d, %Y")/
 
 autocmd Filetype python
     \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>

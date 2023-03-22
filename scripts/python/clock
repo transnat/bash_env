@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         January 25, 2022
 # Description:
-'''
-A simple CLI clock.
-'''
+'''A simple CLI clock.'''
+
+__author__ = 'Casey Sparks'
 
 from argparse import Namespace, ArgumentParser
 from datetime import datetime
@@ -27,9 +26,9 @@ def get_arguments() -> Namespace:
         help='Set format to 12hr time.'
     )
 
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    return args
+    return arguments
 
 
 if __name__ == '__main__':

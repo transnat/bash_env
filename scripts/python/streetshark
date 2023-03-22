@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         May 13, 2022
 # Description:
 '''
 Monitor advertised SSIDs and (optionally) find matches.
 '''
+
+__author__ = 'Casey Sparks'
 
 import re
 from argparse import ArgumentParser, Namespace
@@ -16,6 +17,7 @@ from os import system
 from subprocess import run, Popen, PIPE
 from time import sleep
 from typing import NoReturn
+from sys import exit as sys_exit
 
 # Enable logging, set locale, set args.
 log = getLogger()
@@ -65,18 +67,20 @@ def get_arguments() -> Namespace:
         help='Print all SSIDs to STDOUT.'
     )
 
-    args = parser.parse_args()                                              # Parse CMDline arguments.
+    arguments = parser.parse_args()                                              # Parse CMDline arguments.
 
-    if args.loglevel:                                                       # Set debug output.
-        log.setLevel(args.loglevel)
+    if arguments.loglevel:                                                       # Set debug output.
+        log.setLevel(arguments.loglevel)
 
-    return parser.parse_args()
+    return arguments
 
 
 def get_default_interface() -> str:
+    '''Gets the name of the current WAN-connected interface.'''
     interface = run(
         ['ip', 'route', 'show'],
-        capture_output=True
+        capture_output=True,
+        check=True
     ).stdout.decode('utf-8').split()[4]
 
     return interface
@@ -89,7 +93,7 @@ def iwlist(
     Runs scans all advertised SSIDs from `interface`.
         :param interface: The network interface on which to run the scan.
     '''
-    cells = list()                                                          # List of SSIDs.
+    cells = []                                                              # List of SSIDs.
     cell_number_regex = re.compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
     regexps = [
         re.compile(r"^ESSID:\"(?P<essid>.*)\"$"),
@@ -104,23 +108,18 @@ def iwlist(
     ]
     wpa_regex = re.compile(r"IE:\ WPA\ Version\ 1$")
     wpa2_regex = re.compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
-    proc = Popen(                                                           # Run `iwlist` subprocess.
-        [
-            'iwlist',
-            interface,
-            'scan'
-        ],
+
+    with Popen(                                                             # Run `iwlist` subprocess.
+        ['iwlist', interface, 'scan'],
         stdout=PIPE,
         stderr=PIPE
-    )
-    stdout = proc.stdout.read().decode('utf-8')                             # STDOUT.
-    stderr = proc.stderr.read().decode('utf-8')                             # STDERR.
-    lines = stdout.split('\n')                                              # List of lines returned by scan.
+    ) as proc:
+        lines = proc.stdout.read().decode('utf-8').split('\n')              # STDOUT.
 
-    log.debug(stdout)
-    log.error(stderr)
+        log.error(proc.stderr.read().decode('utf-8'))                       # STDERR.
+        log.debug(lines)
 
-    for line in lines:                                          # Iterate STDOUT and format to list.
+    for line in lines:                                                      # Iterate STDOUT and format to list.
         line = line.strip()
         cell_number = cell_number_regex.search(line)
         wpa = wpa_regex.search(line)
@@ -172,8 +171,8 @@ if __name__ == '__main__':
     args = get_arguments()                                                  # Get cmdline arguments.
     matched = set()                                                         # Matched SSIDs.
     timestamp = {                                                           # SSIDs + first time seen.
-        'advertised': dict(),
-        'matched': dict()
+        'advertised': {},
+        'matched': {}
     }
 
     while True:
@@ -215,6 +214,6 @@ if __name__ == '__main__':
 
         else:                                                               # Exit.
             log.critical('Invalid input. Exiting.')
-            exit()
+            sys_exit()
 
         sleep(args.interval)                                                # Sleep.

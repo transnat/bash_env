@@ -1,37 +1,45 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         September 13, 2022
 # Description:
 '''
 Procedurally generate a name for a sprint.
 '''
 
+__author__ = 'Casey Sparks'
+
 from locale import setlocale, LC_ALL
-from os.path import exists
+from pathlib import Path
 from random import choice
 from string import punctuation
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_word(words: list) -> str:
-    '''Pull a word from list and format.'''
+def get_word(
+    words: list
+        ) -> str:
+    '''
+    Pull a word from list and format.
+        :param words:   A list of words to use in the sprint name.
+    '''
     return choice(words).lower().translate(str.maketrans('', '', punctuation))
 
 
-def create_sprint_name() -> str:
-    '''Generate a sprint name from two random words.'''
-    wordfile = '/usr/share/dict/words'                                      # Installed by `words` package.
+def create_sprint_name(
+    wordfile: Path = Path('/usr/share/dict/words')                          # Installed by `words` package.
+        ) -> str:
+    '''
+    Generate a sprint name from two random words.
+        :param wordfile:    Path() object of the word file to use.
+    '''
+    if not wordfile.exists():                                               # Check file exists.
+        return 'Install `words` package.'
 
-    if exists(wordfile):                                                    # Check file exists.
-        words = open(wordfile, 'r').read().splitlines()
-        string = f'{get_word(words)}-{get_word(words)}'
+    with open(wordfile, 'r', encoding='utf-8') as file:
+        words = file.read().splitlines()
 
-    else:
-        string = 'Install `words` package.'
-
-    return string
+    return f'{get_word(words)}-{get_word(words)}'
 
 
 if __name__ == '__main__':

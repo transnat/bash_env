@@ -95,5 +95,6 @@ if [ -x $(which wal) ]; then                                        		# Enable w
 fi
 
 complete -C /usr/bin/terraform terraform                            		# Enable bash completion for terraform.
+complete -cf sudo
 
 getsecrets                                                          		# Get encrypted env vars.

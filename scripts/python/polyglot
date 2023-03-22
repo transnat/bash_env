@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         August 09, 2022
 # Description:
 '''
@@ -13,15 +12,17 @@ Requirements:
     * xmltodict
 '''
 
+__author__ = 'Casey Sparks'
+
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
-from dict2xml import dict2xml
 from json import dumps as jdumps, load
 from locale import setlocale, LC_ALL
-from logging import getLogger, DEBUG, INFO
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
-from sys import exit, stdout
+from sys import exit as sys_exit, stdout
 from typing import NoReturn
+from dict2xml import dict2xml
 from xmltodict import parse
 from yaml import safe_load, dump as ydump
 
@@ -37,13 +38,13 @@ def get_arguments() -> Namespace:
         description='Convert structured data between JSON and YAML.'
     )
     parser.add_argument(                                                    # Read data from file.
-        '-i', '--infile',
+        '--infile', '-i',
         dest='infile',
         type=Path,
         help='File to read from.'
     )
-    parser.add_argument(                                                    # Output data to file.
-        '-f', '--format',
+    parser.add_argument(                                                    # Specify an output format.
+        '--format', '-f',
         dest='format',
         choices=['ini', 'json', 'xml', 'yaml'],
         default='yaml',
@@ -51,26 +52,45 @@ def get_arguments() -> Namespace:
         help='Data format to output.'
     )
     parser.add_argument(                                                    # Output data to file.
-        '-w', '--write',
+        '--write', '-w',
         dest='write',
         action='store_true',
         help='Write file to disk instead of stdout.'
     )
     parser.add_argument(                                                    # Enable DEBUG logging.
-        '-v', '--verbose',
-        action='store_const',
-        dest='loglevel',
-        const=DEBUG,
-        default=INFO,
-        help='Set log level to DEBUG.'
+        '--verbose', '-v',
+        action='count',
+        dest='log_level',
+        default=0,                                                          # Default NOTSET.
+        help='Set log level (default INFO).'
     )
 
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    log.setLevel(args.loglevel)                                             # User-specified loglevel.
-    log.debug('Debug logging enabled.')
+    arguments.log_level = max(50 - arguments.log_level * 10, 10)
 
-    return args
+    return arguments
+
+
+def enable_logging(
+    log_level: int = 30,                                                    # Default INFO.
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level (10-50).
+    '''
+    formatter = Formatter(                                                  # Log header.
+          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
+          style='{'                                                         # Set f-string style formating.
+    )
+    handler = StreamHandler()                                               # Logging stream handler.
+    logger = getLogger()                                                    # Root logger class.
+
+    handler.setFormatter(formatter)                                         # Set log stream format.
+    logger.setLevel(log_level)                                              # User-specified log_level.
+    logger.addHandler(handler)                                              # Log to screen.
+
+    return logger
 
 
 def ingest_data(
@@ -86,7 +106,7 @@ def ingest_data(
 
     match file_suffix:
         case '.json':                                                       # JSON.
-            payload = load(open(infile, 'r'))
+            payload = load(open(infile, 'r', encoding='utf-8'))
 
         case '.ini':                                                        # INI.
             config = ConfigParser()
@@ -96,14 +116,14 @@ def ingest_data(
             payload = config._sections
 
         case '.html' | '.xml':                                              # HTML/XML.
-            payload = parse(open(infile).read())
+            payload = parse(open(infile, 'r', encoding='utf-8').read())
 
         case '.yaml' | '.yml':                                              # Default to YAML.
-            payload = safe_load(open(infile, 'r'))
+            payload = safe_load(open(infile, 'r', encoding='utf-8'))
 
         case _:
             print('Unsupported filetype. Please check the extension and try again.')
-            exit(1)
+            sys_exit(1)
 
     log.debug(
         f'Input: {infile}\n',
@@ -115,21 +135,25 @@ def ingest_data(
 
 
 def output_data(
-    args: Namespace,
-    payload: dict
+    payload: dict,
+    infile: Path,
+    out_format: str,
+    write: bool = False
         ) -> NoReturn:
     '''
     Formats and outputs a data object as JSON or YAML to a file or STDOUT.
-        :param args:        User-specified commandline arguments.
+        :param arguments:        User-specified commandline arguments.
         :param payload:     The Python dict to format and output.
     '''
-    outfile = open(                                                         # Write to file or stdout.
-        args.infile.with_suffix(f'.{args.format}'), 'w'
-    ) if args.write else stdout
+    if write:                                                     # Write to file or stdout.
+        outfile = open(infile.with_suffix(f'.{out_format}'), 'w', encoding='utf-8')
 
-    log.debug(f'Writing {args.format.upper()} output to {outfile.name}.')
+    else:
+        outfile = stdout
 
-    match args.format.lower():
+    log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
+
+    match out_format.lower():
         case 'ini':                                                         # INI.
             config = ConfigParser()                                         # Instantiate parser.
             nested_keys = False                                             # Validity checker.
@@ -149,7 +173,7 @@ def output_data(
                 ).lower().startswith('y'):
                     pass
                 else:                                                       # ACK and exit.
-                    exit(1)
+                    sys_exit(1)
 
             config._sections = payload
             config.write(outfile)
@@ -169,6 +193,5 @@ def output_data(
 
 if __name__ == '__main__':
     args = get_arguments()
-    payload = ingest_data(args.infile)
 
-    output_data(args, payload)
+    output_data(ingest_data(args.infile), args.infile, args.format, args.write)

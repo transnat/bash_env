@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         November 24, 2022
 # Description:
 '''
@@ -17,15 +16,16 @@ Requirements:
     * PyGnuPG
 '''
 
+__author__ = 'Casey Sparks'
+
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
-from gnupg import GPG
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, DEBUG, INFO
-from os import getenv, stat, chmod
-from pathlib import Path, PosixPath
+from logging import getLogger, Formatter, RootLogger, StreamHandler, DEBUG, INFO
+from pathlib import Path
+from typing import NoReturn
+from gnupg import GPG
 from psutil import process_iter, NoSuchProcess, AccessDenied, ZombieProcess
-from typing import NoReturn, Union
 
 log = getLogger()                                                           # Instantiate logger.
 
@@ -42,6 +42,7 @@ def get_arguments() -> Namespace:
     parser.add_argument(                                                    # Specify input files.
         '--inputs', '-i',
         dest='file',
+        type=Path,
         nargs='+',
         help='Specify files to encrypt.'
     )
@@ -61,50 +62,48 @@ def get_arguments() -> Namespace:
         help='Set log level to DEBUG.'
     )
 
-    return munge_arguments(parser.parse_args())
+    return parser.parse_args()
 
 
-def munge_arguments(args: Namespace) -> Namespace:
+def enable_logging(
+    log_level: int = 30                                                     # Default INFO.
+        ) -> RootLogger:
     '''
-    Resolve inputs to filepaths, set log level, and add default recipient.
-        :param args: User-specified cmdline arguments.
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level (10-50).
     '''
-    log.setLevel(args.loglevel)                                             # Set log level.
+    formatter = Formatter(                                                  # Log header.
+          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
+          style='{'                                                         # Set f-string style        formating.
+    )
+    handler = StreamHandler()                                               # Logging stream handler.
+    logger = getLogger()                                                    # Root logger class.
 
-    default_recipient = getenv('PGP_KEY_ID')                                # Env var for user's PGP key ID.
+    handler.setFormatter(formatter)                                         # Set log stream format.
+    logger.setLevel(log_level)                                              # User-specified log_level.
+    logger.addHandler(handler)                                              # Log to screen.
 
-    if default_recipient:                                                   # Add ourselves to the recipients.
-        log.debug(f'Adding {default_recipient} to recipients.')
-        args.recipients.append(getenv('GPG_KEY_ID'))
-
-    for file in args.file:                                                  # Change arg type from str -> Path.
-        log.debug(f'Munging {file}.')
-        args.file[args.file.index(file)] = Path(file).absolute()
-
-    log.debug(f'Arguments:\n{args}')
-
-    return args
+    return logger
 
 
 def prechecks_pass(
-    args: Namespace
+    arguments: Namespace
         ) -> bool:
     '''
     Check that inputs and processes are as expected.
-        :param args: User-specified cmdline arguments.
+        :param arguments: User-specified cmdline arguments.
     '''
     for gpg_proc in ['gpg-agent', 'gpgconf']:                               # Check that a GPG agent is running.
         for proc in process_iter():
             try:
                 if gpg_proc in proc.name():
                     log.debug(f'Found process {gpg_proc}.')
-                    pass
 
             except (NoSuchProcess, AccessDenied, ZombieProcess) as err:
                 log.exception(f'{gpg_proc} not running on host.')
                 raise err
 
-    for file in args.file:                                                  # Check that the input files exist.
+    for file in arguments.file:                                             # Check that the input files exist.
         try:
             file.resolve(strict=True)
             log.debug(f'Found file {file}.')
@@ -117,9 +116,9 @@ def prechecks_pass(
 
 
 def encrypt(
-    file: Union[Path, PosixPath],
+    file: Path,
     recipients: list
-        ) -> PosixPath:
+        ) -> Path:
     '''
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
@@ -132,28 +131,29 @@ def encrypt(
     )
     outfile = file.with_suffix('')                                          # Strip suffix, if exists.
 
-    log.debug(f'Encrypting file {file} to {outfile.name}')
+    log.debug(f'Encrypting file {file.name} to {outfile.name}')
 
-    try:
-        cipherfile = gpg.encrypt_file(                                      # Encrypt the file.
-            open(file, 'rb'),
-            recipients=recipients,
-            armor=True,                                                     # Output as ASCII text.
-            always_trust=True,
-            output=outfile
-        )
-        log.debug(f'{file} encrypted as {cipherfile}.')
+    with open(file, 'rb', encoding='utf-8') as infile:
+        try:
+            cipherfile = gpg.encrypt_file(                                  # Encrypt the file.
+                infile,
+                recipients=recipients,
+                armor=True,                                                 # Output as ASCII text.
+                always_trust=True,
+                output=outfile
+            )
+            log.debug(f'{file.name} encrypted as {cipherfile}.')
 
-    except BaseException as err:
-        log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
+        except BaseException as err:
+            log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
 
-        raise err
+            raise err
 
     return outfile
 
 
 def munge_cipherfile(
-    cipherfile: PosixPath
+    cipherfile: Path
         ) -> NoReturn:
     '''
     Add lines to cipherfile needed for shell interpretation.
@@ -169,16 +169,14 @@ def munge_cipherfile(
         '\n',
     ]
 
-    newlines.extend(open(cipherfile, 'r').readlines())                      # Ciphertext.
-    newlines.extend('\nEOF\n')                                              # Heredoc delimiter.
+    with open(cipherfile, 'r', encoding='utf-8') as prefile:
+        newlines.extend(prefile).readlines()                                # Ciphertext.
+        newlines.extend('\nEOF\n')                                          # Heredoc delimiter.
 
-    with open(cipherfile, 'w') as file:
-        file.writelines(newlines)                                           # Write header/ciphertext/footer to file.
+    with open(cipherfile, 'w', encoding='utf-8') as postfile:
+        postfile.writelines(newlines)                                       # Write header/ciphertext/footer to file.
 
-    chmod(                                                                  # Make file executable.
-        cipherfile,
-        stat(cipherfile).st_mode | 0o111                                    # Get the file mode.
-    )
+    cipherfile.chmod(775)
 
 
 if __name__ == '__main__':

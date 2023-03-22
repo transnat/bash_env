@@ -1,44 +1,50 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Date: DATE
+# Date: March 20, 2023
 # Description:
-'''The description of the script goes here.'''
+'''Run a simple local webserver.'''
 
 __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
-from datetime import datetime
 from locale import setlocale, LC_ALL
 from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from typing import Optional
+from http import server
+from socketserver import TCPServer
+from sys import exit as sysexit
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='The description of the script goes here.'
-    )
+    parser = ArgumentParser(description='Run a simple local webserver.')    # Instantiate argument parser.
 
+    parser.add_argument(
+        '--port', '-p',
+        dest='port',
+        type=int,
+        default=8000,
+        help='The port to run the webserver on. Default 8000'
+    )
     parser.add_argument(                                                    # Set path for the output log file.
         '--logfile',
         dest='log_file',
         type=Optional[Path],
-        default=Path(f'{Path(__file__).with_suffix("").name}-{datetime.now().strftime("%s")}.log'),
-        help='Absolute path to write the logfile to.'
+        default=None,
+        help='Path to write the logfile to.'
     )
     parser.add_argument(                                                    # Set logging verbosity.
         '--verbose', '-v',
         dest='log_level',
         action='count',
-        default=0,                                                          # Default NOTSET.
-        help='Set log level to DEBUG. Defaults to INFO.'
+        default=3,                                                          # Default NOTSET.
+        help='Set log level. Default DEBUG.'
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-
     arguments.log_level = max(50 - arguments.log_level * 10, 10)            # Log level should always be <=50,>=10.
 
     return arguments
@@ -76,3 +82,14 @@ def enable_logging(
 if __name__ == '__main__':
     args = get_arguments()
     log = enable_logging(args.log_level, args.log_file)
+    http_server = TCPServer(
+        ('', args.port),
+        server.SimpleHTTPRequestHandler
+    )
+
+    with http_server as httpd:
+        try:
+            log.info(f'HTTP Server Serving at port: {args.port}')
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            sysexit(1)

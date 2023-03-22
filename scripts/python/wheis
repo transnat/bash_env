@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         January 25, 2022
 # Description:
-'''
-whois for IP physical locations.
-'''
+'''whois for IP physical locations.'''
+
+__author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
 from logging import getLogger, StreamHandler, DEBUG, INFO
 from os import getenv
-from sys import argv, exit
-from requests import get
+from sys import exit as sys_exit
 from typing import NoReturn
+from requests import get
 
 # Enable logging, set locale, set args.
 log = getLogger()
@@ -26,6 +25,12 @@ def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
     parser = ArgumentParser(                                                # Instantiate argument parser.
         description='whois for physical IP locations.'
+    )
+    parser.add_argument(                                                    # Specify an IPstack API key.
+        'ip_addresses',
+        dest='ip_addresses',
+        type=list,
+        help='List of IP addresses to retrieve.'
     )
     parser.add_argument(                                                    # Specify an IPstack API key.
         '-k', '--api_key',
@@ -43,11 +48,11 @@ def get_arguments() -> Namespace:
         help='Set log level to DEBUG.'
     )
 
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    log.setLevel(args.loglevel)
+    log.setLevel(arguments.loglevel)
 
-    return parser.parse_args()
+    return arguments
 
 
 def get_location_table(
@@ -62,12 +67,13 @@ def get_location_table(
     if api_key is None:
         log.critical('No API key.')
 
-        exit(1)
+        sys_exit(1)
 
     else:
         ip_info = get(
-            f'http://api.ipstack.com/{ip}',
-            params={'access_key': api_key}
+            f'http://api.ipstack.com/{ip_address}',
+            params={'access_key': api_key},
+            timeout=2
         ).json()
 
         location_table = [
@@ -94,7 +100,9 @@ def fprint(
 
 
 if __name__ == '__main__':
-    for ip in argv[1:]:
+    args = get_arguments()
+
+    for ip in args.ip_addresses:
         fprint(get_location_table(
             getenv('IPSTACK_API_KEY'),
             ip

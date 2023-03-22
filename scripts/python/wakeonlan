@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Author:       Casey Sparks
 # Date:         May 03, 2022
 # Description:
-'''
-Send a wake-on-LAN packet to the specified IP addresses.
-'''
+'''Send a wake-on-LAN packet to the specified IP addresses.'''
+
+__author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
 from logging import getLogger, StreamHandler, DEBUG, INFO
 from pathlib import Path
 from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
-from sys import stderr
+from sys import exit as sys_exit, stderr
 from pprint import pp
 from subprocess import run
 from typing import NoReturn, Tuple
@@ -35,34 +34,34 @@ def get_arguments() -> Namespace:
     parser.add_argument(                                                    # The LAN interface.
         '--interface', '-i',
         dest='interface',
-        nargs=1,
+        narguments=1,
         default=Network.get_default_interface(),
         help='Specify the broadcast IP address.'
     )
     parser.add_argument(                                                    # The broadcast IP address.
         '--broadcast', '-b',
         dest='broadcast',
-        nargs=1,
+        narguments=1,
         default='255.255.255.255',
         help='Specify the broadcast IP address.'
     )
     parser.add_argument(                                                    # The port to use.
         '--port', '-p',
         dest='port',
-        nargs=1,
+        narguments=1,
         default=9,
         help='Specify the port to use.'
     )
     parser.add_argument(                                                    # STDIN-specified MAC addresses.
         '--macs', '-M',
         dest='macs',
-        nargs='+',
+        narguments='+',
         help='Specify a list of MAC addresses to send WoL packets to.'
     )
     parser.add_argument(                                                    # STDIN-specified hosts.
         '--hosts', '-H',
         dest='hosts',
-        nargs='+',
+        narguments='+',
         help='Specify a list of known hosts to send WoL packets to.'
     )
     parser.add_argument(                                                    # Get application info.
@@ -79,34 +78,34 @@ def get_arguments() -> Namespace:
         help='Set log level to DEBUG.'
     )
 
-    args = parser.parse_args()
+    arguments = parser.parse_args()
 
-    if args.info:                                                           # Print application info and exit.
-        print_info(args)
-        exit()
+    if arguments.info:                                                           # Print application info and exit.
+        print_info(arguments)
+        sys_exit()
 
-    if args.loglevel:                                                       # Set verbose logging.
-        log.setLevel(args.loglevel)
+    if arguments.loglevel:                                                       # Set verbose logging.
+        log.setLevel(arguments.loglevel)
 
-    if not args.hosts and not args.macs:
+    if not arguments.hosts and not arguments.macs:
         parser.print_help(stderr)
-        exit()
+        sys_exit()
 
-    return args
+    return arguments
 
 
 def print_info(
-    args: Namespace
+    arguments: Namespace
         ) -> NoReturn:
     '''
     Print known hosts and configuration.
-        :param args: User-specified commandline arguments.
+        :param arguments: User-specified commandline arguments.
     '''
-    known_hosts, hostsfile = file_checks()
+    known_hosts = file_checks()
     iface_table = [                                                         # Interface information.
-        ['Interface', args.interface],
-        ['Broadcast', args.broadcast],
-        ['Port', args.port]
+        ['Interface', arguments.interface],
+        ['Broadcast', arguments.broadcast],
+        ['Port', arguments.port]
     ]
     known_hosts = [[k, v] for k, v in known_hosts.items()]                  # Known hosts information.
 
@@ -128,7 +127,7 @@ def file_checks() -> Tuple[dict, Path]:
     '''Check for config directory/file, and create them if they do not exist.'''
     config_dir = Path(Path.home() / '.config/wakeonlan')                    # Directory for config files.
     hostsfile = config_dir / 'known_hosts.yml'                              # File containing known host mappings.
-    known_hosts = list()
+    known_hosts = []
 
     if not config_dir.exists():                                             # Create config dir.
         log.debug(f'Creating config directory at {config_dir}.')
@@ -142,28 +141,30 @@ def file_checks() -> Tuple[dict, Path]:
         log.debug(f'Creating config file at {hostsfile}.')
         hostsfile.touch(mode=0o644, exist_ok=True)
 
-    known_hosts = safe_load(open(hostsfile, 'rb'))                          # Read hosts file into var.
+    with safe_load(open(hostsfile, 'rb', encoding='utf-8')) as file:        # Read hosts file into var.
+        known_hosts = file.read()
 
-    return known_hosts, hostsfile
+    return known_hosts
 
 
 class Network():
+    '''Static methods for network manipulation.'''
     @staticmethod
     def get_mac_addresses(
-        args: Namespace
+        arguments: Namespace
             ) -> list:
         '''
         Grok stdin and config files for the hosts to wake.
-            :param args: User-provided cmdline arguments.
+            :param arguments: User-provided cmdline arguments.
         '''
         known_hosts, hostsfile = file_checks()                              # Get known hosts from config file.
-        mac_addresses = list()
+        mac_addresses = []
 
-        if args.macs:                                                       # Set hosts based on MACs from STDIN.
-            mac_addresses.append(args.macs)
+        if arguments.macs:                                                  # Set hosts based on MACs from STDIN.
+            mac_addresses.append(arguments.macs)
 
-        if args.hosts:                                                      # Set hosts based on hostnames from STDIN.
-            for host in args.hosts:
+        if arguments.hosts:                                                 # Set hosts based on hostnames from STDIN.
+            for host in arguments.hosts:
                 try:
                     mac_addresses.append(known_hosts[host])
 
@@ -179,7 +180,8 @@ class Network():
         '''Return the default network interface.'''
         interface = run(                                                    # Run subprocess to capture interface.
             ['ip', 'route', 'show'],
-            capture_output=True
+            capture_output=True,
+            check=True
         ).stdout.decode('utf-8').split()[4]
 
         return interface

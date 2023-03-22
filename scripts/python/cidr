@@ -3,6 +3,7 @@
 # Date:         March 10, 2023
 # Description:
 '''Print a network table when given a subnet.'''
+
 __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace

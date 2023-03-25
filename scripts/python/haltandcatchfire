@@ -9,8 +9,9 @@ Should be cron on sensitive systems.
 
 __author__ = 'Casey Sparks'
 
+from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, INFO
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from os import getlogin
 from pathlib import Path
 from shutil import rmtree
@@ -19,59 +20,85 @@ from typing import NoReturn
 from requests import get
 
 
-log = getLogger()                                                           # Instantiate logger.
-
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
-log.addHandler(StreamHandler())                                             # Log to screen.
-log.setLevel(INFO)                                                          # Set log level.
+
+
+def get_arguments() -> Namespace:
+    '''Get cmdline arguments.'''
+    parser = ArgumentParser(                                                # Instantiate argument parser.
+        description='The description of the script goes here.'
+    )
+
+    parser.add_argument(                                                    # Run in debug mode.
+        '--debug',
+        dest='debug',
+        action='store_true',
+        help='Run application in debug mode without performing any action.'
+    )
+    parser.add_argument(                                                    # Set logging verbosity.
+        '--verbose', '-v',
+        dest='log_level',
+        action='count',
+        default=3,
+        help='Set log level to DEBUG. Defaults to INFO.'
+    )
+
+    arguments = parser.parse_args()                                         # Parse arguments.
+
+    arguments.log_level = max(50 - arguments.log_level * 10, 10)            # Log level should always be <=50,>=10.
+
+    return arguments
+
+
+def enable_logging(
+    log_level: int = 30                                                     # Default INFO.
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level (10-50).
+    '''
+    formatter = Formatter(                                                  # Log header.
+          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
+          style='{'                                                         # Set f-string style formating.
+    )
+    handler = StreamHandler()                                               # Logging stream handler.
+    logger = getLogger()                                                    # Root logger class.
+
+    handler.setFormatter(formatter)                                         # Set log stream format.
+    logger.setLevel(log_level)                                              # User-specified log_level.
+    logger.addHandler(handler)                                              # Log to screen.
+
+    return logger
 
 
 def remote_flag() -> bool:
     '''Checks remote for hostname match and returns true if true.'''
-    try:
-        flag = eval(get(
-            f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}',
-            timeout=5
-        ).text.capitalize())
+    url = f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}'
+    host_flag = get(url, timeout=5).text.lower() == 'true'
 
-    except BaseException:
-        flag = False
+    log.debug(f'URL: {url}')
+    log.debug(f'Flag: {host_flag}')
 
-    log.debug(flag)
-
-    return flag
+    return host_flag
 
 
-def destroy_user_data() -> NoReturn:
+def destroy_user_data(
+    debug_mode: bool = True
+        ) -> NoReturn:
     '''Wipe sensitive user data from disk.'''
     dir_list = [
-        Path().home() / sub_dir
-        for sub_dir
-        in [
-            'Documents',
-            'Downloads',
-            '.1password',
-            '.aws',
-            '.azure',
-            '.azure',
-            '.config',
-            '.docker',
-            '.env',
-            '.google',
-            '.kube',
-            '.ssh',
-            '.terraform.d',
-            '.ykman'
-        ]
+        Path.home(),
+        Path(f'/var/spool/cron/{getlogin()}')
     ]
 
-    dir_list.extend([
-        Path('/etc/wireguard'),
-        Path(f'/var/spool/cron/{getlogin()}')
-    ])
+    log.debug(f'Directory list: {dir_list}')
 
     for directory in dir_list:
-        try:
+        if debug_mode:                                                      # Log removal ONLY.
+            log.debug(f'Simulating removal of {directory}')
+            continue
+
+        try:                                                                # Remove data.
             rmtree(directory)
             log.debug(f'Removed {directory}.')
 
@@ -80,5 +107,9 @@ def destroy_user_data() -> NoReturn:
 
 
 if __name__ == '__main__':
-    if remote_flag():
-        destroy_user_data()
+    args = get_arguments()
+    log = enable_logging(args.log_level)
+    FLAG = any([args.debug, remote_flag()])                                 # Get remote flag or debug mode.
+
+    if FLAG:
+        destroy_user_data(args.debug)

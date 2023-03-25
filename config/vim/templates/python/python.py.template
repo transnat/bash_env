@@ -33,13 +33,13 @@ def get_arguments() -> Namespace:
         '--verbose', '-v',
         dest='log_level',
         action='count',
-        default=0,                                                          # Default NOTSET.
-        help='Set log level to DEBUG. Defaults to INFO.'
+        default=0,
+        help='Increase logging verbosity. Default NOTSET.'
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
 
-    arguments.log_level = max(50 - arguments.log_level * 10, 10)            # Log level should always be <=50,>=10.
+    arguments.log_level = max(50 - arguments.log_level * 10, 0)             # 50 > args.log_level > 0.
 
     return arguments
 

@@ -6,6 +6,8 @@ if [ -n "${BASH_VERSION}" ]; then
 fi
 
 
+PATH="/usr/local/bin:${PATH}"
+
 # PATH directories below listed from lowest to highest priority.
 ## Set PATH so it includes script directories.
 PATH="${HOME}/.env/scripts/bash:${PATH}"                    # Bash scripts.

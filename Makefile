@@ -1,63 +1,53 @@
-all: env git gpg psql python ssh vim
+.PHONY: all
+.PHONY: test
+.PHONY: clean
 
 # Make variables.
-CONFIG_DIR:= "${HOME}/.env/config"
+CONF_DIR := "${HOME}/.env/config"
+GPG_DIR := "${HOME}/.gnupg"
+SCRIPTS_DIR := "${HOME}/.env/scripts"
+SSH_DIR := "${HOME}/.ssh"
 
-env:
-	@chown -R $(id -u):$(id -g) ${PWD};
-	rm -rf ${HOME}/.profile 												\
-		${HOME}/.bashrc														\
-		${HOME}/.bash_logout												\
-		${HOME}/.bash_profile												\
-		${HOME}/.screenrc													\
-				2> /dev/null;												\
-	ln -s ${CONFIG_DIR}/bash/bash_logout	${HOME}/.bash_logout;			\
-	ln -s ${CONFIG_DIR}/bash/bash_profile	${HOME}/.bash_profile;			\
-	ln -s ${CONFIG_DIR}/bash/bashrc			${HOME}/.bashrc;				\
-	ln -s ${CONFIG_DIR}/profile				${HOME}/.profile;				\
-	ln -s ${CONFIG_DIR}/screen/screenlayout ${HOME}/.screenlayout;			\
-	ln -s ${CONFIG_DIR}/screen/screenrc		${HOME}/.screenrc
+screen:
+	@rm -rf ${HOME}/.screenrc 2>&1 /dev/null 							# Remove default config.
+	@ln -s ${CONF_DIR}/screen/screenrc		${HOME}/.screenrc
+
+bash:
+	@rm -rf ${HOME}/.{bash*,profile} 2>&1 /dev/null						# Remove default configs.
+	@ln -s ${CONF_DIR}/bash/bash_logout		${HOME}/.bash_logout		# Symlink new configs.
+	@ln -s ${CONF_DIR}/bash/bash_profile	${HOME}/.bash_profile
+	@ln -s ${CONF_DIR}/bash/bashrc			${HOME}/.bashrc
+	@ln -s ${CONF_DIR}/profile				${HOME}/.profile
 
 
 git:
-	@rm -f ${HOME}/.gitconfig												\
-		2> /dev/null;														\
-	ln -s ${CONFIG_DIR}/git/gitconfig		${HOME}/.gitconfig
+	@rm -f ${HOME}/.gitconfig 2> /dev/null							\	# Remove default config.
+	@ln -s ${CONF_DIR}/git/gitconfig		${HOME}/.gitconfig			# Symlink new config.
 
 
 gpg:
-	@mv ${HOME}/.gnupg						${HOME}/.gnupg.bkp				\
-		2> /dev/null;														\
-	cp -r ${CONFIG_DIR}/gnupg				${HOME}/.gnupg 					\
-		&& chmod 0700 ${HOME}/.gnupg 										\
-		&& chown -R $(id -u):$(id -g)		${HOME}/.gnupg;					\
-	curl https://keys.caseyspar.kz/public.asc							|	\
-		gpg --import														\
-			2> /dev/null
-
-
-psql:
-	@ln -s ${CONFIG_DIR}/psql/psqlrc 		${HOME}/.psqlrc
+	@rm -rf ${GPG_DIR} 2> /dev/null										# Remove default config.
+	@cp -r ${CONF_DIR}/gnupg				${GPG_DIR} 					# Copy in new config.
+	@chmod 0700 ${HOME}/.gnupg 											# Own configs.
+	@chown -R $(id -u):$(id -g)				${GPG_DIR}
+	@curl https://keys.caseyspar.kz/public.asc | gpg --import		\	# Import my identity.
 
 
 python:
-	@python -m ensurepip --upgrade 											\
-		&& pip install 														\
-			--user															\
-			-r ${CONFIG_DIR}/python/requirements.txt
+	@python -m ensurepip --upgrade 										# Install pip.
+	@pip install --user	--no-cache-dir								\	# Install python requirements.
+		-r ${SCRIPTS_DIR}/python/requirements.txt
 
 
 ssh:
-	@curl https://keys.caseyspar.kz/authorized_keys						|	\
-		tee ${HOME}/.ssh/authorized_keys ${HOME}/.ssh/smartcard.pub			\
-		&& ssh-add ${HOME}/smartcard.pub 2> /dev/null
-	
-
+	@mkdir -m 700 ${SSH_DIR} 2> /dev/null								# Make config dir.
+	@wget -q https://keys.caseyspar.kz/authorized_keys				\	# Import my identity.
+		-o ${SSH_DIR}/smartcard.pub			
+	@chmod 600 ${SSH_DIR}/*
+	@ssh-add ${SSH_DIR}/smartcard.pub 2> /dev/null						# Add ID to agent.
 
 vim:
-	@mv ${HOME}/.vimrc						${HOME}/.vimrc.bkp				\
-		2> /dev/null;														\
-	mv ${HOME}/.vim							${HOME}/.vim.bkp 				\
-		2> /dev/null;														\
-	ln -s ${CONFIG_DIR}/vim					${HOME}/.vim;					\
-	ln -s ${CONFIG_DIR}/vim/vimrc			${HOME}/.vimrc
+	@rm -rf ${HOME}/.vimrc 2> /dev/null									# Remove default config.
+	@rm -rf ${HOME}/.vim 2> /dev/null									# Remove default config dir.
+	@ln -s ${CONF_DIR}/vim/vimrc			${HOME}/.vimrc				# Symlink new config.
+	@ln -s ${CONF_DIR}/vim					${HOME}/.vim				# Symlink new config dir.

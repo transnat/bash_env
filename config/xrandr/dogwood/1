@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-xrandr                      \
+nohup xrandr                \
     --output eDP-1          \
         --primary           \
         --mode 1920x1200    \
@@ -24,4 +24,4 @@ xrandr                      \
     --output DP-3-2         \
         --off               \
     --output DP-3-3         \
-        --off               \
+        --off

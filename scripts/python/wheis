@@ -8,10 +8,8 @@ __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, DEBUG, INFO
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from os import getenv
-from sys import exit as sys_exit
-from typing import NoReturn
 from requests import get
 
 # Enable logging, set locale, set args.
@@ -28,8 +26,8 @@ def get_arguments() -> Namespace:
     )
     parser.add_argument(                                                    # Specify an IPstack API key.
         'ip_addresses',
-        dest='ip_addresses',
-        type=list,
+        type=str,
+        nargs='+',
         help='List of IP addresses to retrieve.'
     )
     parser.add_argument(                                                    # Specify an IPstack API key.
@@ -41,18 +39,39 @@ def get_arguments() -> Namespace:
     )
     parser.add_argument(                                                    # Enable DEBUG logging.
         '-v', '--verbose',
-        action='store_const',
-        dest='loglevel',
-        const=DEBUG,
-        default=INFO,
-        help='Set log level to DEBUG.'
+        action='count',
+        dest='log_level',
+        default=0,
+        help='Set log level (default CRIT).'
     )
 
     arguments = parser.parse_args()
 
-    log.setLevel(arguments.loglevel)
+    arguments.log_level = max(50 - arguments.log_level * 10, 10)
+
 
     return arguments
+
+
+def enable_logging(
+    log_level: int = 30,                                                    # Default INFO.
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level (10-50).
+    '''
+    formatter = Formatter(                                                  # Log header.
+          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
+          style='{'                                                         # Set f-string style formating.
+    )
+    handler = StreamHandler()                                               # Logging stream handler.
+    logger = getLogger()                                                    # Root logger class.
+
+    handler.setFormatter(formatter)                                         # Set log stream format.
+    logger.setLevel(log_level)                                              # User-specified log_level.
+    logger.addHandler(handler)                                              # Log to screen.
+
+    return logger
 
 
 def get_location_table(
@@ -64,19 +83,17 @@ def get_location_table(
         :param api_key:     The IPStack API key for the request.
         :param ip_address:  The IP address to get location info for.
     '''
-    if api_key is None:
-        log.critical('No API key.')
+    ip_info = get(
+        f'http://api.ipstack.com/{ip_address}',
+        params={'access_key': api_key},
+        timeout=2
+    ).json()
 
-        sys_exit(1)
+    if ip_info['success'] is False:
+        log.critical(f"API error: {ip_info['error']['type']}")
 
-    else:
-        ip_info = get(
-            f'http://api.ipstack.com/{ip_address}',
-            params={'access_key': api_key},
-            timeout=2
-        ).json()
-
-        location_table = [
+    try:
+        table = [
             ['IP:', ip_info["ip"]],
             ['City:', ip_info["city"]],
             ['Region:', ip_info["region_name"]],
@@ -85,25 +102,15 @@ def get_location_table(
             ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
         ]
 
-    return location_table
+    except KeyError as err:
+        raise err
 
-
-def fprint(
-    location_table: list
-        ) -> NoReturn:
-    '''
-    Formats and prints a list of lists as a table.
-        :param table: The location to format/print.
-    '''
-    for row in location_table:
-        print('{: <16} {: >0}'.format(*row))
+    return table
 
 
 if __name__ == '__main__':
     args = get_arguments()
 
     for ip in args.ip_addresses:
-        fprint(get_location_table(
-            getenv('IPSTACK_API_KEY'),
-            ip
-        ))
+        for row in get_location_table(getenv('IPSTACK_API_KEY'), ip):
+            print(f'{row[0]: <16} {row[1]: >0}')

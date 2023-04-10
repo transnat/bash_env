@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 # Date: DATE
 # Description:
-'''DESCRIPTION'''
+'''Universal setup.py. Just change DIRECTORY on line 13 and add requirements under line 36.'''
 
 __author__ = 'Casey Sparks'
 

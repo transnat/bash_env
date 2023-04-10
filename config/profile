@@ -10,6 +10,7 @@ PATH="/usr/local/bin:${PATH}"
 
 # PATH directories below listed from lowest to highest priority.
 ## Set PATH so it includes script directories.
+PATH="${HOME}/.local/lib/go"                                # Go install path.
 PATH="${HOME}/.env/scripts/bash:${PATH}"                    # Bash scripts.
 PATH="${HOME}/.env/scripts/python:${PATH}"                  # Python3 scripts.
 PATH="${HOME}/.env/scripts/pgp:${PATH}"                     # PGP-encrypted scripts.

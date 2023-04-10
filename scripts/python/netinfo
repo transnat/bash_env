@@ -8,11 +8,11 @@ __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from fcntl import ioctl
-from logging import getLogger, Formatter, RootLogger, StreamHandler
 from locale import setlocale, LC_ALL
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from socket import inet_ntoa, socket, SOCK_DGRAM, AF_INET
 from struct import pack
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, NoReturn
 from requests import get
 
 setlocale(LC_ALL, 'en_US.UTF-8')
@@ -20,6 +20,26 @@ setlocale(LC_ALL, 'en_US.UTF-8')
 
 def get_arguments() -> Namespace:
     '''Get cmdline arguments.'''
+    def _enable_log(
+        log_level: int = 30,                                                    # Default INFO.
+            ) -> RootLogger:
+        '''
+        Enable logging and handle outputs.
+            :param log_level:   User-specified log level (10-50).
+            :param log_file:    User-specified path to write log file.
+        '''
+        handler = StreamHandler()                                               # Logging stream handler.
+        logger = getLogger(__name__)                                            # Root logger class.
+
+        handler.setFormatter(Formatter(                                         # Set log stream format.
+              '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
+              style='{'                                                         # Set f-string style formating.
+        ))
+        logger.setLevel(log_level)                                              # User-specified log_level.
+        logger.addHandler(handler)                                              # Log to screen.
+
+        return logger
+
     parser = ArgumentParser(
         description='Display information about a network interface.'
     )
@@ -27,7 +47,6 @@ def get_arguments() -> Namespace:
     parser.add_argument(                                                    # Interface name.
         '--interface', '-i',
         dest='interface',
-        default=get_wan_interface(),
         type=str,
         help='Specify the network interface (like "eth0").'
     )
@@ -40,30 +59,8 @@ def get_arguments() -> Namespace:
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = max(50 - arguments.log_level * 10, 0)             # 50 > log_level > 0.
 
-    return arguments
-
-
-def enable_logging(
-    log_level: int = 30,                                                    # Default INFO.
-        ) -> RootLogger:
-    '''
-    Enable logging and handle outputs.
-        :param log_level:   User-specified log level (10-50).
-        :param log_file:    User-specified path to write log file.
-    '''
-    handler = StreamHandler()                                               # Logging stream handler.
-    logger = getLogger(__name__)                                            # Root logger class.
-
-    handler.setFormatter(Formatter(                                         # Set log stream format.
-          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
-          style='{'                                                         # Set f-string style formating.
-    ))
-    logger.setLevel(log_level)                                              # User-specified log_level.
-    logger.addHandler(handler)                                              # Log to screen.
-
-    return logger
+    return arguments, _enable_log(max(50 - arguments.log_level * 10, 0))    # Get args; enable logging.
 
 
 def get_wan_interface() -> str:
@@ -75,18 +72,20 @@ def get_wan_interface() -> str:
         if route[1] == '00000000'
     ][0][0]
 
-    log.debug(f'Interface not specified. Using {gw_iface_name}.')
+    log.debug(f'Gateway interface: {gw_iface_name}')
 
     return gw_iface_name
 
 
 def all_routes() -> Iterator[list]:
     '''Iterator returning all routes read from '/proc/net/route'.'''
-    log.debug('Reading routes from /proc/net/route.')
-
     with open('/proc/net/route', 'r', encoding='utf-8') as route_file:
         for line in route_file.readlines():                                 # Each line is a route.
-            yield line.strip().split()
+            route = line.strip().split()
+
+            log.debug(f'Route: {route}')
+
+            yield route
 
 
 def public_ip() -> str:
@@ -104,7 +103,6 @@ def convert_from_hex(
     '''
     Convert hexadecimal data to usable octets.
         :param hex_data:    Hex data to convert to octet notation.
-        :return octet:      Octet notation derived from hex data.
     '''
     log.debug(f'Converting hex data ({hex_data}) to octet.')
 
@@ -117,7 +115,7 @@ def convert_from_hex(
 
 def interface_info(
     iface: str
-        ) -> Tuple[str, str]:
+        ) -> Tuple[str, str, str]:
     '''
     Get the default gateway.
         :param iface:           The network interface to query.
@@ -153,21 +151,36 @@ def interface_info(
     return iface_ip, iface_gateway, iface_netmask
 
 
-if __name__ == '__main__':
-    args = get_arguments()
-    log = enable_logging(args.log_level)
-
-    log.debug(f'Arguments: {args}')
-
-    ip_address, gateway, netmask = interface_info(args.interface)
-    network_table = [                                                       # Instantiate netinfo array.
-        ('Interface:', args.interface),
-        ('Network Information', ''),
-        ('============================', ''),
-        ('Public IP:', public_ip()),
-        ('Local IP:', ip_address),
-        ('Gateway:', gateway),
-        ('Netmask:', netmask)
+def print_table(
+    iface: str
+        ) -> NoReturn:
+    '''
+    Create and print a table.
+        :param iface: The network interface to tabulate.
+    '''
+    head_foot = 34 * '-'                                                    # For table formatting.
+    ip_address, gateway, netmask = interface_info(iface)                    # Important data.
+    table = [                                                               # Instantiate network info array.
+        [head_foot, ''],
+        [iface, ''],
+        [head_foot, ''],
+        ['Interface', iface],
+        ['Public IP', public_ip()],
+        ['Local IP', ip_address],
+        ['Gateway', gateway],
+        ['Netmask', netmask],
+        [head_foot, '']
     ]
 
-    [print(f'{row[0]: <12} {row[1]: >15}') for row in network_table]        # Print formatted array.
+    for heading, data in table:                                             # Print and format table.
+        print(f'{heading:<18}{data:>16}')
+
+
+if __name__ == '__main__':
+    args, log = get_arguments()
+
+    if args.interface is None:
+        args.interface = get_wan_interface()
+
+    log.debug(f'Arguments: {args}')
+    print_table(args.interface)

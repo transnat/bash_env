@@ -67,6 +67,7 @@ def get_arguments() -> Namespace:
 
     return arguments
 
+
 def enable_logging(
     log_level: int = 30                                                     # Default INFO.
         ) -> RootLogger:

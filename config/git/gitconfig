@@ -10,8 +10,8 @@
     prune = true
     pruneTags = true
 [pull]
-    rebase = true
 	default = current
+    rebase = true
 [commit]
     gpgsign = true
 [push]

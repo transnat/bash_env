@@ -7,7 +7,6 @@
 __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
-from datetime import datetime
 from locale import setlocale, LC_ALL
 from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
@@ -15,18 +14,28 @@ from typing import Optional
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
+ARGS = get_arguments()                                                      # Get commandline arguments.
+LOG = enable_log(ARGS.log_level, ARGS.log_file)                             # Instantiate logger.
+
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
+    '''Get cmdline arguments and enable logging.'''
     parser = ArgumentParser(                                                # Instantiate argument parser.
         description='The description of the script goes here.'
     )
 
+    parser.add_argument(                                                    # Set log level.
+        '--verbose', '-v',
+        dest='log_level',
+        action='count',
+        default=0,
+        help='Increase logging verbosity. Default CRITICAL.'
+    )
     parser.add_argument(                                                    # Set path for the output log file.
-        '--logfile',
+        '--logfile', '-l',
         dest='log_file',
-        type=Optional[Path],
-        default=Path(f'{Path(__file__).with_suffix("").name}-{datetime.now().strftime("%s")}.log'),
+        type=Path,
+        default=None,
         help='Absolute path to write the logfile to.'
     )
     parser.add_argument(                                                    # Set logging verbosity.
@@ -38,13 +47,15 @@ def get_arguments() -> Namespace:
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-
-    arguments.log_level = max(50 - arguments.log_level * 10, 0)             # 50 > args.log_level > 0.
+    arguments.log_level = max(                                              # Set log level.
+        50 - arguments.log_level * 10,                                      # Max CRITICAL.
+        10                                                                  # Not less than DEBUG.
+    )
 
     return arguments
 
 
-def enable_logging(
+def enable_log(
     log_level: int = 30,                                                    # Default INFO.
     log_file_path: Optional[Path] = None
         ) -> RootLogger:
@@ -72,7 +83,5 @@ def enable_logging(
 
     return log_root
 
-
 if __name__ == '__main__':
-    args = get_arguments()
-    log = enable_logging(args.log_level, args.log_file)
+    pass

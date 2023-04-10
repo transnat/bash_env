@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Date:         x
+# Date: DATE
 # Description:
 '''Universal __init__.py. No need to change anything.'''
-
-__author__ = 'Casey Sparks'
 
 from types import ModuleType
 from . import *
@@ -21,7 +19,7 @@ from .__version__ import (
 __all__ = [
     key
     for key
-    in globals()
-    if isinstance(globals()[key], ModuleType)
-    and not key.startswith('_')
+    in globals()                                                            # Globals.
+    if isinstance(globals()[key], ModuleType)                               # Global is module.
+    and not key.startswith('_')                                             # Global is not built-in.
 ]

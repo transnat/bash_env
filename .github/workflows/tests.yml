@@ -1,0 +1,50 @@
+name: Validate Python code
+
+on:  
+    push:
+        branches:
+        - main
+        - WIP
+
+    pull_request:
+        branches:
+        - main
+
+jobs:
+    lint_codebase:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                python-version: ["3.10"]
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v3
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Install dependencies
+              run: |
+                sudo apt update                                         \
+                && sudo apt install shellcheck                          \
+                && python -m pip install --no-cache-dir                 \
+                    pylint                                              \
+                    -r requirements/python.txt
+
+            - name: Lint Bash scripts with Shellcheck
+              run: |
+                shellcheck                                              \
+                    scripts/bash/*
+
+            - name: Lint Python scripts with PyLint
+              run: |
+                pylint                                                  \
+                    --max-line-length=120                               \
+                    --disable R0801,R1732,W0212,W1203                   \
+                    scripts/python/*
+                # R0801: similar-lines
+                # R1732: consider-using-with
+                # W0212: protected-acess
+                # W1203: logging-fstring-interpolation

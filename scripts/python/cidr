@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Date:         March 10, 2023
+# Date: March 10, 2023
 # Description:
 '''Print a network table when given a subnet.'''
 
 __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
-from ipaddress import ip_network
+from ipaddress import ip_network, IPv6Network
 from locale import setlocale, LC_ALL
-from tabulate import tabulate
+from typing import NoReturn
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
+    '''
+    Get cmdline arguments.
+        :return:    User-provided commandline arguments.
+    '''
     parser = ArgumentParser(                                                # Instantiate argument parser.
         description='Parse IPv4 and IPv6 addresses between CIDR and netmask.'
     )
@@ -39,21 +42,53 @@ def get_arguments() -> Namespace:
     return arguments
 
 
-if __name__ == '__main__':
-    args = get_arguments()
-    subnet = ip_network(args.network, strict=False)
-    host_addr = args.network.split('/')[0]
-    table = [                                                               # Subnet info table.
-        ['Host Address', host_addr if host_addr[-1] != '0' else 'N/A'],     # Only set if host bits set.
-        ['Network Address', subnet.network_address],
-        ['Broadcast_address', subnet.broadcast_address],
-        ['Hostmask', subnet.hostmask],
-        ['Netmask', subnet.netmask],
-        ['CIDR Netmask', f'/{subnet.prefixlen}'],
+def print_table(
+    network: str
+        ) -> NoReturn:
+    '''
+    Create and print a network table.
+        :param network: The network string to print (like 10.10.10.10/24).
+    '''
+    if network.split('/')[0].endswith('.0'):
+        host_addr = 'None'
+    else:
+        host_addr = network.split('/')[0]
+
+    subnet = ip_network(network, strict=False)
+    div = 34 * '='                                                          # Div length for IPv4 addresses.
+    r_pad = 16                                                              # Right padding for IPv4 addresses.
+    netmask = 'Netmask'
+
+    if isinstance(subnet, IPv6Network):                                     # Increase div, padding for IPv6 addresses.
+        div += 24 * '='
+        r_pad += 24
+        netmask = 'Prefix'                                                  # IPv6 terminology.
+
+    table = [
+        [div, ''],
+        [network, ''],
+        [div.replace('=', '-'), ''],
+        ['Host Address', f'{host_addr}'],
+        ['Network Address', f'{subnet.network_address}'],
+        ['Broadcast Address', f'{subnet.broadcast_address}'],
+        ['Hostmask', f'{subnet.hostmask}'],
+        [netmask, f'{subnet.netmask}'],
+        [f'CIDR {netmask}', f'/{subnet.prefixlen}'],
         ['Version', f'IPv{subnet.version}'],
-        ['Private', subnet.is_private],
-        ['Reserved', subnet.is_reserved],
-        ['Total Addresses', f'{subnet.num_addresses:,}']
+        ['Private', f'{subnet.is_private}'],
+        ['Reserved', f'{subnet.is_reserved}'],
+        ['First IP', f'{subnet[0]}'],
+        ['Last IP', f'{subnet[-1]}'],
+        [div.replace('=', '-'), ''],
+        ['Total Addresses', f'{subnet.num_addresses:,}'],
+        [div, '']
     ]
 
-    print(tabulate(table, ['Network', args.network], 'fancy_grid'))
+    for heading, data in table:                                             # Print table.
+        print(f'{heading:<18}{data:>{r_pad}}')
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    print_table(args.network)

@@ -6,13 +6,15 @@
 Convert structured data between INI, HTML, JSON, YAML, XML.
 
 Requirements:
-    * dict2xml
-    * pyjson
-    * pyyaml
-    * xmltodict
 '''
 
 __author__ = 'Casey Sparks'
+__install_requires__ = [
+    'dict2xml>=1.7.2,<2.0.0',
+    'pyjson',
+    'pyyaml',
+    'xmltodict'
+]
 
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
@@ -21,7 +23,7 @@ from locale import setlocale, LC_ALL
 from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from sys import exit as sys_exit, stdout
-from typing import NoReturn
+from typing import NoReturn, Tuple
 from dict2xml import dict2xml
 from xmltodict import parse
 from yaml import safe_load, dump as ydump
@@ -29,14 +31,39 @@ from yaml import safe_load, dump as ydump
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
-log = getLogger()                                                           # Log to screen.
+ARGS, LOG = get_arguments()                                                 # Get arguments; instantiate logger.
 
 
-def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
+def get_arguments() -> Tuple[Namespace, RootLogger]:
+    '''
+    Get cmdline arguments.
+        :return:    Tuple containing user-provided commandline arguments, and instantiated root logger.
+    '''
+    def _get_logger(
+        log_level: int = 30                                                 # Default INFO.
+            ) -> RootLogger:
+        '''
+        Enable logging and handle outputs.
+            :param log_level:   User-specified log level (10-50).
+            :return:            Instantiated root logger.
+        '''
+        formatter = Formatter(                                              # Log header.
+              '{asctime} {threadName:12} {levelname:8}: "{message}"',       # Format style.
+              style='{'                                                     # Set f-string style formating.
+        )
+        handler = StreamHandler()                                           # Logging stream handler.
+        logger = getLogger()                                                # Root logger class.
+
+        handler.setFormatter(formatter)                                     # Set log stream format.
+        logger.setLevel(log_level)                                          # User-specified log_level.
+        logger.addHandler(handler)                                          # Log to screen.
+
+        return logger
+
     parser = ArgumentParser(                                                # Instantiate argument parser.
         description='Convert structured data between JSON and YAML.'
     )
+
     parser.add_argument(                                                    # Read data from file.
         '--infile', '-i',
         dest='infile',
@@ -66,31 +93,10 @@ def get_arguments() -> Namespace:
     )
 
     arguments = parser.parse_args()
-
     arguments.log_level = max(50 - arguments.log_level * 10, 10)
+    logger = _get_logger(arguments.log_level)
 
-    return arguments
-
-
-def enable_logging(
-    log_level: int = 30,                                                    # Default INFO.
-        ) -> RootLogger:
-    '''
-    Enable logging and handle outputs.
-        :param log_level:   User-specified log level (10-50).
-    '''
-    formatter = Formatter(                                                  # Log header.
-          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
-          style='{'                                                         # Set f-string style formating.
-    )
-    handler = StreamHandler()                                               # Logging stream handler.
-    logger = getLogger()                                                    # Root logger class.
-
-    handler.setFormatter(formatter)                                         # Set log stream format.
-    logger.setLevel(log_level)                                              # User-specified log_level.
-    logger.addHandler(handler)                                              # Log to screen.
-
-    return logger
+    return arguments, logger
 
 
 def ingest_data(
@@ -98,9 +104,10 @@ def ingest_data(
         ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
-        :param args:    User-specified commandline arguments.
+        :param infile:  The file to ingest data from.
+        :return:        Dictionary containing parsed data.
     '''
-    log.debug(f'Reading from file: {infile.name}')
+    LOG.debug(f'Reading from file: {infile.name}')
 
     file_suffix = infile.suffix
 
@@ -125,7 +132,7 @@ def ingest_data(
             print('Unsupported filetype. Please check the extension and try again.')
             sys_exit(1)
 
-    log.debug(
+    LOG.debug(
         f'Input: {infile}\n',
         f'Input filetype: {file_suffix.upper().replace(".", "")}\n\n',
         payload
@@ -142,37 +149,28 @@ def output_data(
         ) -> NoReturn:
     '''
     Formats and outputs a data object as JSON or YAML to a file or STDOUT.
-        :param arguments:        User-specified commandline arguments.
+        :param arguments:   User-specified commandline arguments.
         :param payload:     The Python dict to format and output.
     '''
-    if write:                                                     # Write to file or stdout.
+    if write:                                                               # Write to file or stdout.
         outfile = open(infile.with_suffix(f'.{out_format}'), 'w', encoding='utf-8')
 
     else:
         outfile = stdout
 
-    log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
+    LOG.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
 
     match out_format.lower():
         case 'ini':                                                         # INI.
             config = ConfigParser()                                         # Instantiate parser.
-            nested_keys = False                                             # Validity checker.
 
             for key in payload.keys():
-                if iter(key):                                               # Check if keys are invalid types.
-                    nested_keys = True                                      # Mark invalid.
+                if iter(key):                                               # Keys are nested.
+                    print('Warning! INI does not support nested values.\nValues will be flattened to strings.')
 
-            if nested_keys:                                                 # Warn the user.
-                log.warning(
-                    'Warning! INI does not support nested values.\n'
-                    'Values will be flattened to strings.'
-                )
+                    if input('Proceed? [y/N] ').lower().startswith('y'):    # ACK and continue.
+                        break
 
-                if input(                                                   # ACK and continue.
-                    'Proceed? [y/N] '
-                ).lower().startswith('y'):
-                    pass
-                else:                                                       # ACK and exit.
                     sys_exit(1)
 
             config._sections = payload
@@ -192,6 +190,9 @@ def output_data(
 
 
 if __name__ == '__main__':
-    args = get_arguments()
-
-    output_data(ingest_data(args.infile), args.infile, args.format, args.write)
+    output_data(
+        ingest_data(ARGS.infile),
+        ARGS.infile,
+        ARGS.format,
+        ARGS.write
+    )

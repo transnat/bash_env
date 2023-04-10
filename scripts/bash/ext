@@ -2,6 +2,7 @@
 # Author:       Casey Sparks
 # Date:         May 18, 2022
 # Description:  Extract any compressed file or compress any uncompressed file.
+# Notes:        Python refactor candidate.
 
 for FILE in "$@"; do
     if [ -f "${FILE}" ] ; then

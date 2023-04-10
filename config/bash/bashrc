@@ -98,3 +98,5 @@ complete -C /usr/bin/terraform terraform                            		# Enable b
 complete -cf sudo
 
 getsecrets                                                          		# Get encrypted env vars.
+
+source ${HOME}/.bashrc.local                                                # For host-specific bash config.

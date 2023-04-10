@@ -102,7 +102,7 @@ def destroy_user_data(
             rmtree(directory)
             log.debug(f'Removed {directory}.')
 
-        except BaseException:
+        except (FileNotFoundError,OSError):
             log.warning(f'Failed to remove {directory}.')
 
 

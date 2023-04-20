@@ -11,33 +11,33 @@ GPG_DIR := "${HOME}/.gnupg"
 SSH_DIR := "${HOME}/.ssh"
 
 prerequisite:
-	@sudo chown -Rc ${USER}:${USER}				${ENV_DIR}
+	@sudo chown -Rc ${USER}:${USER}         ${ENV_DIR}
 
 bash:
 	@rm -rf ${HOME}/.bash* ${HOME}/.profile 2> /dev/null
-	@ln -s ${CONF_DIR}/bash/bash_logout		${HOME}/.bash_logout
-	@ln -s ${CONF_DIR}/bash/bash_profile	${HOME}/.bash_profile
-	@ln -s ${CONF_DIR}/bash/bashrc			${HOME}/.bashrc
-	@ln -s ${CONF_DIR}/profile				${HOME}/.profile
+	@ln -s ${CONF_DIR}/bash/bash_logout     ${HOME}/.bash_logout
+	@ln -s ${CONF_DIR}/bash/bash_profile    ${HOME}/.bash_profile
+	@ln -s ${CONF_DIR}/bash/bashrc          ${HOME}/.bashrc
+	@ln -s ${CONF_DIR}/profile              ${HOME}/.profile
 
 git:
 	@rm -f ${HOME}/.gitconfig || true
-	@ln -s ${CONF_DIR}/git/gitconfig		${HOME}/.gitconfig
+	@ln -s ${CONF_DIR}/git/gitconfig        ${HOME}/.gitconfig
 
 
 gpg:
 	@rm -rf ${GPG_DIR} 2> /dev/null
 	@mkdir -m 700 ${GPG_DIR}
-	@cp -r ${CONF_DIR}/gnupg/*.conf			${GPG_DIR}
+	@cp -r ${CONF_DIR}/gnupg/*.conf         ${GPG_DIR}
 	@curl https://keys.caseyspar.kz/public.asc | gpg --import
 
 python:
 	@python -m ensurepip --upgrade
-	@pip install --user	--no-cache-dir -r ${SCRIPTS_DIR}/python/requirements.txt
+	@pip install --user	--no-cache-dir -r   ${CONF_DIR}/python/requirements.txt
 
 screen:
 	@rm -rf ${HOME}/.screenrc || true
-	@ln -s ${CONF_DIR}/screen/screenrc		${HOME}/.screenrc
+	@ln -s ${CONF_DIR}/screen/screenrc      ${HOME}/.screenrc
 
 
 ssh:
@@ -49,5 +49,5 @@ ssh:
 vim:
 	@rm -rf ${HOME}/.vim 2> /dev/null
 	@rm -rf ${HOME}/.vimrc 2> /dev/null
-	@ln -s ${CONF_DIR}/vim					${HOME}/.vim
-	@ln -s ${CONF_DIR}/vim/vimrc			${HOME}/.vimrc
+	@ln -s ${CONF_DIR}/vim                  ${HOME}/.vim
+	@ln -s ${CONF_DIR}/vim/vimrc            ${HOME}/.vimrc

@@ -17,7 +17,7 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 def get_arguments() -> Namespace:
     '''
-    Get cmdline arguments and enable logging.
+    Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
@@ -30,7 +30,7 @@ def get_arguments() -> Namespace:
         help='Absolute path to write the logfile to. Default `None`.'
     )
     parser.add_argument(                                                    # Specify logging verbosity.
-        '--verbosity', '-v',
+        '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
@@ -88,6 +88,7 @@ def enable_log(
         log_root.addHandler(log_file)                                       # Log to file.
 
     return log_root
+
 
 if __name__ == '__main__':
     args = get_arguments()

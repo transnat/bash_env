@@ -2,11 +2,7 @@
 # -*- coding: utf-8 -*-
 # Date:         August 09, 2022
 # Description:
-'''
-Convert structured data between INI, HTML, JSON, YAML, XML.
-
-Requirements:
-'''
+'''Convert structured data between INI, HTML, JSON, YAML, XML.'''
 
 __author__ = 'Casey Sparks'
 __install_requires__ = [
@@ -31,38 +27,13 @@ from yaml import safe_load, dump as ydump
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
-ARGS, LOG = get_arguments()                                                 # Get arguments; instantiate logger.
-
 
 def get_arguments() -> Tuple[Namespace, RootLogger]:
     '''
     Get cmdline arguments.
-        :return:    Tuple containing user-provided commandline arguments, and instantiated root logger.
+        :return:    argparse.Namespace instance of user arguments.
     '''
-    def _get_logger(
-        log_level: int = 30                                                 # Default INFO.
-            ) -> RootLogger:
-        '''
-        Enable logging and handle outputs.
-            :param log_level:   User-specified log level (10-50).
-            :return:            Instantiated root logger.
-        '''
-        formatter = Formatter(                                              # Log header.
-              '{asctime} {threadName:12} {levelname:8}: "{message}"',       # Format style.
-              style='{'                                                     # Set f-string style formating.
-        )
-        handler = StreamHandler()                                           # Logging stream handler.
-        logger = getLogger()                                                # Root logger class.
-
-        handler.setFormatter(formatter)                                     # Set log stream format.
-        logger.setLevel(log_level)                                          # User-specified log_level.
-        logger.addHandler(handler)                                          # Log to screen.
-
-        return logger
-
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='Convert structured data between JSON and YAML.'
-    )
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
     parser.add_argument(                                                    # Read data from file.
         '--infile', '-i',
@@ -84,19 +55,56 @@ def get_arguments() -> Tuple[Namespace, RootLogger]:
         action='store_true',
         help='Write file to disk instead of stdout.'
     )
-    parser.add_argument(                                                    # Enable DEBUG logging.
+    parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
-        action='count',
         dest='log_level',
-        default=0,                                                          # Default NOTSET.
-        help='Set log level (default INFO).'
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
     )
 
-    arguments = parser.parse_args()
-    arguments.log_level = max(50 - arguments.log_level * 10, 10)
-    logger = _get_logger(arguments.log_level)
+    arguments = parser.parse_args()                                         # Parse arguments.
 
-    return arguments, logger
+    match arguments.log_level:                                              # Set arguments.log_level.
+        case 0:
+            arguments.log_level = 50                                        # CRITICAL.
+        case 1:
+            arguments.log_level = 40                                        # ERROR.
+        case 2:
+            arguments.log_level = 30                                        # WARNING.
+        case 3:
+            arguments.log_level = 20                                        # INFO
+        case 4:
+            arguments.log_level = 10                                        # DEBUG.
+        case _:
+            arguments.log_level = 0                                         # NOTSET.
+
+    return arguments
+
+
+def enable_log(
+    log_level: int = 0
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level. Default NOTSET.
+        :return:            Instantiated logger.RootLogger instance.
+    '''
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
+    )
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
+
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+
+    return log_root
 
 
 def ingest_data(
@@ -107,7 +115,7 @@ def ingest_data(
         :param infile:  The file to ingest data from.
         :return:        Dictionary containing parsed data.
     '''
-    LOG.debug(f'Reading from file: {infile.name}')
+    log.debug(f'Reading from file: {infile.name}')
 
     file_suffix = infile.suffix
 
@@ -132,7 +140,7 @@ def ingest_data(
             print('Unsupported filetype. Please check the extension and try again.')
             sys_exit(1)
 
-    LOG.debug(
+    log.debug(
         f'Input: {infile}\n',
         f'Input filetype: {file_suffix.upper().replace(".", "")}\n\n',
         payload
@@ -158,7 +166,7 @@ def output_data(
     else:
         outfile = stdout
 
-    LOG.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
+    log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
 
     match out_format.lower():
         case 'ini':                                                         # INI.
@@ -190,9 +198,12 @@ def output_data(
 
 
 if __name__ == '__main__':
+    args = get_arguments()
+    log = enable_log(args.log_level)
+
     output_data(
-        ingest_data(ARGS.infile),
-        ARGS.infile,
-        ARGS.format,
-        ARGS.write
+        ingest_data(args.infile),
+        args.infile,
+        args.format,
+        args.write
     )

@@ -21,23 +21,21 @@ __author__ = 'Casey Sparks'
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler, DEBUG, INFO
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from typing import NoReturn
 from gnupg import GPG
 from psutil import process_iter, NoSuchProcess, AccessDenied, ZombieProcess
 
-log = getLogger()                                                           # Instantiate logger.
-
-log.addHandler(StreamHandler())                                             # Log to screen.
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                                # Instantiate parser.
-        description='Create executable and arbitrary PGP-encrypted scripts.'
-    )
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate parser.
 
     parser.add_argument(                                                    # Specify input files.
         '--inputs', '-i',
@@ -53,37 +51,56 @@ def get_arguments() -> Namespace:
         default=[],
         help='Specify who can decrypt the file.'
     )
-    parser.add_argument(                                                    # Enable DEBUG logging.
+    parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
-        action='store_const',
-        dest='loglevel',
-        const=DEBUG,
-        default=INFO,
-        help='Set log level to DEBUG.'
+        dest='log_level',
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
     )
 
-    return parser.parse_args()
+    arguments = parser.parse_args()                                         # Parse arguments.
+
+    match arguments.log_level:                                              # Set arguments.log_level.
+        case 0:
+            arguments.log_level = 50                                        # CRITICAL.
+        case 1:
+            arguments.log_level = 40                                        # ERROR.
+        case 2:
+            arguments.log_level = 30                                        # WARNING.
+        case 3:
+            arguments.log_level = 20                                        # INFO
+        case 4:
+            arguments.log_level = 10                                        # DEBUG.
+        case _:
+            arguments.log_level = 0                                         # NOTSET.
+
+    return arguments
 
 
-def enable_logging(
-    log_level: int = 30                                                     # Default INFO.
+def enable_log(
+    log_level: int = 0
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param log_level:   User-specified log level (10-50).
+        :param log_level:   User-specified log level. Default NOTSET.
+        :return:            Instantiated logger.RootLogger instance.
     '''
-    formatter = Formatter(                                                  # Log header.
-          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
-          style='{'                                                         # Set f-string style        formating.
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
     )
-    handler = StreamHandler()                                               # Logging stream handler.
-    logger = getLogger()                                                    # Root logger class.
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
 
-    handler.setFormatter(formatter)                                         # Set log stream format.
-    logger.setLevel(log_level)                                              # User-specified log_level.
-    logger.addHandler(handler)                                              # Log to screen.
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
 
-    return logger
+    return log_root
 
 
 def prechecks_pass(
@@ -181,6 +198,7 @@ def munge_cipherfile(
 
 if __name__ == '__main__':
     args = get_arguments()
+    log = enable_log(args.log_level)
 
     if prechecks_pass(args):
         for clearfile in args.file:

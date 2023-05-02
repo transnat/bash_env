@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Date:         December 14, 2022
+# Date: December 14, 2022
 # Description:
-'''
-Check an endpoint and wipe local user data.
-Should be cron on sensitive systems.
-'''
+'''Check an endpoint and wipe local user data. Should be cron on sensitive systems.'''
 
 __author__ = 'Casey Sparks'
 
@@ -24,10 +21,11 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='The description of the script goes here.'
-    )
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
     parser.add_argument(                                                    # Run in debug mode.
         '--debug',
@@ -35,58 +33,83 @@ def get_arguments() -> Namespace:
         action='store_true',
         help='Run application in debug mode without performing any action.'
     )
-    parser.add_argument(                                                    # Set logging verbosity.
+    parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
         dest='log_level',
+        default=0,
         action='count',
-        default=3,
-        help='Set log level to DEBUG. Defaults to INFO.'
+        help='Specify logging verbosity. Default `CRITICAL`.'
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
 
-    arguments.log_level = max(50 - arguments.log_level * 10, 10)            # Log level should always be <=50,>=10.
+    match arguments.log_level:                                              # Set arguments.log_level.
+        case 0:
+            arguments.log_level = 50                                        # CRITICAL.
+        case 1:
+            arguments.log_level = 40                                        # ERROR.
+        case 2:
+            arguments.log_level = 30                                        # WARNING.
+        case 3:
+            arguments.log_level = 20                                        # INFO
+        case 4:
+            arguments.log_level = 10                                        # DEBUG.
+        case _:
+            arguments.log_level = 0                                         # NOTSET.
 
     return arguments
 
 
-def enable_logging(
-    log_level: int = 30                                                     # Default INFO.
+def enable_log(
+    log_level: int = 0
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param log_level:   User-specified log level (10-50).
+        :param log_level:   User-specified log level. Default NOTSET.
+        :return:            Instantiated logger.RootLogger instance.
     '''
-    formatter = Formatter(                                                  # Log header.
-          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
-          style='{'                                                         # Set f-string style formating.
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
     )
-    handler = StreamHandler()                                               # Logging stream handler.
-    logger = getLogger()                                                    # Root logger class.
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
 
-    handler.setFormatter(formatter)                                         # Set log stream format.
-    logger.setLevel(log_level)                                              # User-specified log_level.
-    logger.addHandler(handler)                                              # Log to screen.
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
 
-    return logger
+    return log_root
 
 
 def remote_flag() -> bool:
-    '''Checks remote for hostname match and returns true if true.'''
-    url = f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}'
-    host_flag = get(url, timeout=5).text.lower() == 'true'
+    '''
+    Checks remote for hostname match and returns true if true.
+        :return:    Boolean for the existence of the remote flag.
+    '''
+    host_flag = bool(                                                       # Check if flag exists.
+        get(
+            f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}',
+            timeout=5
+        ).text.lower()
+    )
 
-    log.debug(f'URL: {url}')
     log.debug(f'Flag: {host_flag}')
 
     return host_flag
 
 
 def destroy_user_data(
-    debug_mode: bool = True
+    debug: bool = True
         ) -> NoReturn:
-    '''Wipe sensitive user data from disk.'''
-    dir_list = [
+    '''
+    Wipe sensitive user data from disk.
+        :param debug:   Run steps without taking any action.
+    '''
+    dir_list = [                                                            # List of directories to erase.
         Path.home(),
         Path(f'/var/spool/cron/{getlogin()}')
     ]
@@ -94,22 +117,24 @@ def destroy_user_data(
     log.debug(f'Directory list: {dir_list}')
 
     for directory in dir_list:
-        if debug_mode:                                                      # Log removal ONLY.
+        if debug:                                                           # Log removal ONLY.
             log.debug(f'Simulating removal of {directory}')
-            continue
 
-        try:                                                                # Remove data.
-            rmtree(directory)
-            log.debug(f'Removed {directory}.')
+        else:
+            try:                                                                # Remove data.
+                rmtree(directory)
+                log.debug(f'Removed {directory}.')
 
-        except (FileNotFoundError,OSError):
-            log.warning(f'Failed to remove {directory}.')
+            except (FileNotFoundError, OSError) as exc:
+                log.warning(f'Failed to remove {directory}.')
+
+                raise exc
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    log = enable_logging(args.log_level)
-    FLAG = any([args.debug, remote_flag()])                                 # Get remote flag or debug mode.
+    log = enable_log(args.log_level)
+    flag = any([args.debug, remote_flag()])                                 # Get remote flag or debug mode.
 
-    if FLAG:
+    if flag:
         destroy_user_data(args.debug)

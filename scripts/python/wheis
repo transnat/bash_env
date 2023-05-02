@@ -8,66 +8,29 @@ __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler
 from os import getenv
 from requests import get
 from tabulate import tabulate
+
+
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='whois for physical IP locations.'
-    )
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     parser.add_argument(                                                    # Specify an IPstack API key.
         'ip_addresses',
         type=str,
         nargs='+',
         help='List of IP addresses to retrieve.'
     )
-    parser.add_argument(                                                    # Specify an IPstack API key.
-        '-k', '--api_key',
-        dest='api_key',
-        default=getenv('IPSTACK_API_KEY'),
-        type=str,
-        help='API key for ipstack.com.'
-    )
-    parser.add_argument(                                                    # Enable DEBUG logging.
-        '-v', '--verbose',
-        action='count',
-        dest='log_level',
-        default=0,
-        help='Set log level (default CRIT).'
-    )
 
-    arguments = parser.parse_args()
-
-    arguments.log_level = max(50 - arguments.log_level * 10, 10)
-
-    return arguments
-
-
-def enable_logging(
-    log_level: int = 30,                                                    # Default INFO.
-        ) -> RootLogger:
-    '''
-    Enable logging and handle outputs.
-        :param log_level:   User-specified log level (10-50).
-    '''
-    formatter = Formatter(                                                  # Log header.
-          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
-          style='{'                                                         # Set f-string style formating.
-    )
-    handler = StreamHandler()                                               # Logging stream handler.
-    logger = getLogger()                                                    # Root logger class.
-
-    handler.setFormatter(formatter)                                         # Set log stream format.
-    logger.setLevel(log_level)                                              # User-specified log_level.
-    logger.addHandler(handler)                                              # Log to screen.
-
-    return logger
+    return parser.parse_args()
 
 
 def get_location_table(
@@ -79,6 +42,9 @@ def get_location_table(
         :param api_key:     The IPStack API key for the request.
         :param ip_address:  The IP address to get location info for.
     '''
+    assert isinstance(api_key, str), '`api_key` must be str.'
+    assert isinstance(ip_address, str), '`ip_address` must be str.'
+
     ip_info = get(
         f'http://api.ipstack.com/{ip_address}',
         params={'access_key': api_key},
@@ -99,7 +65,6 @@ def get_location_table(
 
 if __name__ == '__main__':
     args = get_arguments()
-    log = enable_logging(args.log_level)
 
     for ip in args.ip_addresses:
         print(tabulate(get_location_table(getenv('IPSTACK_API_KEY'), ip)))

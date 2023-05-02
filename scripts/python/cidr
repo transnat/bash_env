@@ -2,7 +2,7 @@
 # -*- coding:utf-8 -*-
 # Date: March 10, 2023
 # Description:
-'''Print a network table when given a subnet.'''
+'''Parse IPv4 and IPv6 addresses between CIDR and netmask.'''
 
 __author__ = 'Casey Sparks'
 
@@ -19,27 +19,15 @@ def get_arguments() -> Namespace:
     Get cmdline arguments.
         :return:    User-provided commandline arguments.
     '''
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='Parse IPv4 and IPv6 addresses between CIDR and netmask.'
-    )
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
     parser.add_argument(                                                    # Addresses/netmasks to process.
         'network',
         type=str,
         help='Subnet to parse, like `192.168.0.1/16`, `10.0.0.1/255.0.0.0`, or `::1`.'
     )
-    parser.add_argument(                                                    # Set logging verbosity.
-        '--verbose', '-v',
-        dest='log_level',
-        action='count',
-        default=0,                                                          # Default NOTSET.
-        help='Set log level to DEBUG. Defaults to INFO.'
-    )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = max(50 - arguments.log_level * 10, 10)            # Log level should be <=50,>=10.
-
-    return arguments
+    return parser.parse_args()
 
 
 def print_table(

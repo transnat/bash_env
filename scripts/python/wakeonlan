@@ -2,34 +2,30 @@
 # -*- coding: utf-8 -*-
 # Date:         May 03, 2022
 # Description:
-'''Send a wake-on-LAN packet to the specified IP addresses.'''
+'''Send a wake-on-LAN packet to the specified MAC/IP addresses.'''
 
 __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, DEBUG, INFO
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
-from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
-from sys import exit as sys_exit, stderr
 from pprint import pp
+from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
 from subprocess import run
-from typing import NoReturn, Tuple
+from sys import exit as sys_exit, stderr
+from typing import NoReturn, Optional
 from yaml import safe_load
 
-# Enable logging, set locale, set args.
-log = getLogger()
-
 setlocale(LC_ALL, 'en_US.UTF-8')
-log.addHandler(StreamHandler())
-log.setLevel(INFO)
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
-    parser = ArgumentParser(
-        description='Send a wake-on-LAN packet to specified MAC addresses.'
-    )
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
     parser.add_argument(                                                    # The LAN interface.
         '--interface', '-i',
@@ -70,28 +66,76 @@ def get_arguments() -> Namespace:
         dest='info',
         help='Print the default configuration and exit.'
     )
-    parser.add_argument(                                                    # Enable DEBUG logging.
+    parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
-        action='store_const',
-        dest='loglevel',
-        const=DEBUG,
-        help='Set log level to DEBUG.'
+        dest='log_level',
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
     )
 
     arguments = parser.parse_args()
 
-    if arguments.info:                                                           # Print application info and exit.
+    if arguments.info:                                                      # Print application info and exit.
         print_info(arguments)
         sys_exit()
 
-    if arguments.loglevel:                                                       # Set verbose logging.
+    if arguments.loglevel:                                                  # Set verbose logging.
         log.setLevel(arguments.loglevel)
 
     if not arguments.hosts and not arguments.macs:
         parser.print_help(stderr)
         sys_exit()
 
+    match arguments.log_level:                                              # Set arguments.log_level.
+        case 0:
+            arguments.log_level = 50                                        # CRITICAL.
+        case 1:
+            arguments.log_level = 40                                        # ERROR.
+        case 2:
+            arguments.log_level = 30                                        # WARNING.
+        case 3:
+            arguments.log_level = 20                                        # INFO
+        case 4:
+            arguments.log_level = 10                                        # DEBUG.
+        case _:
+            arguments.log_level = 0                                         # NOTSET.
+
     return arguments
+
+
+def enable_log(
+    log_level: int = 0,
+    log_file: Optional[Path] = None
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level. Default NOTSET.
+        :param log_file:    User-specified path to write log file. Default None.
+        :return:            Instantiated logger.RootLogger instance.
+    '''
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_file, Optional[Path]), '`log_file` must be Path or None.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
+    )
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
+
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+
+    if log_file:                                                            # Log to file.
+        log_file = FileHandler(log_file)                                    # Set log file.
+
+        log_file.setFormatter(formatter)                                    # Set log file format.
+        log_root.addHandler(log_file)                                       # Log to file.
+
+    return log_root
 
 
 def print_info(
@@ -123,11 +167,13 @@ def print_info(
         print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(21))
 
 
-def file_checks() -> Tuple[dict, Path]:
-    '''Check for config directory/file, and create them if they do not exist.'''
+def file_checks() -> list:
+    '''
+    Check for config directory/file, and create them if they do not exist.
+        :return:    List of known hosts.
+    '''
     config_dir = Path(Path.home() / '.config/wakeonlan')                    # Directory for config files.
     hostsfile = config_dir / 'known_hosts.yml'                              # File containing known host mappings.
-    known_hosts = []
 
     if not config_dir.exists():                                             # Create config dir.
         log.debug(f'Creating config directory at {config_dir}.')
@@ -157,7 +203,7 @@ class Network():
         Grok stdin and config files for the hosts to wake.
             :param arguments: User-provided cmdline arguments.
         '''
-        known_hosts, hostsfile = file_checks()                              # Get known hosts from config file.
+        known_hosts = file_checks()                                         # Get known hosts from config file.
         mac_addresses = []
 
         if arguments.macs:                                                  # Set hosts based on MACs from STDIN.
@@ -169,7 +215,7 @@ class Network():
                     mac_addresses.append(known_hosts[host])
 
                 except TypeError:
-                    log.critical(f'Config file {hostsfile} is empty.')
+                    log.critical('No known hosts.')
 
         log.debug(f'MAC addresses: {pp(mac_addresses)}')
 
@@ -243,6 +289,7 @@ class Network():
 
 if __name__ == '__main__':
     args = get_arguments()
+    log = enable_log(args.log_level)
 
     Network.send_packet(
         mac_addresses=Network.get_mac_addresses(args),

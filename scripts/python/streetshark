@@ -2,65 +2,32 @@
 # -*- coding: utf-8 -*-
 # Date: May 13, 2022
 # Description:
-'''
-Monitor advertised SSIDs and (optionally) find matches.
-'''
+'''Monitor advertised SSIDs and (optionally) find matches.'''
 
 __author__ = 'Casey Sparks'
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, RootLogger, Formatter, FileHandler
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from os import system
-from re import compile as re_compile
 from pathlib import Path
+from re import compile as re_compile
 from subprocess import run, Popen, PIPE
 from sys import exit as sys_exit
 from time import sleep
-from typing import NoReturn, Tuple, Optional
+from typing import NoReturn, Optional
 
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments() -> Tuple[Namespace, RootLogger]:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
-        :return:    User-provided commandline arguments.
         :return:    RootLogger instance.
     '''
-    def _get_logger(
-        log_level: int = 30,                                                # Default INFO.
-        log_file_path: Optional[Path] = None
-            ) -> RootLogger:
-        '''
-        Enable logging and handle outputs.
-            :param log_level:   User-specified log level (10-50).
-            :param log_file:    User-specified path to write log file.
-        '''
-        formatter = Formatter(                                              # Log header.
-              '{asctime} {threadName:12} {levelname:8}: "{message}"',       # Format style.
-              style='{'                                                     # Set f-string style formating.
-        )
-        log_console = StreamHandler()                                       # Logging stream handler.
-        log_root = getLogger()                                              # Root logger class.
-
-        log_console.setFormatter(formatter)                                 # Set log stream format.
-        log_root.setLevel(log_level)                                        # User-specified log_level.
-        log_root.addHandler(log_console)                                    # Log to screen.
-
-        if log_file_path:                                                   # Logging file handler.
-            log_file = FileHandler(log_file_path)
-
-            log_file.setFormatter(formatter)                                # Set log file format.
-            log_root.addHandler(log_file)                                   # Log to file.
-
-        return log_root
-
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='Monitor advertised SSIDs and (optionally) find matches.'
-    )
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
 
     parser.add_argument(                                                    # Set wireless interface.
@@ -76,19 +43,6 @@ def get_arguments() -> Tuple[Namespace, RootLogger]:
         default=5,
         help='Set the scan interval (seconds).'
     )
-    parser.add_argument(                                                    # Set logging verbosity.
-        '--verbose', '-v',
-        dest='log_level',
-        action='count',
-        default=0,
-        help='Increase logging verbosity. Default NOTSET.'
-    )
-    parser.add_argument(
-        '--logfile',
-        dest='log_file',
-        type=Optional[Path],
-        help='Absolute path to write the logfile to.'
-    )
     scan_type.add_argument(                                                 # Matched scan.
         '--match', '-m',
         dest='ssids',
@@ -102,16 +56,79 @@ def get_arguments() -> Tuple[Namespace, RootLogger]:
         dest='passive',
         help='Print all SSIDs to STDOUT.'
     )
+    parser.add_argument(                                                    # Set path for the output log file.
+        '--logfile', '-l',
+        dest='log_file',
+        type=Optional[Path],
+        default=None,
+        help='Absolute path to write the logfile to. Default `None`.'
+    )
+    parser.add_argument(                                                    # Specify logging verbosity.
+        '--verbose', '-v',
+        dest='log_level',
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
+    )
 
-    arguments = parser.parse_args()                                         # Parse CMDline arguments.
-    arguments.log_level = max(50 - arguments.log_level * 10, 10)
-    logger = _get_logger(arguments.log_level, arguments.log_file)           # Instantiate logger.
+    arguments = parser.parse_args()                                         # Parse arguments.
 
-    return arguments, logger
+    match arguments.log_level:                                              # Set arguments.log_level.
+        case 0:
+            arguments.log_level = 50                                        # CRITICAL.
+        case 1:
+            arguments.log_level = 40                                        # ERROR.
+        case 2:
+            arguments.log_level = 30                                        # WARNING.
+        case 3:
+            arguments.log_level = 20                                        # INFO
+        case 4:
+            arguments.log_level = 10                                        # DEBUG.
+        case _:
+            arguments.log_level = 0                                         # NOTSET.
+
+    return arguments
+
+
+def enable_log(
+    log_level: int = 0,
+    log_file: Optional[Path] = None
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level. Default NOTSET.
+        :param log_file:    User-specified path to write log file. Default None.
+        :return:            Instantiated logger.RootLogger instance.
+    '''
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_file, Optional[Path]), '`log_file` must be Path or None.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
+    )
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
+
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+
+    if log_file:                                                            # Log to file.
+        log_file = FileHandler(log_file)                                    # Set log file.
+
+        log_file.setFormatter(formatter)                                    # Set log file format.
+        log_root.addHandler(log_file)                                       # Log to file.
+
+    return log_root
 
 
 def get_default_interface() -> str:
-    '''Gets the name of the current WAN-connected interface.'''
+    '''
+    Gets the name of the current WAN-connected interface.
+        :return:    Name of the default gateway interface.
+    '''
     interface = run(
         ['ip', 'route', 'show'],
         capture_output=True,
@@ -252,7 +269,8 @@ def display_ssids(
 
 
 if __name__ == '__main__':
-    args, log = get_arguments()                                             # Get cmdline arguments.
+    args= get_arguments()                                                   # Get cmdline arguments.
+    log = enable_log(args.log_level, args.log_file)                         # Instantiate logger.
     advertised = set()                                                      # Found SSIDs.
     matched = set()                                                         # Matched SSIDs.
     timestamp = {'advertised': {}, 'matched': {}}                           # SSIDs + first time seen.

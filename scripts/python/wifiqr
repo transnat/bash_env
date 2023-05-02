@@ -10,17 +10,19 @@ from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
 from logging import getLogger, StreamHandler, Formatter, RootLogger
 from pathlib import Path
-from typing import NoReturn, Optional
+from sys import exit as sys_exit
+from typing import NoReturn
 from qrcode import QRCode
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
-    parser = ArgumentParser(                                                # Instantiate argument parser.
-        description='Generate a QR code to join a wifi network.'
-    )
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     mutex_group = parser.add_mutually_exclusive_group()
 
     parser.add_argument(                                                    # SSID of the wifi network.
@@ -41,12 +43,12 @@ def get_arguments() -> Namespace:
         choices=['WPA', 'WEP'],
         help='Encryption used by the SSID (default WPA).'
     )
-    parser.add_argument(                                                    # Enable DEBUG logging.
+    parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
         dest='log_level',
+        default=0,
         action='count',
-        default=0,                                                          # Default CRITICAL.
-        help='Set log level (default INFO).'
+        help='Specify logging verbosity. Default `CRITICAL`.'
     )
     mutex_group.add_argument(                                               # Output connection string.
         '--string-only',
@@ -62,70 +64,76 @@ def get_arguments() -> Namespace:
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-    log_level = 50 - arguments.log_level * 10                               # Set log numeric value from -vvv arguments.
-    arguments.log_level = log_level if log_level >= 10 else 10              # Log level should be <= 10.
+
+    match arguments.log_level:                                              # Set arguments.log_level.
+        case 0:
+            arguments.log_level = 50                                        # CRITICAL.
+        case 1:
+            arguments.log_level = 40                                        # ERROR.
+        case 2:
+            arguments.log_level = 30                                        # WARNING.
+        case 3:
+            arguments.log_level = 20                                        # INFO
+        case 4:
+            arguments.log_level = 10                                        # DEBUG.
+        case _:
+            arguments.log_level = 0                                         # NOTSET.
 
     return arguments
 
 
-def enable_logging(
-    log_level: int = 30                                                     # Default INFO.
+def enable_log(
+    log_level: int = 0
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param log_level:   User-specified log level (10-50).
+        :param log_level:   User-specified log level. Default NOTSET.
+        :return:            Instantiated logger.RootLogger instance.
     '''
-    formatter = Formatter(                                                  # Log header.
-          '{asctime} {threadName:12} {levelname:8}: "{message}"',           # Format style.
-          style='{'                                                         # Set f-string style formating.
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
     )
-    stream_handler = StreamHandler()                                        # Logging stream handler.
-    logger = getLogger()                                                    # Root logger class.
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
 
-    stream_handler.setFormatter(formatter)                                  # Set log stream format.
-    logger.setLevel(log_level)                                              # User-specified log_level.
-    logger.addHandler(stream_handler)                                       # Log to screen.
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
 
-    return logger
+    return log_root
 
 
-def generate_qr(
-    qr_string: str,
-    output: Optional[str] = None
-        ) -> NoReturn:
-    '''
-    Generate a QR and print to stdout or a PNG.
-        :param qr_string:   User-provided commandline arguments.
-        :param output:      Optional path to output the resultant PNG.
-    '''
-    log.debug(f'Connection string: {qr_string}')
-    qr.add_data(qr_string)                                                  # Add data to the QR class.
-    qr.make()                                                               # Generate the QR code.
+def generate_qr() -> NoReturn:
+    '''Generate a QR and print to stdout or a PNG.'''
+    qr_code = QRCode()                                                      # Instantiate QR class.
+    qr_str= f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'     # String to be encoded in the QR.
+
+
+    if args.string:                                                         # Only print the string to stdout.
+        print(qr_str)
+        sys_exit()
+
+    log.debug(f'Connection string: {qr_str}')
+    qr_code.add_data(qr_str)                                                # Add data to the QR class.
+    qr_code.make()                                                          # Generate the QR code.
     log.debug('QR code created.')
 
-    if output:
-        img = qr.make_image(                                                # Create PNG.
-            fill_color="black",
-            back_color="white"
-        )
+    if args.output:
+        img = qr_code.make_image(fill_color="black", back_color="white")    # Create PNG.
 
-        log.debug(qr.print_tty())
-        img.save(output)                                                    # Save PNG to disk.
+        log.debug(qr_code.print_tty())
+        img.save(args.output)                                               # Save PNG to disk.
 
     else:
-        qr.print_tty()                                                      # Print to screen.
+        qr_code.print_tty()                                                 # Print to screen.
 
 
 if __name__ == '__main__':
     args = get_arguments()                                                  # Get cmdline arguments.
-    log = enable_logging(args.log_level)                                    # Enable logging.
-    qr = QRCode()                                                           # Instantiate QR class.
-    connection_string = f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'
+    log = enable_log(args.log_level)                                        # Enable logging.
 
-    log.debug(f'Arguments: {args}')
-
-    if args.string:                                                         # Only print the string to stdout.
-        print(connection_string)
-
-    else:                                                                   # Generate a QR code.
-        generate_qr(connection_string, args.output)
+    generate_qr()

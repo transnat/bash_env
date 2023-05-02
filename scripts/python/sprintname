@@ -17,13 +17,14 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 
 def get_word(
-    words: list
+    wordlist: list
         ) -> str:
     '''
     Pull a word from list and format.
-        :param words:   A list of words to use in the sprint name.
+        :param wordlist:   A list of wordlist to use in the sprint name.
+        :return:        A random word.
     '''
-    return choice(words).lower().translate(str.maketrans('', '', punctuation))
+    return choice(wordlist).lower().translate(str.maketrans('', '', punctuation))
 
 
 def create_sprint_name(
@@ -37,9 +38,9 @@ def create_sprint_name(
         return 'Install `words` package.'
 
     with open(wordfile, 'r', encoding='utf-8') as file:
-        words = file.read().splitlines()
+        wordlist = file.read().splitlines()
 
-    return f'{get_word(words)}-{get_word(words)}'
+    return f'{get_word(wordlist)}-{get_word(wordlist)}'
 
 
 if __name__ == '__main__':

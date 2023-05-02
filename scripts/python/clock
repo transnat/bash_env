@@ -17,9 +17,13 @@ setlocale(LC_ALL, 'en_US.UTF-8')
 
 
 def get_arguments() -> Namespace:
-    '''Get cmdline arguments.'''
-    parser = ArgumentParser(description='Prints a simple clock to your terminal.')
-    parser.add_argument(
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+
+    parser.add_argument(                                                    # 12-hour time.
         '-12',
         action='store_true',
         dest='twelve',
@@ -33,23 +37,9 @@ def get_arguments() -> Namespace:
 
 if __name__ == '__main__':
     args = get_arguments()
+    FSTRING = '%I:%M:%S %p' if args.twelve else '%H:%M:%S'
 
     while True:
-        now = datetime.now()
-
         system('clear')
-
-        if args.twelve:
-            print(
-                '===========\n'
-                f'{now.strftime("%I:%M:%S %p")}\n'
-                '==========='
-            )
-        else:
-            print(
-                '========\n'
-                f'{now.strftime("%H:%M:%S")}\n'
-                '========'
-            )
-
+        print(f'===========\n{datetime.now().strftime(FSTRING)}\n===========')
         sleep(1)

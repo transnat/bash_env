@@ -36,7 +36,7 @@ jobs:
             - name: Lint Bash scripts with Shellcheck
               run: |
                 shellcheck                                              \
-                    scripts/bash/*
+                    scripts/sh/*
 
             - name: Lint Python scripts with PyLint
               run: |

@@ -7,13 +7,14 @@ fi
 
 
 PATH="${PATH}:/usr/local/bin"
+SCRIPTS="${HOME}/.env/scripts"
 
 # PATH directories below listed from lowest to highest priority.
 ## Set PATH so it includes script directories.
 PATH="${PATH}:${HOME}/.local/lib/go"                        # Go install path.
-PATH="${PATH}:${HOME}/.env/scripts/bash"                    # Bash scripts.
-PATH="${PATH}:${HOME}/.env/scripts/python"                  # Python3 scripts.
-PATH="${PATH}:${HOME}/.env/scripts/pgp"                     # PGP-encrypted scripts.
+PATH="${PATH}:${SCRIPTS}/sh"                                # Bash scripts.
+PATH="${PATH}:${SCRIPTS}/python"                            # Python3 scripts.
+PATH="${PATH}:${SCRIPTS}/pgp"                               # PGP-encrypted scripts.
 
 ## Misc. scripts.
 if [ -d "${HOME}/Documents/scripts/ad_hoc" ]; then

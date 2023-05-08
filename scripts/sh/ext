@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 # Author:       Casey Sparks
 # Date:         May 18, 2022
 # Description:  Extract any compressed file or compress any uncompressed file.

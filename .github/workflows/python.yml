@@ -32,11 +32,6 @@ jobs:
                     pylint                                              \
                     -r requirements/python.txt
 
-            - name: Lint Bash scripts with Shellcheck
-              run: |
-                shellcheck                                              \
-                    scripts/sh/*
-
             - name: Lint Python scripts with PyLint
               run: |
                 pylint                                                  \

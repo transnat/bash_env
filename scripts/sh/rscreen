@@ -1,7 +1,12 @@
 #!/usr/bin/env sh
+#-*- coding:utf-8 -*-
 # Author:       Casey Sparks
 # Date:         May 18, 2022
 # Description:  Record primary display.
+
+if [ ! -d "${HOME}"/Videos/screen_recordings ]; then
+    mkdir -p "${HOME}"/Videos/screen_recordings 
+fi
 
 ffmpeg                                                \
   -f x11grab                                          \

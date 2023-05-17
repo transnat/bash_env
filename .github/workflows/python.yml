@@ -36,7 +36,9 @@ jobs:
               run: |
                 pylint                                                  \
                         --max-line-length=120                           \
-                        --disable E0611,W0212                           \
+                        --disable E0611,R0801,W0212,W1203               \
                     scripts/python/*
                 # E0611: no-name-in-module
+                # R0801: similar-lines
                 # W0212: protected-acess
+                # W1203: logging-fstring-interpolation

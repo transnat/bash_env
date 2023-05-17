@@ -5,6 +5,9 @@
 '''Display information about a network interface.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = [
+    'requests>=2.26.0,<3.0.0'
+]
 
 from argparse import ArgumentParser, Namespace
 from fcntl import ioctl

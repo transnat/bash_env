@@ -5,6 +5,7 @@
 '''Parse IPv4 and IPv6 addresses between CIDR and netmask.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = []
 
 from argparse import ArgumentParser, Namespace
 from ipaddress import ip_network, IPv6Network

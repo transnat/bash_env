@@ -7,6 +7,7 @@ Procedurally generate a name for a sprint.
 '''
 
 __author__ = 'Casey Sparks'
+__requires__ = []
 
 from locale import setlocale, LC_ALL
 from pathlib import Path

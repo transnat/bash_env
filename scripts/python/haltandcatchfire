@@ -5,6 +5,9 @@
 '''Check an endpoint and wipe local user data. Should be cron on sensitive systems.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = [
+    'requests>=2.26.0,<3.0.0'
+]
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL

@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Date: DATE
+# Date: May 12, 2023
 # Description:
-'''The description of the script goes here.'''
+'''Read QR codes from the screen.'''
 
 __author__ = 'Casey Sparks'
-__requires__ = []
+__requires__ = [
+    'opencv-python>=4.7.0,<5.0.0',
+    'pillow>=9.4.0,<10.0.0'
+]
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import FileHandler, Formatter, RootLogger, StreamHandler, getLogger
 from pathlib import Path
-from typing import Optional
+from tempfile import NamedTemporaryFile
+from typing import Optional, Union
+from PIL import ImageGrab
+from cv2 import QRCodeDetector, imread
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -91,6 +97,42 @@ def enable_log(
     return log_root
 
 
+def take_screenshot() -> Path:
+    '''
+    Save the entire screen to a temporary PNG file and return the path.
+        :return:    Path of the temporary PNG file.
+    '''
+    with NamedTemporaryFile(mode='w+b', suffix='.png', dir=Path('/tmp'), delete=False) as temp_file:
+        screenshot = ImageGrab.grab()                                       # Take screenshot.
+
+        screenshot.save(temp_file.name, 'PNG')                              # Save screenshot.
+
+    return Path(temp_file.name)
+
+
+def read_qr_code_from_file(
+    filename: Union[Path, str]
+        ) -> str:
+    '''
+    Read a QR code from an image.
+        :param filename: Path to file.
+        :return: Value from QR code.
+    '''
+    try:
+        img = imread(str(filename))
+        value, _, _ = QRCodeDetector().detectAndDecode(img)
+
+        if value == '':
+            value = 'No QR data found.'
+
+    except BaseException as exc:
+        raise exc
+
+    return value
+
+
 if __name__ == '__main__':
     args = get_arguments()
     log = enable_log(args.log_level, args.log_file)
+
+    print(read_qr_code_from_file(Path(take_screenshot())))

@@ -5,6 +5,7 @@
 '''Run a simple local webserver.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = []
 
 from argparse import ArgumentParser, Namespace
 from http import server

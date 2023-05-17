@@ -5,6 +5,9 @@
 '''Generate a connection QR code for a wifi SSID.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = [
+    'qrcode>=7.4.2,<8.0.0'
+]
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL

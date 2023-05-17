@@ -5,6 +5,7 @@
 '''A simple CLI clock.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = []
 
 from argparse import Namespace, ArgumentParser
 from datetime import datetime

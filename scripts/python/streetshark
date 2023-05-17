@@ -5,6 +5,7 @@
 '''Monitor advertised SSIDs and (optionally) find matches.'''
 
 __author__ = 'Casey Sparks'
+__requires__ = []
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime

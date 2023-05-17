@@ -3,9 +3,11 @@
 # Date:         May 18, 2022.
 # Description:  A simple wrapper for xrandr scripts.
 
-"${HOME}"/.env/config/xrandr/"${HOSTNAME}"/"${1}"                       \
+HOSTNAME="$(cat /etc/hostname)"
+
+"$HOME"/.env/config/xrandr/"$HOSTNAME"/"$1"                             \
     2> /dev/null                                                        \
     && betterlockscreen                                                 \
-        -u "${HOME}"/Pictures/backgrounds/"${HOSTNAME}".{jp*g,png}  &
+        -u "$HOME"/Pictures/backgrounds/"$HOSTNAME".*
 
-command source "${HOME}"/.bashrc
+command . "$HOME"/.bashrc

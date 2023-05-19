@@ -10,7 +10,8 @@ __requires__ = []
 from argparse import ArgumentParser, Namespace
 from ipaddress import ip_network, IPv6Network
 from locale import setlocale, LC_ALL
-from typing import NoReturn
+from typing import List, NoReturn
+from math import ceil, log
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -21,28 +22,46 @@ def get_arguments() -> Namespace:
         :return:    User-provided commandline arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    mutex_group = parser.add_mutually_exclusive_group()
 
-    parser.add_argument(                                                    # Addresses/netmasks to process.
-        'network',
+    mutex_group.add_argument(                                               # Addresses/netmasks to process.
+        '--address', '-a',
         type=str,
+        dest='address',
         help='Subnet to parse, like `192.168.0.1/16`, `10.0.0.1/255.0.0.0`, or `::1`.'
+    )
+    mutex_group.add_argument(                                               # Number of hosts.
+        '--hosts', '-n',
+        type=int,
+        dest='number_of_hosts',
+        help='Get the minimum netmask for a given number of hosts.'
     )
 
     return parser.parse_args()
 
 
 def print_table(
+    table_list:  List[List[str]],
+    right_padding: int
+        ) -> NoReturn:
+    '''
+    Create and print a network table.
+        :param table: The table to print.
+        :right_padding: The amount of whitespace padding in the table.
+    '''
+    for heading, data in table_list:                                        # Print table.
+        print(f'{heading:<18}{data:>{right_padding}}')
+
+
+def get_network_table(
     network: str
         ) -> NoReturn:
     '''
     Create and print a network table.
         :param network: The network string to print (like 10.10.10.10/24).
+        :return:        The network table.
     '''
-    if network.split('/')[0].endswith('.0'):
-        host_addr = 'None'
-    else:
-        host_addr = network.split('/')[0]
-
+    host_addr = 'None' if network.split('/')[0].endswith('.0') else network.split('/')[0]
     subnet = ip_network(network, strict=False)
     div = 34 * '='                                                          # Div length for IPv4 addresses.
     r_pad = 16                                                              # Right padding for IPv4 addresses.
@@ -53,7 +72,7 @@ def print_table(
         r_pad += 24
         netmask = 'Prefix'                                                  # IPv6 terminology.
 
-    table = [
+    net_table = [
         [div, ''],
         [network, ''],
         [div.replace('=', '-'), ''],
@@ -73,11 +92,43 @@ def print_table(
         [div, '']
     ]
 
-    for heading, data in table:                                             # Print table.
-        print(f'{heading:<18}{data:>{r_pad}}')
+    return net_table, r_pad
+
+
+def get_netmask_table(
+    hosts: int
+        ) -> List[List[str]]:
+    '''
+    Print the minimum netmask/prefix length for a subnet with a given number of hosts.
+        :param hosts:   The maximum number of hosts on the subnet.
+        :return:        The netmask table.
+    '''
+    ip4_cidr = f'/{32 - ceil(log(hosts, 2))}'                               # IPv4 CIDR.
+    ip4_netmask = str(ip_network(f'0.0.0.0{ip4_cidr}').netmask)             # IPv4 netmask.
+    ip6_cidr = f'/{128 - ceil(log(hosts, 2))}'                              # IPv6 CIDR.
+    ip6_netmask = str(ip_network(f'::{ip6_cidr}').netmask)                  # IPv6 netmask.
+    div = 57 * '='                                                          # Div length for IPv4 addresses.
+
+    net_table = [
+        [div, ''],
+        [f'{hosts} Total Addresses', ''],
+        [div.replace('=', '-'), ''],
+        ['IPv4 CIDR', ip4_cidr],
+        ['IPv4 Netmask', ip4_netmask],
+        ['IPv6 CIDR', ip6_cidr],
+        ['IPv6 Netmask', ip6_netmask],
+    ]
+
+    return net_table, 39
 
 
 if __name__ == '__main__':
     args = get_arguments()
 
-    print_table(args.network)
+    if args.address:
+        table, padding = get_network_table(args.address)
+
+    if args.number_of_hosts:
+        table, padding = get_netmask_table(args.number_of_hosts)
+
+    print_table(table, padding)

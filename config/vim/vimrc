@@ -82,6 +82,10 @@ autocmd BufNewFile *.sh
 autocmd Filetype sh
     \set colorcolumn=76,121
 
+autocmd BufRead *.rsc
+    \set colorcolumn=76,121                                                 \
+    \set virtualedit=all
+
 
 " Plaintext config ------------------------------------------------------------
 autocmd BufRead,BufNewfile *.txt,*.md

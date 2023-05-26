@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Author:       Casey Sparks
+# Date:         May 19, 2023
+# Description:  Get the cipher suites of a host or hosts.
+# Notes:        Python refactor candidate.
+
+# OpenSSL requires the port number.
+CIPHERS=( "$(openssl ciphers 'ALL:eNULL' | sed -e 's/:/ /g')" )
+SERVERS=( "${@}" )
+
+echo "Obtaining cipher list from $(openssl version)".
+
+for SERVER in "${SERVERS[@]}"; do
+    for CIPHER in "${CIPHERS[@]}"; do
+        echo -n "${CIPHER}: "
+
+        RESULT=$(echo -n | openssl s_client -cipher "${CIPHER}" -connect "${SERVER}" 2>&1)
+
+        if [[ "${RESULT}" =~ ":error:" ]] ; then
+            echo "FAILED"
+
+        else
+            if [[ "${RESULT}" == "CONNECTED"* || "${RESULT}" =~ "Cipher    :" ]]; then
+                echo "SUCCESS"
+
+                else
+                echo "UNKNOWN RESPONSE: ${RESULT}"
+            fi
+        fi
+
+        sleep 1
+    done
+done

@@ -19,7 +19,7 @@ from locale import setlocale, LC_ALL
 from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from sys import exit as sys_exit, stdout
-from typing import NoReturn, Union
+from typing import NoReturn
 from dict2xml import dict2xml
 from xmltodict import parse
 from yaml import safe_load, dump as ydump
@@ -147,16 +147,18 @@ def ingest_data(
 def output_data(
     payload: dict,
     infile: Path,
-    out_format: Union[SUPPORTED_TYPES] = 'yaml',
+    out_format: str = 'yaml',
     write: bool = False
         ) -> NoReturn:
     '''
     Formats and outputs a data object as JSON or YAML to a file or STDOUT.
         :param payload:     The Python dict to format and output.
         :param infile:      Path of the input file.
-        :param out_format:  Output format of the data.
+        :param out_format:  Output format of the data. One of ['ini', 'json', 'xml', 'yaml']
         :param write:       Boolean specifying whether data should be written to a file.
     '''
+    assert out_format in SUPPORTED_TYPES, f'`out_format must be one of {SUPPORTED_TYPES}'
+
     def _write_out(
         payload: dict,
         out_format: str,
@@ -165,9 +167,13 @@ def output_data(
         '''
         Write data to a TextIOWrapper.
             :param payload:     The Python dict to format and output.
-            :param out_format:  Output format of the data.
+            :param out_format:  Output format of the data. One of ['ini', 'json', 'xml', 'yaml']
             :param outfile:     TextIOWrapper to write data to. Either an open filehandle, or stdout.
         '''
+        assert isinstance(payload, dict), '`payload` must be dict.'
+        assert out_format in SUPPORTED_TYPES, 'Unsupported output format.'
+        assert isinstance(outfile, TextIOWrapper), '`outfile` must be io.TextIOWrapper.'
+
         log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
 
         match out_format.lower():
@@ -204,9 +210,4 @@ if __name__ == '__main__':
     args = get_arguments()
     log = enable_log(args.log_level)
 
-    output_data(
-        ingest_data(args.infile),
-        args.infile,
-        args.format,
-        args.write
-    )
+    output_data(ingest_data(args.infile), args.infile, args.format, args.write)

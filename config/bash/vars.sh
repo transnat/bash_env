@@ -6,7 +6,7 @@ export TERM="xterm-256color"
 
 # Misc.
 export ALIASES="${HOME}/.env/config/bash/aliases"
-export BROWSER="$(which chrome)"
+export BROWSER="$(which firefox)"
 export CONFIG="${HOME}/.env/config"
 export ENV="${HOME}/.env"
 export FUNCTIONS="${HOME}/.env/config/bash/functions"

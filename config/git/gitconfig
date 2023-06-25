@@ -1,27 +1,27 @@
 [user]
-    email = himself@caseyspar.kz
-    name = caseysparkz
-    signingKey = 0x3260255327CBCDA1
+	email = himself@caseyspar.kz
+	name = caseysparkz
+	signingKey = 0x2027DEDFECE6A3D5
 [core]
-    editor = vim
+	editor = vim
 [init]
-    defaultBranch = main
+	defaultBranch = main
 [fetch]
-    prune = true
-    pruneTags = true
+	prune = true
+	pruneTags = true
 [pull]
 	default = current
-    rebase = true
+	rebase = true
 [commit]
-    gpgsign = true
+	gpgsign = true
 [push]
 	default = current
 [diff]
 	colorMoved = zebra
 [http]
-    postBuffer = 1048576000
+	postBuffer = 1048576000
 [ssh]
-    postBuffer = 1048576000
+	postBuffer = 1048576000
 [gc]
 	pruneexpire = 14 days
 [advice]

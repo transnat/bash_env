@@ -52,13 +52,13 @@ def get_arguments() -> Namespace:
 
 
 def print_table(
-    table_list:  List[List[str]],
+    table_list:  list,
     right_padding: int
         ) -> NoReturn:
     '''
     Create and print a network table.
-        :param table: The table to print.
-        :right_padding: The amount of whitespace padding in the table.
+        :param table_list:      The table to print.
+        :param right_padding:   The amount of whitespace padding in the table.
     '''
     for heading, data in table_list:                                        # Print table.
         print(f'{heading:<18}{data:>{right_padding}}')
@@ -66,10 +66,10 @@ def print_table(
 
 def get_network_table(
     subnet: Union[IPv4Network, IPv6Network]
-        ) -> Optional[Tuple[List[List[str]], int]]:
+        ) -> Optional[tuple]:
     '''
     Create and print a network table.
-        :param network: The network string to print (like 10.10.10.10/24).
+        :param subnet:  The network string to print (like 10.10.10.10/24).
         :return:        The network table.
     '''
     if subnet is None:
@@ -110,7 +110,7 @@ def get_network_table(
 
 def get_netmask_table(
     hosts: int
-        ) -> Optional[Tuple[List[List[str]], int]]:
+        ) -> Optional[tuple]:
     '''
     Print the minimum netmask/prefix length for a subnet with a given number of hosts.
         :param hosts:   The maximum number of hosts on the subnet.

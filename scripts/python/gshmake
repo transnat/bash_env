@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -*- coding:utf-8 -*-
 # Author:       Casey Sparks
 # Date:         November 24, 2022
 # Description:
@@ -9,7 +9,7 @@ Note that decrypted scripts get passed to a bash subshell, so all
 non-POSIX files **must** have a shebang in order to be properly
 interpreted by bash.
 
-To optionall encrypt the resultant script to yourself automatically:
+To optionally encrypt the resultant script to yourself automatically:
     * Set $PGP_KEY_ID in your environment, or
     * Set default-recipient to your uid in ~/.gnupg/gpg.conf
 

@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Date: May 13, 2022
+# Author:       Casey Sparks
+# Date:         May 13, 2022
 # Description:
 '''Monitor advertised SSIDs and (optionally) find matches.'''
-
-__author__ = 'Casey Sparks'
-__requires__ = []
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
@@ -15,9 +13,8 @@ from os import system
 from pathlib import Path
 from re import compile as re_compile
 from subprocess import run, Popen, PIPE
-from sys import exit as sys_exit
 from time import sleep
-from typing import NoReturn, Optional
+from typing import NoReturn
 
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
@@ -48,19 +45,13 @@ def get_arguments() -> Namespace:
         '--match', '-m',
         dest='ssids',
         type=str,
-        nargs='+',
-        help='Specify the SSIDs to catch.'
-    )
-    scan_type.add_argument(                                                 # Passive scan.
-        '--passive', '-p',
-        action='store_true',
-        dest='passive',
-        help='Print all SSIDs to STDOUT.'
+        nargs='*',
+        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.'
     )
     parser.add_argument(                                                    # Set path for the output log file.
         '--logfile', '-l',
         dest='log_file',
-        type=Optional[Path],
+        type=Path,
         default=None,
         help='Absolute path to write the logfile to. Default `None`.'
     )
@@ -93,7 +84,7 @@ def get_arguments() -> Namespace:
 
 def enable_log(
     log_level: int = 0,
-    log_file: Optional[Path] = None
+    log_file: (Path | None) = None
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
@@ -103,7 +94,7 @@ def enable_log(
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
-    assert isinstance(log_file, Optional[Path]), '`log_file` must be Path or None.'
+    assert isinstance(log_file, (Path | None)), '`log_file` must be Path or None.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -188,9 +179,7 @@ def iwlist(
             cells[-1].update({'encryption': 'wpa2'})
 
         for expression in regexps:
-            result = expression.search(line)
-
-            if result:
+            if (result := expression.search(line)):
                 log.debug(f'Found result: {result}.')
 
                 if 'encryption' in result.groupdict():
@@ -207,15 +196,13 @@ def iwlist(
 
 def display_ssids(
     interface: str,
-    ssids: Optional[list],
-    passive: Optional[bool] = False,
+    ssids: (list | None),
     refresh_interval: int = 5
         ) -> NoReturn:
     '''
     Display a list of discovered SSIDS to STDOUT.
        :param interface:        The interface to scan on.
        :param ssids:            SSIDS to look for.
-       :param passive:          Look for all SSIDS.
        :param refresh_interval: The interval to refresh the screen on.
     '''
     def _print_dict(
@@ -233,21 +220,19 @@ def display_ssids(
     now = datetime.now().strftime('%H:%M:%S')                               # Set timestamp.
 
     for name in [ssid['essid'] for ssid in iwlist(interface)]:              # Grab SSIDs.
-        if name:                                                            # Ignore hidden SSIDs.
-            if name not in advertised:                                      # Add found SSID to set.
-                advertised.add(name)
-                timestamp['advertised'][name] = now
+        if name not in advertised:                                          # Add found SSID to set.
+            advertised.add(name)
+            timestamp['advertised'][name] = now
 
-            if ssids and name in ssids:                                     # Add matched SSID to set.
-                if name not in matched:
-                    matched.add(name)
-                    timestamp['matched'][name] = now
+        if ssids and name in ssids:                                         # Add matched SSID to set.
+            if name not in matched:
+                matched.add(name)
+                timestamp['matched'][name] = now
 
     log.debug(f'Found: {advertised}')
     log.debug(f'Matched: {matched}')
-    print(51 * '=')                                                         # Print div.
-    print('StreetShark')                                                    # Print header.
-    print(51 * '-')                                                         # Print div.
+
+    print(51 * '=', '\nStreetShark', 51 * '-')                              # Print header.
 
     if ssids:                                                               # Print matched SSIDs.
         if len(matched) == 0:
@@ -255,15 +240,11 @@ def display_ssids(
         else:
             _print_dict(timestamp['matched'])
 
-    elif passive:                                                           # Print found SSIDs.
-        if len(advertised) == 0:
-            print('No SSIDs found yet.')
-        else:
-            _print_dict(timestamp['advertised'])
+    elif len(advertised) == 0:                                          # Print found SSIDs.
+        print('No SSIDs found yet.')
 
-    else:                                                                   # Exit.
-        log.critical('Invalid input. Exiting.')
-        sys_exit()
+    else:
+        _print_dict(timestamp['advertised'])
 
     print(51 * '=')                                                         # Print div.
     sleep(refresh_interval)
@@ -280,6 +261,5 @@ if __name__ == '__main__':
         display_ssids(
             args.interface,
             args.ssids,
-            args.passive,
             args.interval
         )

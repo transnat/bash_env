@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Date: December 14, 2022
+# Author:       Casey Sparks
+# Date:         December 14, 2022
 # Description:
 '''Check an endpoint and wipe local user data. Should be cron on sensitive systems.'''
-
-__author__ = 'Casey Sparks'
-__requires__ = [
-    'requests>=2.26.0,<3.0.0'
-]
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
@@ -128,7 +124,7 @@ def destroy_user_data(
                 rmtree(directory)
                 log.debug(f'Removed {directory}.')
 
-            except (FileNotFoundError, OSError) as exc:
+            except OSError as exc:
                 log.warning(f'Failed to remove {directory}.')
 
                 raise exc
@@ -137,7 +133,6 @@ def destroy_user_data(
 if __name__ == '__main__':
     args = get_arguments()
     log = enable_log(args.log_level)
-    flag = any([args.debug, remote_flag()])                                 # Get remote flag or debug mode.
 
-    if flag:
+    if any([args.debug, remote_flag()]):                                    # Get remote flag or debug mode.
         destroy_user_data(args.debug)

@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Date: February 09, 2022.
+# Author:       Casey Sparks
+# Date:         February 09, 2022.
 # Description:
 '''Display information about a network interface.'''
-
-__author__ = 'Casey Sparks'
-__requires__ = [
-    'requests>=2.26.0,<3.0.0'
-]
 
 from argparse import ArgumentParser, Namespace
 from fcntl import ioctl
@@ -15,7 +11,8 @@ from locale import setlocale, LC_ALL
 from logging import getLogger, Formatter, RootLogger, StreamHandler
 from socket import inet_ntoa, socket, SOCK_DGRAM, AF_INET
 from struct import pack
-from typing import Iterator, Tuple, NoReturn
+from typing import NoReturn
+from collections.abc import Iterator
 from requests import get
 
 setlocale(LC_ALL, 'en_US.UTF-8')
@@ -148,11 +145,11 @@ def convert_from_hex(
 
 def interface_info(
     iface: str
-        ) -> Tuple[str, str, str]:
+        ) -> tuple:
     '''
     Get the default gateway.
         :param iface:           The network interface to query.
-        :return:                Tuple of: (iface_ip, iface_gateway, iface_netmask)
+        :return:                Tuple of: (str(iface_ip), str(iface_gateway), str(iface_netmask))
     '''
     sock = socket(AF_INET, SOCK_DGRAM)                                      # Open a socket.
     iface_ip = inet_ntoa(ioctl(                                             # IP address.

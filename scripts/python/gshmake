@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Author:       Casey Sparks
 # Date:         November 24, 2022
 # Description:
 '''
@@ -8,19 +9,14 @@ Note that decrypted scripts get passed to a bash subshell, so all
 non-POSIX files **must** have a shebang in order to be properly
 interpreted by bash.
 
-To encrypt the resultant script to yourself:
-    * Optionally set $PGP_KEY_ID in your environment, or
+To optionall encrypt the resultant script to yourself automatically:
+    * Set $PGP_KEY_ID in your environment, or
     * Set default-recipient to your uid in ~/.gnupg/gpg.conf
 
 Requirements:
-    * PyGnuPG
+    * psutil
+    * python-gnupg
 '''
-
-__author__ = 'Casey Sparks'
-__requires__ = [
-    'psutil>=5.9.4,<6.0.0',
-    'python-gnupg>=0.5.0,<6.0.0'
-]
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
@@ -29,7 +25,7 @@ from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from typing import NoReturn
 from gnupg import GPG
-from psutil import process_iter, NoSuchProcess, AccessDenied, ZombieProcess
+from psutil import process_iter, AccessDenied, ZombieProcess
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -112,15 +108,16 @@ def prechecks_pass(
         ) -> bool:
     '''
     Check that inputs and processes are as expected.
-        :param arguments: User-specified cmdline arguments.
+        :param arguments:   User-specified cmdline arguments.
+        :return:            Boolean indicating if prechecks have passed.
     '''
-    for gpg_proc in ['gpg-agent', 'gpgconf']:                               # Check that a GPG agent is running.
+    for gpg_proc in ('gpg-agent', 'gpgconf'):                               # Check that a GPG agent is running.
         for proc in process_iter():
             try:
                 if gpg_proc in proc.name():
                     log.debug(f'Found process {gpg_proc}.')
 
-            except (NoSuchProcess, AccessDenied, ZombieProcess) as err:
+            except (AccessDenied, ZombieProcess) as err:
                 log.exception(f'{gpg_proc} not running on host.')
                 raise err
 
@@ -144,6 +141,7 @@ def encrypt(
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
         :param recipients:  The recipient emails of the cipherfile.
+        :return:            Path of the resultant cipherfile.
     '''
     gpg = GPG(                                                              # Instantiate GPG agent class.
         gpgbinary='/usr/bin/gpg2',

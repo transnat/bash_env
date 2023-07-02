@@ -1,0 +1,78 @@
+[MAIN]
+persistent=yes
+load-plugins=
+    pylint.extensions.check_elif,
+    pylint.extensions.bad_builtin,
+    pylint.extensions.docparams,
+    pylint.extensions.for_any_all,
+    pylint.extensions.set_membership,
+    pylint.extensions.code_style,
+    pylint.extensions.overlapping_exceptions,
+    pylint.extensions.typing,
+    pylint.extensions.redefined_variable_type,
+    pylint.extensions.comparison_placement,
+    pylint.extensions.mccabe,
+jobs=0
+suggestion-mode=yes
+unsafe-load-any-extension=no
+py-version = 3.10.0
+limit-inference-results=100
+fail-under=10.0
+fail-on=
+
+[MESSAGES CONTROL]
+enable=
+    use-symbolic-message-instead,
+    useless-suppression,
+disable=
+    logging-fstring-interpolation,
+    no-name-in-module,
+    protected-access
+
+[REPORTS]
+output-format=text
+reports=no
+score=yes
+
+[MISCELLANEOUS]
+notes=TODO
+
+
+[SIMILARITIES]
+min-similarity-lines=5
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes
+ignore-signatures=yes
+
+[VARIABLES]
+init-import=yes
+allow-global-unused-variables=no
+
+[FORMAT]
+max-line-length=120
+single-line-if-stmt=yes
+single-line-class-stmt=yes
+max-module-lines=1000
+indent-string='    '
+indent-after-paren=4
+expected-line-ending-format=
+
+[BASIC]
+good-names=i,j,k,ex,Run,_
+bad-names=foo,bar,baz,toto,tutu,tata
+include-naming-hint=yes
+function-naming-style=snake_case
+variable-naming-style=snake_case
+const-naming-style=UPPER_CASE
+attr-naming-style=snake_case
+argument-naming-style=snake_case
+class-attribute-naming-style=any
+class-const-naming-style=UPPER_CASE
+inlinevar-naming-style=any
+class-naming-style=PascalCase
+module-naming-style=snake_case
+method-naming-style=snake_case
+no-docstring-rgx=__.*__
+docstring-min-length=-1
+property-classes=abc.abstractproperty

@@ -1,0 +1,41 @@
+---
+- name: 'Disable securetty.'
+  ansible.builtin.copy:
+      dest: '/etc/securetty'
+      owner: 'root'
+      group: 'root'
+      mode: '0400'
+      content: ''
+      force: false
+
+- name: 'Set sudo timeout to 0.'
+  ansible.builtin.lineinfile:
+      backup: false
+      line: 'Defaults timestamp_timeout=0'
+      path: '/etc/sudoers'
+      state: 'present'
+
+- name: 'Disable su binary for non-sudo users.'
+  ansible.builtin.file:
+      dest: '/bin/su'
+      owner: 'root'
+      group: 'root'
+      mode: '0750'
+
+- name: 'Find pkexec binary.'
+  ansible.builtin.find:
+      paths:
+          - '/bin'
+          - '/usr/bin'
+      patterns: '^pkexec$'
+  register: security_pkexec
+
+- name: 'Disable pkexec binary for non-sudo users.'
+  ansible.builtin.file:
+      dest: '{{ item }}'
+      owner: 'root'
+      group: 'root'
+      mode: '0750'
+  loop: '{{ security_pkexec.files }}'
+  when: security_pkexec.examined | length != 0
+...

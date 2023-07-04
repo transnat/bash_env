@@ -1,0 +1,6 @@
+---
+exclude_paths:
+    - 'roles/environment/files/**'
+    - '.ansible-lint'
+    - '.git*'
+...

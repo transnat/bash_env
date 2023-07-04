@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Date: DATE
+# Description:
+'''The description of the script goes here.'''
+
+__author__ = 'Casey Sparks'
+__requires__ = []
+
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from pathlib import Path
+from typing import Optional
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+
+    parser.add_argument(                                                    # Set path for the output log file.
+        '--logfile', '-l',
+        dest='log_file',
+        type=Optional[Path],
+        default=None,
+        help='Absolute path to write the logfile to. Default `None`.'
+    )
+    parser.add_argument(                                                    # Specify logging verbosity.
+        '--verbose', '-v',
+        dest='log_level',
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
+    )
+
+    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level from 10 - 50.
+
+    return arguments
+
+
+def enable_log(
+    log_level: int = 0,
+    log_file: Optional[Path] = None
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level. Default NOTSET.
+        :param log_file:    User-specified path to write log file. Default None.
+        :return:            Instantiated logger.RootLogger instance.
+    '''
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_file, Optional[Path]), '`log_file` must be Path or None.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
+    )
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
+
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+
+    if log_file:                                                            # Log to file.
+        log_file = FileHandler(log_file)                                    # Set log file.
+
+        log_file.setFormatter(formatter)                                    # Set log file format.
+        log_root.addHandler(log_file)                                       # Log to file.
+
+    return log_root
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+    log = enable_log(args.log_level, args.log_file)

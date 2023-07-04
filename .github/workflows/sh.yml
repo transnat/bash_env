@@ -1,30 +1,23 @@
-name: Validate shell code
-
-on:  
-    push:
-        branches:
-        - main
-
-    pull_request:
-        branches:
-        - main
-
+---
+name: 'Validate shell code'
+    on:
+        push:
+            branches:
+                - 'main'
+        pull_request:
+            branches:
+                - 'main'
 jobs:
     lint_codebase:
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                python-version: ["3.10"]
-
+        runs-on: 'ubuntu-latest'
         steps:
-            - uses: actions/checkout@v3
+            - uses: 'actions/checkout@v3'
+            - name: 'Install dependencies'
+              run: >
+                  sudo apt update
+                  && sudo apt install -y shellcheck
 
-            - name: Install dependencies
-              run: |
-                sudo apt update                                         \
-                && sudo apt install -y shellcheck
-
-            - name: Lint shell scripts with Shellcheck
-              run: |
-                shellcheck                                              \
-                    scripts/sh/*
+            - name: 'Lint shell scripts with Shellcheck'
+              run: 'shellcheck ./*'
+              working-directory: 'scripts/sh'
+...

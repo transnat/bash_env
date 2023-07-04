@@ -1,0 +1,9 @@
+---
+- name: 'Update grub.'
+  ansible.builtin.command: 'grub2-mkconfig -o /boot/grub2/grub.cfg'
+  changed_when: false
+
+- name: 'Update initramfs.'
+  ansible.builtin.command: 'dracut --force --regenerate-all -v'
+  changed_when: false
+...

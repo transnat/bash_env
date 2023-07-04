@@ -1,0 +1,15 @@
+---
+- name: 'Package tasks.'
+  block:
+      - name: 'Update and install packages'
+        ansible.builtin.include_tasks: 'install_packages.yml'
+        tags:
+            - 'packages'
+            - 'install'
+
+      - name: 'Start system services, sockets, and timers.'
+        ansible.builtin.include_tasks: 'system_services.yml'
+        tags:
+            - 'packages'
+            - 'systemd'
+...

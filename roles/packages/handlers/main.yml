@@ -1,0 +1,20 @@
+---
+- name: 'Start systemd services.'
+  ansible.builtin.systemd:
+      name: '{{ item }}'
+      enabled: true
+      state: 'started'
+  loop: '{{ packages.systemd.services }}'
+
+- name: 'Start systemd timers.'
+  ansible.builtin.systemd:
+      name: '{{ item }}'
+      enabled: true
+      state: 'started'
+  loop: '{{ packages.systemd.timers }}'
+
+- name: 'Reload systemd configs.'
+  become: true
+  ansible.builtin.systemd:
+      daemon_reload: true
+...

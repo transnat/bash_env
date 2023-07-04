@@ -1,0 +1,98 @@
+" Global default config -------------------------------------------------------
+filetype indent on                      " Turn indent, filetype checking.
+syntax on                               " Turn on syntax highlighting.
+
+set encoding=utf-8                      " Set encoding.
+set expandtab                           " Expand tabs to spaces.
+set fileformat=unix                     " Duh.
+set foldenable                          " Enable tab folding
+set foldmethod=indent                   " Set fold for indented lines.
+set hlsearch                            " Highlight search results.
+set incsearch                           " Start highlighting at search.
+set wrap linebreak nolist               " Don't break in the middle of a word.
+set lazyredraw                          " Don't rerender the screen.
+set number                              " Enable line numbers.
+set showmatch                           " Match brackets.
+set spelllang=en_us                     " Set spellcheck language.
+set tabstop=4                           " The width of a TAB is set to 4.
+set softtabstop=4                       " Sets the number of columns for a TAB.
+set shiftwidth=0                        " Indents will match tabstop.
+set shell=bash                          " Set external shell to bash.
+
+cnoreabbrev nt NERDTree
+cnoreabbrev nT NERDTreeToggle
+
+" Docker config ---------------------------------------------------------------
+autocmd BufNewFile docker-compose.y*ml
+    \ :0r ~/.vim/templates/docker-compose.yml.template
+
+
+" JSON config -----------------------------------------------------------------
+autocmd BufRead *.json
+    \ set filetype=json
+
+
+" LaTeX config ----------------------------------------------------------------
+autocmd BufNewFile *.tex
+    \ :0r ~/.vim/templates/latex.tex.template
+
+
+" Makefile config -------------------------------------------------------------
+autocmd FileType make
+    \ set noexpandtab                                                       |
+    \ set softtabstop=0
+
+" Pkgbuild config -------------------------------------------------------------
+autocmd BufRead,BufNewfile PKGBUILD
+    \ set autoindent                                                        |
+    \ set filetype=PKGBUILD                                                 |
+    \ set noexpandtab                                                       |
+    \ set softtabstop=2
+
+
+" Python/YAML config ----------------------------------------------------------
+autocmd BufNewFile *.py
+    \ :0r ~/.vim/templates/python.py.template                               |
+    \ :3s/\<DATE\>/\=strftime("%B %d, %Y")/
+
+autocmd Filetype python
+    \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>
+
+autocmd Filetype python,yaml
+    \ set autoindent                                                        |
+    \ set tabstop=4                                                         |
+    \ set softtabstop=4                                                     |
+    \ set expandtab                                                         |
+    \ set colorcolumn=76,121                                                |
+    \ set modeline                                                          |
+    \ set textwidth=120                                                     |
+    \ set linebreak                                                         |
+    \ set wrap
+
+
+" Terraform configs -----------------------------------------------------------
+autocmd BufNewFile terraform.tf
+    \ :0r ~/.vim/templates/terraform/terraform.tf.template                  |
+    \ :4s/\<DATE\>/\=strftime("%B %d, %Y")/
+
+
+" Shell scripts ---------------------------------------------------------------
+autocmd BufNewFile *.sh
+    \ :0r ~/.vim/templates/sh.sh.template                                   |
+    \ :3s/\<DATE\>/\=strftime("%B %d, %Y")/
+
+autocmd Filetype sh
+    \set colorcolumn=76,121
+
+autocmd BufRead *.rsc
+    \set colorcolumn=76,121                                                 \
+    \set virtualedit=all
+
+
+" Plaintext config ------------------------------------------------------------
+autocmd BufRead,BufNewfile *.txt,*.md
+    \ set colorcolumn=115                                                   |
+    \ set textwidth=114                                                     |
+    \ set linebreak                                                         |
+    \ set wrap                                                              |
+    \ set nolist

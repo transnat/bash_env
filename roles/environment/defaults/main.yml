@@ -1,0 +1,30 @@
+---
+_default:
+    dir: &dir_defaults
+        mode: '0700'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+
+environment_env_dir:
+    <<: *dir_defaults
+    mode: '0700'
+    dir: '{{ ansible_env.HOME }}/.env'
+
+environment_conf_dir:
+    <<: *dir_defaults
+    mode: '0700'
+    dir: '{{ environment_env_dir }}/config'
+
+environment_script_dir:
+    <<: *dir_defaults
+    mode: '0755'
+    dir: '{{ environment_env_dir }}/scripts'
+
+environment_gpg_dir:
+    <<: *dir_defaults
+    dir: '{{ ansible_env.HOME }}/.gnupg'
+
+environment_ssh_dir:
+    <<: *dir_defaults
+    dir: '{{ ansible_env.HOME }}/.ssh'
+...

@@ -1,0 +1,33 @@
+---
+- name: 'Create limits.d-directory.'
+  ansible.builtin.file:
+      path: '/etc/security/limits.d'
+      owner: 'root'
+      group: 'root'
+      mode: '0755'
+      state: 'directory'
+
+- name: 'Create ulimit hardening file (1).'
+  community.general.pam_limits:
+      dest: '/etc/security/limits.d/hardening.conf'
+      domain: '*'
+      limit_item: 'core'
+      limit_type: 'hard'
+      value: '0'
+
+- name: 'Create ulimit hardening file (2).'
+  community.general.pam_limits:
+      dest: '/etc/security/limits.d/hardening.conf'
+      domain: '*'
+      limit_item: 'core'
+      limit_type: 'soft'
+      value: '0'
+
+- name: 'Limit number of concurrent logins.'
+  community.general.pam_limits:
+      dest: '/etc/security/limits.d/hardening.conf'
+      domain: '*'
+      limit_item: 'maxlogins'
+      limit_type: 'hard'
+      value: '5'
+...

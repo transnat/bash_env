@@ -1,0 +1,45 @@
+---
+- name: 'Build preferred user environment.'
+  block:
+      - name: 'Bash.'
+        ansible.builtin.include_tasks: 'bash.yml'
+        tags:
+            - 'environment'
+            - 'bash'
+
+      - name: 'Git.'
+        ansible.builtin.include_tasks: 'git.yml'
+        tags:
+            - 'environment'
+            - 'git'
+
+      - name: 'GnuPG.'
+        ansible.builtin.include_tasks: 'gnupg.yml'
+        tags:
+            - 'environment'
+            - 'pgp'
+
+      - name: 'Python3.'
+        ansible.builtin.include_tasks: 'python3.yml'
+        tags:
+            - 'environment'
+            - 'python3'
+
+      - name: 'SSH.'
+        ansible.builtin.include_tasks: 'ssh.yml'
+        tags:
+            - 'environment'
+            - 'ssh'
+
+      - name: 'Vim.'
+        ansible.builtin.include_tasks: 'vim.yml'
+        tags:
+            - 'environment'
+            - 'vim'
+
+      - name: 'Scripts.'
+        ansible.builtin.include_tasks: 'script_dir.yml'
+        tags:
+            - 'environment'
+            - 'scripts'
+...

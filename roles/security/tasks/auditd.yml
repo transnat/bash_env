@@ -1,0 +1,10 @@
+---
+- name: 'Replace auditd rules.'
+  become: true
+  ansible.builtin.copy:
+      src: 'audit.rules'
+      dest: '/etc/audit/rules.d/audit.rules'
+      mode: '0644'
+      owner: 'root'
+      group: 'root'
+...

@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         January 25, 2022
+# Description:
+'''
+whois for IP physical locations.
+
+Uses api.ipstack.com for IP data.
+'''
+
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from os import getenv
+from requests import get
+from tabulate import tabulate
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser.add_argument(                                                    # Specify an IPstack API key.
+        'ip_addresses',
+        type=str,
+        nargs='+',
+        help='List of IP addresses to retrieve.'
+    )
+
+    return parser.parse_args()
+
+
+def get_location_table(
+    api_key: str,
+    ip_address: str
+        ) -> list:
+    '''
+    Gets location data from IPStack.com and returns it as a list of lists.
+        :param api_key:     The IPStack API key for the request.
+        :param ip_address:  The IP address to get location info for.
+    '''
+    assert isinstance(api_key, str), '`api_key` must be str.'
+    assert isinstance(ip_address, str), '`ip_address` must be str.'
+
+    ip_info = get(
+        f'http://api.ipstack.com/{ip_address}',
+        params={'access_key': api_key},
+        timeout=2
+    ).json()
+
+    table = [
+        ['IP:', ip_info["ip"]],
+        ['City:', ip_info["city"]],
+        ['Region:', ip_info["region_name"]],
+        ['ZIP:', ip_info["zip"]],
+        ['Country:', ip_info["country_name"]],
+        ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
+    ]
+
+    return table
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    for ip in args.ip_addresses:
+        print(tabulate(get_location_table(getenv('IPSTACK_API_KEY'), ip)))

@@ -1,44 +1,45 @@
-name: Validate Python code
-
-on:  
+---
+name: 'Validate Python code'
+on:
     push:
         branches:
-        - main
+        - 'main'
 
     pull_request:
         branches:
-        - main
-
+        - 'main'
 jobs:
     lint_codebase:
-        runs-on: ubuntu-latest
+        runs-on: 'ubuntu-latest'
         strategy:
             matrix:
                 python-version: ["3.10"]
 
         steps:
-            - uses: actions/checkout@v3
+            - uses: 'actions/checkout@v3'
 
-            - name: Set up Python ${{ matrix.python-version }}
-              uses: actions/setup-python@v3
+            - name: 'Set up Python ${{ matrix.python-version }}'
+              uses: 'actions/setup-python@v3'
               with:
                   python-version: ${{ matrix.python-version }}
 
-            - name: Install dependencies
-              run: |
-                sudo apt update                                         \
-                && sudo apt install shellcheck                          \
-                && python -m pip install --no-cache-dir                 \
-                    pylint                                              \
-                    -r requirements/python.txt
+            - name: 'Install dependencies'
+              run: >
+                  sudo apt update
+                  && sudo apt install shellcheck
+                  && python -m pip install --no-cache-dir
+                      pylint
+                      -r requirements/python.txt
 
-            - name: Lint Python scripts with PyLint
-              run: |
-                pylint                                                  \
-                        --max-line-length=120                           \
-                        --disable E0611,R0801,W0212,W1203               \
-                    scripts/python/*
-                # E0611: no-name-in-module
-                # R0801: similar-lines
-                # W0212: protected-acess
-                # W1203: logging-fstring-interpolation
+            - name: 'Lint Python scripts with PyLint'
+              run: >
+                  pylint
+                      --max-line-length=120
+                      --disable E0611,R0801,W0212,W1203
+                      scripts/python/*
+                      # E0611: no-name-in-module
+                      # R0801: similar-lines
+                      # W0212: protected-acess
+                      # W1203: logging-fstring-interpolation
+              working-directory: 'scripts/python'
+...

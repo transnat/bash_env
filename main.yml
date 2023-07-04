@@ -1,0 +1,13 @@
+---
+- name: 'Gather facts.'
+  gather_facts: true
+  hosts: 'localhost'
+
+- name: 'Build end-user Linux system.'
+  hosts: 'localhost'
+  roles:                                                                    # Order matters.
+      # 'security'
+      # 'performance_tweaks'
+      # 'packages'
+      - 'environment'
+...

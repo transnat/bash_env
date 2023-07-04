@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         November 24, 2022
+# Description:
+'''
+A script to create PGP-encrypted scripts.
+Note that decrypted scripts get passed to a bash subshell, so all
+non-POSIX files **must** have a shebang in order to be properly
+interpreted by bash.
+
+To optionally encrypt the resultant script to yourself automatically:
+    * Set $PGP_KEY_ID in your environment, or
+    * Set default-recipient to your uid in ~/.gnupg/gpg.conf
+'''
+
+from argparse import ArgumentParser, Namespace
+from datetime import datetime
+from locale import setlocale, LC_ALL
+from logging import getLogger, Formatter, RootLogger, StreamHandler
+from pathlib import Path
+from typing import NoReturn
+from gnupg import GPG
+from psutil import process_iter, AccessDenied, ZombieProcess
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate parser.
+
+    parser.add_argument(                                                    # Specify input files.
+        'file',
+        type=Path,
+        nargs='+',
+        help='Specify files to encrypt.'
+    )
+    parser.add_argument(                                                    # Specify recipients.
+        '--recipients', '-r',
+        dest='recipients',
+        nargs='+',
+        default=[],
+        help='Specify who can decrypt the file.'
+    )
+    parser.add_argument(                                                    # Specify logging verbosity.
+        '--verbose', '-v',
+        dest='log_level',
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
+    )
+
+    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments.log_level = 50 - min(arguments.log_level * 10, 40)            # Set arguments.log_level from 10-50
+
+    return arguments
+
+
+def enable_log(
+    log_level: int = 0
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level. Default NOTSET.
+        :return:            Instantiated logger.RootLogger instance.
+    '''
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
+    )
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
+
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+
+    return log_root
+
+
+def prechecks_pass(
+    arguments: Namespace
+        ) -> bool:
+    '''
+    Check that inputs and processes are as expected.
+        :param arguments:   User-specified cmdline arguments.
+        :return:            Boolean indicating if prechecks have passed.
+    '''
+    for gpg_proc in ('gpg-agent', 'gpgconf'):                               # Check that a GPG agent is running.
+        for proc in process_iter():
+            try:
+                if gpg_proc in proc.name():
+                    log.debug(f'Found process {gpg_proc}.')
+
+            except (AccessDenied, ZombieProcess) as err:
+                log.exception(f'{gpg_proc} not running on host.')
+                raise err
+
+    for file in arguments.file:                                             # Check that the input files exist.
+        try:
+            file.resolve(strict=True)
+            log.debug(f'Found file {file}.')
+
+        except FileNotFoundError as file_err:
+            log.exception(f'File {file} not found: {file_err}')
+            raise file_err
+
+    return True
+
+
+def encrypt(
+    file: Path,
+    recipients: list
+        ) -> Path:
+    '''
+    Decrypt seed phrase and return its value.
+        :param file:        The path of the file to be encrypted.
+        :param recipients:  The recipient emails of the cipherfile.
+        :return:            Path of the resultant cipherfile.
+    '''
+    gpg = GPG(gpgbinary='/usr/bin/gpg2', use_agent=True, verbose=False)     # Instantiate GPG agent class.
+    outfile = file.with_suffix('')                                          # Strip suffix, if one exists.
+
+    log.debug(f'Encrypting file {file.name} to {outfile.name}')
+
+    with open(file, 'rb') as infile:
+        try:
+            cipherfile = gpg.encrypt_file(                                  # Encrypt the file.
+                infile,
+                recipients=recipients,
+                armor=True,                                                 # Output as ASCII text.
+                always_trust=True,
+                output=outfile
+            )
+            log.debug(f'{file.name} encrypted as {cipherfile}.')
+
+        except BaseException as err:
+            log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
+
+            raise err
+
+    return outfile
+
+
+def munge_cipherfile(
+    cipherfile: Path
+        ) -> NoReturn:
+    '''
+    Add lines to cipherfile needed for shell interpretation.
+        :param cipherfile: The path of the file to be encrypted.
+    '''
+    newlines = [                                                            # GSHscript cleartext header.
+        '#!/usr/bin/env bash\n',
+        '# -*- coding:utf-8 -*-\n',
+        '# Author:       Casey Sparks\n',
+        f'# Date:         {datetime.now().strftime("%B %d, %Y")}\n',
+        '\n',
+        'gpg2 --decrypt 2> /dev/null << EOF | bash -s $@\n',
+        '\n',
+    ]
+    with open(cipherfile, 'r', encoding='utf-8') as prefile:
+        newlines.extend(prefile.readlines())                                # Ciphertext.
+        newlines.extend('\nEOF\n')                                          # Heredoc delimiter.
+
+    with open(cipherfile, 'w', encoding='utf-8') as postfile:
+        postfile.writelines(newlines)                                       # Write header/ciphertext/footer to file.
+
+    cipherfile.chmod(775)
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+    log = enable_log(args.log_level)
+
+    if prechecks_pass(args):
+        for clearfile in args.file:
+            munge_cipherfile(encrypt(clearfile, args.recipients))
+            print(f'{clearfile} encrypted.\nYou may now delete the original, if it still exists.')

@@ -1,0 +1,24 @@
+# WAN
+Host git
+	Hostname github.com
+	User git
+
+# Catchall
+Host *
+	AddKeysToAgent yes
+	IdentityFile 	~/.ssh/smartcard
+	IdentitiesOnly yes
+	ServerAliveInterval 5
+	ServerAliveCountMax 120
+	PubkeyAcceptedKeyTypes +ssh-rsa
+	CheckHostIP yes
+	ConnectTimeout 5
+	ForwardX11 no
+	ForwardAgent no
+	#IPQoS=throughput
+	#LogLevel QUIET
+	#StrictHostKeyChecking no
+	#ControlMaster auto
+	#ControlPath ~/.ssh/control_paths/master-%u-%C
+	#ControlPersist 72h
+

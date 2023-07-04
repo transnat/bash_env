@@ -1,0 +1,39 @@
+---
+- name: 'Disable host-based authentication (1).'
+  ansible.builtin.lineinfile:
+      create: false
+      path: '/etc/ssh/sshd_config'
+      regexp: '(?i)^\s*HostbasedAuthentication yes\s+'
+      state: 'absent'
+  failed_when: false
+
+- name: 'Disable host-based authentication (2).'
+  ansible.builtin.lineinfile:
+      create: true
+      insertbefore: '^[#\s]*Match'
+      line: 'HostbasedAuthentication no'
+      path: '/etc/ssh/sshd_config'
+      state: 'present'
+      validate: '/usr/sbin/sshd -t -f %s'
+      mode: '0644'
+  failed_when: false
+
+- name: 'Disable SSH root login (1).'
+  ansible.builtin.lineinfile:
+      create: false
+      path: '/etc/ssh/sshd_config'
+      regexp: '(?i)^\s*PermitRootLogin yes\s+'
+      state: 'absent'
+  failed_when: false
+
+- name: 'Disable SSH root login (2).'
+  ansible.builtin.lineinfile:
+      create: true
+      insertbefore: '^[#\s]*Match'
+      line: 'PermitRootLogin no'
+      path: '/etc/ssh/sshd_config'
+      state: 'present'
+      validate: '/usr/sbin/sshd -t -f %s'
+      mode: '0644'
+  failed_when: false
+...

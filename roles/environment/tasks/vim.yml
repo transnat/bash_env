@@ -1,0 +1,15 @@
+---
+- name: 'Replace ~/.vimrc.'
+  ansible.builtin.file:
+      src: '{{ role_path }}/files/vim/vimrc'
+      dest: '{{ ansible_env.HOME }}/.vimrc'
+      force: true
+      state: 'link'
+
+- name: 'Symlink ~/.vim.'
+  ansible.builtin.file:
+      src: '{{ role_path }}/files/vim'
+      dest: '{{ ansible_env.HOME }}/.vim'
+      force: true
+      state: 'link'
+...

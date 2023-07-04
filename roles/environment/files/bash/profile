@@ -1,0 +1,20 @@
+# If running bash, include .bashrc.
+if [ -n "${BASH_VERSION}" ]; then
+  if [ -f "${HOME}/.bashrc" ]; then
+    . "${HOME}/.bashrc" >> /dev/null
+  fi
+fi
+
+
+PATH="${PATH}:/usr/local/bin"
+
+## Include local bin, if exists.
+if [ -d "${HOME}/.local/bin" ] ; then
+  PATH="${HOME}/.local/bin:${PATH}"
+fi
+
+# PATH directories below listed from lowest to highest priority.
+## Set PATH so it includes script directories.
+PATH="${PATH}:${HOME}/.local/lib/scripts/python"    # Python scripts.
+PATH="${PATH}:${HOME}/.local/lib/scripts/sh"        # Shell scripts.
+PATH="${PATH}:${HOME}/.local/lib/scripts/gsh"       # Encrypted scripts/binaries.

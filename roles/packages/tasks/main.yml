@@ -7,6 +7,12 @@
             - 'packages'
             - 'install'
 
+      - name: 'Add user to new package groups.'
+        ansible.builtin.include_tasks: 'usermod.yml'
+        tags:
+            - 'packages'
+            - 'usermod'
+
       - name: 'Start system services, sockets, and timers.'
         ansible.builtin.include_tasks: 'system_services.yml'
         tags:

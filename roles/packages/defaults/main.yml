@@ -1,5 +1,6 @@
 ---
 packages_apt:
+    - 'containerd'
     - 'dirmngr'
     - 'dnsutils'
     - 'docker'

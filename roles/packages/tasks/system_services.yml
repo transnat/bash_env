@@ -2,6 +2,18 @@
 - name: 'Enable systemd services and timers'
   become: true
   block:
+      - name: 'Copy systemd service files.'
+        when: ansible_distribution == 'Ubuntu'
+        ansible.builtin.copy:
+            src: '{{ role_path }}/files/etc/systemd/system/{{ item }}'
+            dest: '/etc/systemd/system/{{ item }}'
+            owner: 'root'
+            group: 'root'
+            mode: '0644'
+        loop:
+            - 'docker.service'
+            - 'docker.socket'
+
       - name: 'Start systemd services.'
         ansible.builtin.systemd:
             name: '{{ item }}.service'

@@ -1,0 +1,29 @@
+---
+- name: 'Disable and uninstall Snap.'
+  become: true
+  when: ansible_distribution == 'Ubuntu'
+  block:
+      - name: 'Stop snapd.'
+        ansible.builtin.systemd:
+            name: 'snapd.service'
+            state: 'stopped'
+
+      - name: 'Mask snapd.'
+        ansible.builtin.systemd:
+            name: 'snapd'
+            masked: true
+
+      - name: 'Uninstall snapd.'
+        ansible.builtin.apt:
+            name: 'snapd'
+            state: 'absent'
+            purge: true
+            autoclean: true
+            autoremove: true
+            force: true
+
+      - name: 'Hold snapd in apt.'
+        ansible.builtin.dpkg_selections:
+            name: 'snapd'
+            selection: 'hold'
+...

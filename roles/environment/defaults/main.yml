@@ -1,30 +1,25 @@
 ---
 _default:
-    dir: &dir_defaults
-        mode: '0700'
+    dir: &default_dir
         owner: '{{ ansible_effective_user_id }}'
         group: '{{ ansible_effective_group_id }}'
+        mode: '0700'
+    file: &default_file
+        <<: *default_dir
+        mode: '0600'
 
-environment_env_dir:
-    <<: *dir_defaults
-    mode: '0700'
-    dir: '{{ ansible_env.HOME }}/.env'
-
-environment_conf_dir:
-    <<: *dir_defaults
-    mode: '0700'
-    dir: '{{ environment_env_dir }}/config'
-
-environment_script_dir:
-    <<: *dir_defaults
-    mode: '0755'
-    dir: '{{ environment_env_dir }}/scripts'
-
-environment_gpg_dir:
-    <<: *dir_defaults
-    dir: '{{ ansible_env.HOME }}/.gnupg'
-
-environment_ssh_dir:
-    <<: *dir_defaults
-    dir: '{{ ansible_env.HOME }}/.ssh'
+environment_dotfiles:
+    subdirectories:
+        - <<: *default_dir
+          path: '{{ ansible_env.HOME }}/.config/Yubico'
+    symlinks:
+        - <<: *default_file
+          src: '{{ role_path }}/files/config/pylint.pylintrc'
+          dest: '{{ ansible_env.HOME }}/.config/pylint.pylintrc'
+        - <<: *default_file
+          src: '{{ role_path }}/files/config/Yubico/u2f_keys'
+          dest: '{{ ansible_env.HOME }}/.config/Yubico/u2f_keys'
+        - <<: *default_file
+          src: '{{ role_path }}/files/config/yamllint.yml'
+          dest: '{{ ansible_env.HOME }}/.config/yamllint.yml'
 ...

@@ -19,12 +19,6 @@
             - 'environment'
             - 'pgp'
 
-      - name: 'Python3.'
-        ansible.builtin.include_tasks: 'python3.yml'
-        tags:
-            - 'environment'
-            - 'python3'
-
       - name: 'SSH.'
         ansible.builtin.include_tasks: 'ssh.yml'
         tags:
@@ -42,4 +36,10 @@
         tags:
             - 'environment'
             - 'scripts'
+
+      - name: 'Dotfiles.'
+        ansible.builtin.include_tasks: 'dotfiles.yml'
+        tags:
+            - 'environment'
+            - 'dotfiles'
 ...

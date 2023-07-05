@@ -3,25 +3,27 @@ name: 'Validate Python code'
 on:
     push:
         branches:
-        - 'main'
+            - 'main'
+            - 'WIP**'
+        paths: 'roles/environment/files/scripts/**'
 
     pull_request:
         branches:
-        - 'main'
+            - 'main'
+        paths: 'roles/environment/files/scripts/**'
 jobs:
-    lint_codebase:
+    pylint:
         runs-on: 'ubuntu-latest'
         strategy:
             matrix:
-                python-version: ["3.10"]
-
+                python-version: ['3.11']
         steps:
             - uses: 'actions/checkout@v3'
 
             - name: 'Set up Python ${{ matrix.python-version }}'
               uses: 'actions/setup-python@v3'
               with:
-                  python-version: ${{ matrix.python-version }}
+                  python-version: '${{ matrix.python-version }}'
 
             - name: 'Install dependencies'
               run: >
@@ -29,17 +31,18 @@ jobs:
                   && sudo apt install shellcheck
                   && python -m pip install --no-cache-dir
                       pylint
-                      -r requirements/python.txt
+                      -r python_requirements.txt
+              working-directory: 'roles/environment/files/scripts/'
 
             - name: 'Lint Python scripts with PyLint'
               run: >
                   pylint
                       --max-line-length=120
                       --disable E0611,R0801,W0212,W1203
-                      scripts/python/*
+                      python/*
                       # E0611: no-name-in-module
                       # R0801: similar-lines
                       # W0212: protected-acess
                       # W1203: logging-fstring-interpolation
-              working-directory: 'scripts/python'
+              working-directory: 'roles/environment/files/scripts/'
 ...

@@ -1,14 +1,17 @@
 ---
 name: 'Validate shell code'
-    on:
-        push:
-            branches:
-                - 'main'
-        pull_request:
-            branches:
-                - 'main'
+on:
+    push:
+        branches:
+            - 'main'
+            - 'WIP**'
+        paths: 'roles/environment/files/scripts/sh/**'
+    pull_request:
+        branches:
+            - 'main'
+        paths: 'roles/environment/files/scripts/sh/**'
 jobs:
-    lint_codebase:
+    shellcheck:
         runs-on: 'ubuntu-latest'
         steps:
             - uses: 'actions/checkout@v3'
@@ -19,5 +22,5 @@ jobs:
 
             - name: 'Lint shell scripts with Shellcheck'
               run: 'shellcheck ./*'
-              working-directory: 'scripts/sh'
+              working-directory: 'roles/environment/files/scripts/sh/'
 ...

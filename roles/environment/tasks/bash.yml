@@ -1,7 +1,7 @@
 ---
 - name: 'Symlink ~/.bash.'
   ansible.builtin.file:
-      src: '{{ role_path}}/files/bash/'
+      src: '{{ role_path }}/files/bash/'
       dest: '{{ ansible_env.HOME }}/.bash'
       owner: '{{ ansible_effective_user_id }}'
       group: '{{ ansible_effective_group_id }}'
@@ -10,7 +10,7 @@
 
 - name: 'Symlink ~/.profile.'
   ansible.builtin.file:
-      src: '{{ role_path}}/files/bash/profile'
+      src: '{{ role_path }}/files/bash/profile'
       dest: '{{ ansible_env.HOME }}/.profile'
       owner: '{{ ansible_effective_user_id }}'
       group: '{{ ansible_effective_group_id }}'
@@ -19,7 +19,7 @@
 
 - name: 'Symlink ~/.bashrc.'
   ansible.builtin.file:
-      src: '{{ role_path}}/files/bash/bashrc'
+      src: '{{ role_path }}/files/bash/bashrc'
       dest: '{{ ansible_env.HOME }}/.bashrc'
       owner: '{{ ansible_effective_user_id }}'
       group: '{{ ansible_effective_group_id }}'
@@ -36,7 +36,7 @@
 
 - name: 'Symlink ~/.bash_logout.'
   ansible.builtin.file:
-      src: '{{ role_path}}/files/bash/bash_logout'
+      src: '{{ role_path }}/files/bash/bash_logout'
       dest: '{{ ansible_env.HOME }}/.bash_logout'
       owner: '{{ ansible_effective_user_id }}'
       group: '{{ ansible_effective_group_id }}'

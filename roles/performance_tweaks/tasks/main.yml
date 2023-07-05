@@ -30,6 +30,35 @@
             enabled: true
             daemon_reload: true
         tags:
-            - 'always'
+            - 'systemd'
+
+      - name: 'Enable reflector.'
+        when: ansible_os_family == 'ArchLinux'
+        ansible.builtin.systemd:
+            name: 'reflecter.service'
+            state: 'started'
+            enabled: true
+            daemon_reload: true
+        tags:
+            - 'systemd'
+
+      - name: 'Enable timeshift-boot.'
+        when: ansible_os_family == 'ArchLinux'
+        ansible.builtin.systemd:
+            name: 'timeshift-boot.timer'
+            state: 'started'
+            enabled: true
+            daemon_reload: true
+        tags:
+            - 'systemd'
+
+      - name: 'Enable timeshift-hourly.'
+        when: ansible_os_family == 'ArchLinux'
+        ansible.builtin.systemd:
+            name: 'timeshift-boot.timer'
+            state: 'started'
+            enabled: true
+            daemon_reload: true
+        tags:
             - 'systemd'
 ...

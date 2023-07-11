@@ -5,8 +5,8 @@
 # Description:  A simple wrapper for xrandr scripts.
 
 HOSTNAME="$(cat /etc/hostname)"
-
-"${HOME}"/.env/config/xrandr/"${HOSTNAME}"/"${1}" > /dev/null 2>&1      \
+"${HOME}/.screenlayout/${HOSTNAME}/${1}"                                \
+        > /dev/null 2>&1                                                \
     && exec betterlockscreen                                            \
         -u "${HOME}"/Pictures/backgrounds/"${HOSTNAME}".*               \
         >/dev/null 2>&1 &

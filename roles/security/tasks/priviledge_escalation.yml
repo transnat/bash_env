@@ -20,7 +20,7 @@
       dest: '/bin/su'
       owner: 'root'
       group: 'root'
-      mode: '0750'
+      mode: '0700'
 
 - name: 'Find pkexec binary.'
   ansible.builtin.find:
@@ -35,7 +35,7 @@
       dest: '{{ item }}'
       owner: 'root'
       group: 'root'
-      mode: '0750'
+      mode: '0700'
   loop: '{{ security_pkexec.files }}'
   when: security_pkexec.examined | length != 0
 ...

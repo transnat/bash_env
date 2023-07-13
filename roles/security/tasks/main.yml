@@ -37,4 +37,10 @@
         tags:
             - 'security'
             - 'ssh'
+
+      - name: 'Enable firewalld.'
+        ansible.builtin.include_tasks: 'firewalld.yml'
+        tags:
+            - 'security'
+            - 'firewall'
 ...

@@ -1,0 +1,25 @@
+---
+- name: 'Update fstab file with tmpfs /tmp'
+  become: true
+  ansible.builtin.lineinfile:
+      path: '/etc/fstab'
+      regexp: 'tmpfs /tmp tmpfs'
+      line: 'tmpfs /tmp tmpfs defaults,lazytime,noatime,nodiratime 0 0'
+      state: 'present'
+      backup: true
+  tags:
+      - 'filesystem'
+      - 'fstab'
+
+- name: 'Discard trim enable.'
+  become: true
+  ansible.builtin.systemd:
+      name: 'fstrim.timer'
+      state: 'started'
+      enabled: true
+      daemon_reload: true
+  tags:
+      - 'filesystem'
+      - 'fstrim'
+      - 'systemd'
+...

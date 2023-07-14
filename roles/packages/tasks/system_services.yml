@@ -1,6 +1,8 @@
 ---
 - name: 'Enable systemd services and timers'
   become: true
+  tags:
+      - 'systemd'
   block:
       - name: 'Copy systemd service files.'
         when: ansible_distribution == 'Ubuntu'
@@ -18,33 +20,21 @@
         ansible.builtin.systemd:
             name: '{{ item }}.service'
             enabled: true
-        tags:
-            - 'always'
-            - 'systemd'
         loop: '{{ packages_systemd.services }}'
 
       - name: 'Start systemd sockets.'
         ansible.builtin.systemd:
             name: '{{ item }}.socket'
             enabled: true
-        tags:
-            - 'always'
-            - 'systemd'
         loop: '{{ packages_systemd.sockets }}'
 
       - name: 'Start systemd timers.'
         ansible.builtin.systemd:
             name: '{{ item }}.timer'
             enabled: true
-        tags:
-            - 'always'
-            - 'systemd'
         loop: '{{ packages_systemd.timers }}'
 
       - name: 'Reload systemd daemon.'
         ansible.builtin.systemd:
             daemon_reload: true
-        tags:
-            - 'always'
-            - 'systemd'
 ...

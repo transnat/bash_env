@@ -5,6 +5,7 @@
 
 # Ansible
 **/*.retry
+**/collections
 
 # Python
 **/__pycache__/

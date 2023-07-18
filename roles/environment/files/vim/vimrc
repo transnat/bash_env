@@ -75,6 +75,9 @@ autocmd BufNewFile terraform.tf
     \ :0r ~/.vim/templates/terraform/terraform.tf.template                  |
     \ :4s/\<DATE\>/\=strftime("%B %d, %Y")/
 
+autocmd BufRead *.tf
+    \ set colorcolumn=80,121
+
 
 " Shell scripts ---------------------------------------------------------------
 autocmd BufNewFile *.sh

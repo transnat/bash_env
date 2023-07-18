@@ -63,6 +63,7 @@
       mode: '0700'
   loop:
       - '/boot'
+      - '/root'
       - '/lib/modules'
       - '/usr/lib/modules'
       - '/usr/src'

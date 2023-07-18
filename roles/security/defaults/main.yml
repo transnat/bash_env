@@ -64,6 +64,8 @@ security_grub_flags:
 security_sysctl_vars:
     - name: 'dev.tty.ldisc_autoload'
       value: 0
+    - name: 'io_uring_disabled'
+      value: 1
     - name: 'fs.protected_fifos'
       value: 2
     - name: 'fs.protected_hardlinks'

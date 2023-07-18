@@ -1,64 +1,21 @@
 ---
-- name: 'Run performance tweaks'
-  become: true
+- name: 'Run performance tweaks.'
   tags:
       - 'performance_tweaks'
       - 'optional'
   block:
-      - name: 'Update fstab file with tmpfs /tmp'
-        ansible.builtin.lineinfile:
-            path: '/etc/fstab'
-            regexp: 'tmpfs /tmp tmpfs'
-            line: 'tmpfs /tmp tmpfs defaults,lazytime,noatime,nodiratime 0 0'
-            state: 'present'
-            backup: true
+      - name: 'Install dependencies.'
+        ansible.builtin.include_tasks: 'install_dependencies.yml'
 
-      - name: 'Load IO Schedulers at boot'
-        ansible.builtin.blockinfile:
-            path: '/etc/modules-load.d/iosched.conf'
-            create: true
-            mode: '0644'
-            block: |
-                bfq
-                mq-deadline
-                kyber-iosched
+      - name: 'Timeshift.'
+        ansible.builtin.include_tasks: 'timeshift.yml'
 
-      - name: 'Discard trim enable'
-        ansible.builtin.systemd:
-            name: 'fstrim.timer'
-            state: 'started'
-            enabled: true
-            daemon_reload: true
-        tags:
-            - 'systemd'
+      - name: 'IO scheduer.'
+        ansible.builtin.include_tasks: 'io_sched.yml'
 
-      - name: 'Enable reflector.'
-        when: ansible_os_family == 'ArchLinux'
-        ansible.builtin.systemd:
-            name: 'reflecter.service'
-            state: 'started'
-            enabled: true
-            daemon_reload: true
-        tags:
-            - 'systemd'
+      - name: 'Filesystem tweaks.'
+        ansible.builtin.include_tasks: 'filesystem.yml'
 
-      - name: 'Enable timeshift-boot.'
-        when: ansible_os_family == 'ArchLinux'
-        ansible.builtin.systemd:
-            name: 'timeshift-boot.timer'
-            state: 'started'
-            enabled: true
-            daemon_reload: true
-        tags:
-            - 'systemd'
-
-      - name: 'Enable timeshift-hourly.'
-        when: ansible_os_family == 'ArchLinux'
-        ansible.builtin.systemd:
-            name: 'timeshift-boot.timer'
-            state: 'started'
-            enabled: true
-            daemon_reload: true
-        tags:
-            - 'systemd'
+      - name: 'Reflector.'
+        ansible.builtin.include_tasks: 'reflector.yml'
 ...

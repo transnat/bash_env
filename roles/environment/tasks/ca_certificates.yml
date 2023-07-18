@@ -1,37 +1,37 @@
 ---
 - name: 'Enumerate CA certificates (PEM).'
   ansible.builtin.find:
-      paths: '{{ role_dir }}/files/ca-certificates/'
+      paths: '{{ role_path }}/files/ca-certificates/'
       file_type: 'file'
       patterns: '*.pem'
-  register: environment_ca_certificates_pem
+  register: ca_certificates_pem
 
 - name: 'Enumerate CA certificates (CRT).'
   ansible.builtin.find:
-      paths: '{{ role_dir }}/files/ca-certificates/'
+      paths: '{{ role_path }}/files/ca-certificates/'
       file_type: 'file'
       patterns: '*.crt'
-  register: environment_ca_certificates_crt
+  register: ca_certificates_crt
 
 - name: 'Install CA certificates.'                                          # Debian-based distos.
-  when: ansible_os_family == 'Debian' and environment_ca_certificates_pem.matched >= 1
+  when: ansible_os_family == 'Debian' and ca_certificates_pem.matched >= 1
   become: true
   block:
       - name: 'Copy PEM files.'
         ansible.builtin.copy:
-            src: '{{ role_path }}/files/ca-certificates/{{ item.path }}'
+            src: '{{ item.path }}'
             dest: '/usr/local/share/ca-certificates/{{ item.path | basename }}'
-            owner: '{{ root }}'
-            group: '{{ root }}'
+            owner: 'root'
+            group: 'root'
             mode: '0644'
-        loop: environment_ca_certificates_pem.files
+        loop: '{{ ca_certificates_pem.files }}'
 
       - name: 'Update CA trust.'
         ansible.builtin.command: 'update-ca-certificates'
         changed_when: false
 
 - name: 'Install CA certificates.'                                          # RHEL-based distros.
-  when: ansible_os_family == 'RedHat' and environment_ca_certificates_pem.matched >= 1
+  when: ansible_os_family == 'RedHat' and ca_certificates_pem.matched >= 1
   become: true
   block:
       - name: 'Create /etc/pki/ca-trust/source/anchors/.'
@@ -44,19 +44,19 @@
 
       - name: 'Copy PEM files.'
         ansible.builtin.copy:
-            src: '{{ role_path }}/files/ca-certificates/{{ item.path }}'
+            src: '{{ item.path }}'
             dest: '/etc/pki/ca-trust/source/anchors/{{ item.path | basename }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
-        loop: environment_ca_certificates_pem.files
+        loop: '{{ ca_certificates_pem.files }}'
 
       - name: 'Update CA trust.'
         ansible.builtin.command: 'update-ca-trust'
         changed_when: false
 
 - name: 'Install CA certificates.'                                          # Arch-based distros.
-  when: ansible_os_family == 'ArchLinux' and environment_ca_certificates_crt.matched >= 1
+  when: ansible_os_family == 'ArchLinux' and ca_certificates_crt.matched >= 1
   become: true
   block:
       - name: 'Create /usr/local/share/ca-certificates/.'
@@ -69,12 +69,12 @@
 
       - name: 'Copy CRT files.'
         ansible.builtin.copy:
-            src: '{{ role_path }}/files/ca-certificates/{{ item.path }}'
+            src: '{{ item.path }}'
             dest: '/etc/pki/ca-trust/source/anchors/{{ item.path | basename }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
-        loop: environment_ca_certificates_crt.files
+        loop: '{{ ca_certificates_crt.files }}'
 
       - name: 'Update CA trust.'
         ansible.builtin.command: 'update-ca-certificates'

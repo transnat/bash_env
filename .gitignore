@@ -2,6 +2,7 @@
 **/vim/.netrwhist
 **/vim/spell/
 **/nohup.out
+**/.*.swp
 
 # Ansible
 **/*.retry

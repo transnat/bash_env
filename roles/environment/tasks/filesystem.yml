@@ -1,0 +1,17 @@
+---
+- name: 'Create subdirectories in user home.'
+  ansible.builtin.file:
+      path: '{{ ansible_env.HOME }}/{{ item }}'
+      state: 'directory'
+      owner: '{{ ansible_user }}'
+      group: '{{ ansible_user }}'
+      mode: '0700'
+  loop:
+      - 'Documents/git/caseysparkz'
+      - 'Pictures/backgrounds'
+      - 'Pictures/screenshots'
+      - 'Media/usb1'
+      - 'Media/usb2'
+      - 'Media/usb3'
+      - 'Media/usb4'
+...

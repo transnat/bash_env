@@ -73,7 +73,6 @@
   ansible.builtin.command: 'find -L {{ item }} -perm /go+w -type f -exec chmod go-w {} \;'
   loop:
       - '/bin'
-      - '/sbin'
       - '/usr/bin'
       - '/usr/local/bin'
       - '/usr/local/sbin'

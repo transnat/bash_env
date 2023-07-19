@@ -8,10 +8,10 @@
       content: ''
       force: false
 
-- name: 'Set sudo timeout to 0.'
+- name: 'Set sudo timeout to 1.'
   ansible.builtin.lineinfile:
       backup: false
-      line: 'Defaults timestamp_timeout=0'
+      line: 'Defaults timestamp_timeout=1'
       path: '/etc/sudoers'
       state: 'present'
 

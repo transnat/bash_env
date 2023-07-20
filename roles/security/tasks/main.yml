@@ -1,46 +1,14 @@
 ---
 - name: 'Security tasks.'
-  become: true
-  block:
-      - name: 'Harden kernel.'
-        ansible.builtin.include_tasks: 'kernel.yml'
-        tags:
-            - 'security'
-            - 'kernel'
-
-      - name: 'Harden filesystem.'
-        ansible.builtin.include_tasks: 'filesystem.yml'
-        tags:
-            - 'security'
-            - 'filesystem'
-
-      - name: 'Harden binaries commonly used for priviledge escalation.'
-        ansible.builtin.include_tasks: 'priviledge_escalation.yml'
-        tags:
-            - 'security'
-            - 'priv_esc'
-
-      - name: 'Harden limits.'
-        ansible.builtin.include_tasks: 'ulimit.yml'
-        tags:
-            - 'security'
-            - 'ulimit'
-
-      - name: 'Harden auditd.'
-        ansible.builtin.include_tasks: 'auditd.yml'
-        tags:
-            - 'security'
-            - 'auditd'
-
-      - name: 'Harden SSH.'
-        ansible.builtin.include_tasks: 'ssh.yml'
-        tags:
-            - 'security'
-            - 'ssh'
-
-      - name: 'Enable firewalld.'
-        ansible.builtin.include_tasks: 'firewalld.yml'
-        tags:
-            - 'security'
-            - 'firewall'
+  tags:
+      - 'security'
+  ansible.builtin.include_tasks: '{{ item }}'
+  loop:
+      - 'kernel.yml'
+      - 'filesystem.yml'
+      - 'priviledge_escalation.yml'
+      - 'ulimit.yml'
+      - 'auditd.yml'
+      - 'ssh.yml'
+      - 'firewalld.yml'
 ...

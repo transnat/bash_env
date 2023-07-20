@@ -1,40 +1,41 @@
 ---
-- name: 'Install APT packages.'
+- name: 'Install distro packages.'
   become: true
   tags:
       - 'always'
-      - 'apt'
-  when: ansible_os_family == 'Debian'
   block:
       - name: 'Update APT cache.'
+        when: ansible_os_family == 'Debian'
+        tags:
+            - 'apt'
         ansible.builtin.apt:
             update_cache: true
             cache_valid_time: 3600
             name: '*'
 
       - name: 'Install APT packages.'
+        when: ansible_os_family == 'Debian'
+        tags:
+            - 'apt'
         ansible.builtin.apt:
             name: '{{ packages_apt }}'
 
-- name: 'Install DNF packages.'
-  become: true
-  tags:
-      - 'always'
-      - 'dnf'
-  when: ansible_os_family == 'RedHat'
-  ansible.builtin.dnf:
-      name: '{{ packages_dnf }}'
-      state: 'present'
+      - name: 'Install DNF packages.'
+        tags:
+            - 'dnf'
+        when: ansible_os_family == 'RedHat'
+        ansible.builtin.dnf:
+            name: '{{ packages_dnf }}'
+            state: 'present'
 
-- name: 'Install Pacman packages.'
-  become: true
-  tags:
-      - 'always'
-      - 'pacman'
-  when: ansible_os_family == 'Archlinux'
-  community.general.pacman:
-      name: '{{ packages_pacman }}'
-      state: 'present'
+      - name: 'Install Pacman packages.'
+        become: true
+        tags:
+            - 'pacman'
+        when: ansible_os_family == 'Archlinux'
+        community.general.pacman:
+            name: '{{ packages_pacman }}'
+            state: 'present'
 
 - name: 'Install PIP packages.'
   tags:

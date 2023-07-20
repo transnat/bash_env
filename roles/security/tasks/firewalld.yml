@@ -1,12 +1,11 @@
 ---
-- name: 'Install dependencies.'
+- name: 'Set up system firewall.'
+  become: true
   tags:
-      - 'security'
       - 'firewall'
   block:
       - name: 'Debian'
         when: ansible_os_family == 'Debian'
-        become: true
         ansible.builtin.apt:
             name: '{{ item }}'
             state: 'present'
@@ -16,7 +15,6 @@
 
       - name: 'Red Hat'
         when: ansible_os_family == 'RedHat'
-        become: true
         ansible.builtin.dnf:
             name: '{{ item }}'
             state: 'present'
@@ -26,7 +24,6 @@
 
       - name: 'Arch'
         when: ansible_os_family == 'ArchLinux'
-        become: true
         community.general.pacman:
             name: '{{ item }}'
             state: 'present'
@@ -38,16 +35,14 @@
         ansible.builtin.pip:
             name: 'firewall'
 
-- name: 'Start firewalld service.'
-  become: true
-  ansible.builtin.systemd:
-      name: 'firewalld.service'
-      state: 'started'
-      enabled: true
+      - name: 'Start firewalld service.'
+        ansible.builtin.systemd:
+            name: 'firewalld.service'
+            state: 'started'
+            enabled: true
 
-- name: 'Block all incoming connections.'
-  become: true
-  ansible.posix.firewalld:
-      state: 'disabled'
-      permanent: true
+      - name: 'Block all incoming connections.'
+        ansible.posix.firewalld:
+            state: 'disabled'
+            permanent: true
 ...

@@ -1,27 +1,31 @@
 ---
-- name: 'Create ~/.ssh'
-  ansible.builtin.file:
-      path: '{{ ansible_env.HOME }}/.ssh'
-      state: 'directory'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0700'
+- name: 'SSH'
+  tags:
+      - 'ssh'
+  block:
+      - name: 'Create ~/.ssh'
+        ansible.builtin.file:
+            path: '{{ ansible_env.HOME }}/.ssh'
+            state: 'directory'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0700'
 
-- name: 'Copy SSH pubkey.'
-  ansible.builtin.copy:
-      src: 'files/ssh/smartcard'
-      dest: '{{ ansible_env.HOME }}/.ssh/smartcard'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0600'
-      force: true
+      - name: 'Copy SSH pubkey.'
+        ansible.builtin.copy:
+            src: 'files/ssh/smartcard'
+            dest: '{{ ansible_env.HOME }}/.ssh/smartcard'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0600'
+            force: true
 
-- name: 'Copy SSH config.'
-  ansible.builtin.copy:
-      src: 'files/ssh/config'
-      dest: '{{ ansible_env.HOME }}/.ssh/config'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0600'
-      force: false
+      - name: 'Copy SSH config.'
+        ansible.builtin.copy:
+            src: 'files/ssh/config'
+            dest: '{{ ansible_env.HOME }}/.ssh/config'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0600'
+            force: false
 ...

@@ -5,10 +5,15 @@
   tags:
       - 'snap'
   block:
+      - name: 'Collect system service facts.'
+        ansible.builtin.service_facts:
+        register: services_state
+
       - name: 'Stop snapd.'
         ansible.builtin.systemd:
             name: 'snapd.service'
             state: 'stopped'
+        when: "'snapd.service' in services_state.ansible_facts.services"
 
       - name: 'Mask snapd.'
         ansible.builtin.systemd:

@@ -22,4 +22,7 @@ environment_dotfiles:
         - <<: *default_file
           src: '{{ role_path }}/files/config/yamllint.yml'
           dest: '{{ ansible_env.HOME }}/.config/yamllint.yml'
+        - <<: *default_file
+          src: '{{ role_path }}/files/screen/screenrc'
+          dest: '{{ ansible_env.HOME }}/.screenrc'
 ...

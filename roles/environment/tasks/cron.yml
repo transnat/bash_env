@@ -1,0 +1,8 @@
+---
+- name: 'Delete screenshots.'
+  ansible.builtin.cron:
+      name: 'Delete screenshots.'
+      minute: 0
+      hour: 10
+      job: 'rm ${HOME}/Pictures/screenshots/*'
+...

@@ -10,5 +10,5 @@
       - 'ulimit.yml'
       - 'auditd.yml'
       - 'ssh.yml'
-      - 'firewalld.yml'
+      - 'iptables.yml'
 ...

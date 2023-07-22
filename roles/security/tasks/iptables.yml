@@ -1,0 +1,13 @@
+---
+- name: 'IPtables.'
+  become: true
+  tags:
+      - 'firewall'
+      - 'iptables'
+  block:
+      - name: 'Drop all incoming traffic.'
+        ansible.builtin.iptables:
+            action: 'insert'
+            chain: 'INPUT'
+            policy: 'DROP'
+...

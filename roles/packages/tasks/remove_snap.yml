@@ -60,9 +60,10 @@
                   state: 'absent'
 
             - name: 'Replace Snap packages with Apt.'
-              loop: '{{ packages_snap_to_apt }}'
+              loop: '{{ packages_apt }}'
               block:
-                  - name: 'Add Apt preferences: {{ item.name }}.'
+                  - name: 'Add Apt preferences for  {{ item.name }}.'
+                    when: item | selectattr('pref', 'defined')
                     ansible.builtin.copy:
                         dest: '/etc/apt/preferences.d/{{ item.name }}.pref'
                         content: '{{ item.pref }}'
@@ -70,7 +71,8 @@
                         group: 'root'
                         mode: '0644'
 
-                  - name: 'Add Apt repository: {{ item.name }}'
+                  - name: 'Add Apt repository for  {{ item.name }}'
+                    when: item | selectattr('repo', 'defined')
                     ansible.builtin.apt_repository:
                         repo: '{{ item.repo }}'
                         state: 'present'
@@ -79,8 +81,10 @@
               ansible.builtin.apt:
                   update_cache: true
 
-      - name: 'Remove snap directory from system user home.'
-        ansible.builtin.file:
-            name: '{{ ansible_env.HOME }}/snap'
-            state: 'absent'
+      - name: 'System user tasks.'
+        block:
+            - name: 'Remove snap directory from system user home.'
+              ansible.builtin.file:
+                  name: '{{ ansible_env.HOME }}/snap'
+                  state: 'absent'
 ...

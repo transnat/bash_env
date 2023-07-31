@@ -12,15 +12,8 @@
             name: '*'
 
       - name: 'Install APT packages.'
+        loop: '{{ packages_apt }}'
         when: ansible_os_family == 'Debian'
-        tags:
-            - 'apt'
-        ansible.builtin.apt:
-            name: '{{ packages_apt }}'
-
-      - name: 'Install former snap packages.'
-        when: ansible_os_family == 'Ubuntu'
-        loop: '{{ packages_snap_to_apt }}'
         tags:
             - 'apt'
         ansible.builtin.apt:

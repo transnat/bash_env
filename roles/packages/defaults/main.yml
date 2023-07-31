@@ -1,25 +1,34 @@
 ---
 packages_apt:
-    - 'containerd'
-    - 'dirmngr'
-    - 'dnsutils'
-    - 'docker'
-    - 'fwupd'
-    - 'gnupg-agent'
-    - 'gnupg2'
-    - 'hopenpgp-tools'
-    - 'libpam-u2f'
-    - 'libpam-yubico'
-    - 'modemmanager'
-    - 'net-tools'
-    - 'network-manager'
-    - 'nmap'
-    - 'pamu2fcfg'
-    - 'pcscd'
-    - 'scdaemon'
-    - 'wget'
-    - 'yubikey-manager'
-    - 'yubikey-personalization'
+    - name: 'containerd'
+    - name: 'dirmngr'
+    - name: 'dnsutils'
+    - name: 'docker'
+    - name: 'firefox'
+      repo: 'ppa:mozillateam/ppa'
+      pref: |
+          "Package: *
+          Pin: release o=LP-PPA-mozillateam
+          Pin-Priority: 1001
+          Package: firefox
+          Pin: version 1:1snap1-0ubuntu2
+          Pin-Priority: -1"
+    - name: 'fwupd'
+    - name: 'gnupg-agent'
+    - name: 'gnupg2'
+    - name: 'hopenpgp-tools'
+    - name: 'libpam-u2f'
+    - name: 'libpam-yubico'
+    - name: 'modemmanager'
+    - name: 'net-tools'
+    - name: 'network-manager'
+    - name: 'nmap'
+    - name: 'pamu2fcfg'
+    - name: 'pcscd'
+    - name: 'scdaemon'
+    - name: 'wget'
+    - name: 'yubikey-manager'
+    - name: 'yubikey-personalization'
 packages_dnf:
     - 'ModemManager'
     - 'bind-utils'
@@ -43,16 +52,6 @@ packages_dnf:
     - 'wget'
     - 'ykpers'
     - 'yubikey-manager'
-packages_snap_to_apt:
-    - name: 'firefox'
-      repo: 'ppa:mozillateam/ppa'
-      pref: |
-          Package: *
-          Pin: release o=LP-PPA-mozillateam
-          Pin-Priority: 1001
-          Package: firefox
-          Pin: version 1:1snap1-0ubuntu2
-          Pin-Priority: -1
 packages_pacman:
     - 'bind'
     - 'ccid'

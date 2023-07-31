@@ -25,3 +25,8 @@ export PGP_KEY_ID="0x2027DEDFECE6A3D5"
 
 ## SSH
 export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+
+## Terraform
+export TF_CLI_CONFIG_FILE="${HOME}/.terraform.d/terraformrc"
+export TF_LOG="trace"
+export TF_LOG_PATH="./terraform.log"

@@ -1,8 +1,6 @@
 ---
 - name: 'Install distro packages.'
   become: true
-  tags:
-      - 'always'
   block:
       - name: 'Update APT cache.'
         when: ansible_os_family == 'Debian'
@@ -20,6 +18,14 @@
         ansible.builtin.apt:
             name: '{{ packages_apt }}'
 
+      - name: 'Install former snap packages.'
+        when: ansible_os_family == 'Ubuntu'
+        loop: '{{ packages_snap_to_apt }}'
+        tags:
+            - 'apt'
+        ansible.builtin.apt:
+            name: '{{ item.name }}'
+
       - name: 'Install DNF packages.'
         tags:
             - 'dnf'
@@ -29,7 +35,6 @@
             state: 'present'
 
       - name: 'Install Pacman packages.'
-        become: true
         tags:
             - 'pacman'
         when: ansible_os_family == 'Archlinux'
@@ -39,9 +44,7 @@
 
 - name: 'Install PIP packages.'
   tags:
-      - 'always'
       - 'pip'
   ansible.builtin.pip:
-      name: '{{ item }}'
-  loop: '{{ packages_pip }}'
+      name: '{{ packages_pip }}'
 ...

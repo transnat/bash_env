@@ -1,36 +1,86 @@
 ---
-- name: 'Disable and uninstall Snap.'
-  become: true
+- name: 'Purge and replace Snap packages.'
   when: ansible_distribution == 'Ubuntu'
   tags:
       - 'snap'
   block:
-      - name: 'Collect system service facts.'
-        ansible.builtin.service_facts:
-        register: services_state
+      - name: 'Root user tasks.'
+        become: true
+        block:
+            - name: 'Collect system service facts.'
+              ansible.builtin.service_facts:
+              register: services_state
 
-      - name: 'Stop snapd.'
-        ansible.builtin.systemd:
-            name: 'snapd.service'
-            state: 'stopped'
-        when: "'snapd.service' in services_state.ansible_facts.services"
+            - name: 'Stop and disable snapd systemd service.'
+              ansible.builtin.systemd_service:
+                  name: 'snapd.service'
+                  state: 'stopped'
+                  enabled: false
+              when: "'snapd.service' in services_state.ansible_facts.services"
 
-      - name: 'Mask snapd.'
-        ansible.builtin.systemd:
-            name: 'snapd'
-            masked: true
+            - name: 'Mask snapd systemd service.'
+              ansible.builtin.systemd_service:
+                  name: 'snapd'
+                  masked: true
 
-      - name: 'Uninstall snapd.'
-        ansible.builtin.apt:
-            name: 'snapd'
+            - name: 'Uninstall snapd package.'
+              ansible.builtin.apt:
+                  name: 'snapd'
+                  state: 'absent'
+                  purge: true
+                  autoclean: true
+                  autoremove: true
+                  force: true
+
+            - name: 'Hold snapd package in apt.'
+              ansible.builtin.dpkg_selections:
+                  name: 'snapd'
+                  selection: 'hold'
+
+            - name: 'Prevent Snap installation via apt.'
+              ansible.builtin.copy:
+                  dest: '/etc/apt/preferences.d/nosnap.pref'
+                  force: true
+                  owner: 'root'
+                  group: 'root'
+                  mode: '0644'
+                  content: |
+                      Package: snapd
+                      Pin: release a=*
+                      Pin-Priority: -10
+
+            - name: 'Remove snap system directories.'
+              loop:
+                  - '/snap/'
+                  - '/var/lib/snapd/'
+                  - '/var/snap/'
+                  - '/root/snapd/'
+              ansible.builtin.file:
+                  name: '{{ item }}'
+                  state: 'absent'
+
+            - name: 'Replace Snap packages with Apt.'
+              loop: '{{ packages_snap_to_apt }}'
+              block:
+                  - name: 'Add Apt preferences: {{ item.name }}.'
+                    ansible.builtin.copy:
+                        dest: '/etc/apt/preferences.d/{{ item.name }}.pref'
+                        content: '{{ item.pref }}'
+                        owner: 'root'
+                        group: 'root'
+                        mode: '0644'
+
+                  - name: 'Add Apt repository: {{ item.name }}'
+                    ansible.builtin.apt_repository:
+                        repo: '{{ item.repo }}'
+                        state: 'present'
+
+            - name: 'Update Apt cache.'
+              ansible.builtin.apt:
+                  update_cache: true
+
+      - name: 'Remove snap directory from system user home.'
+        ansible.builtin.file:
+            name: '{{ ansible_env.HOME }}/snap'
             state: 'absent'
-            purge: true
-            autoclean: true
-            autoremove: true
-            force: true
-
-      - name: 'Hold snapd in apt.'
-        ansible.builtin.dpkg_selections:
-            name: 'snapd'
-            selection: 'hold'
 ...

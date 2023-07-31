@@ -1,5 +1,7 @@
 ---
 - name: 'Symlink ~/.gitconfig.'
+  tags:
+      - 'git'
   ansible.builtin.file:
       src: '{{ role_path }}/files/git/gitconfig'
       dest: '{{ ansible_env.HOME }}/.gitconfig'

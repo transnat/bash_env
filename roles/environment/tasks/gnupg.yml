@@ -1,37 +1,41 @@
 ---
-- name: 'Create ~/.gnupg/.'
-  ansible.builtin.file:
-      path: '{{ ansible_env.HOME }}/.gnupg'
-      state: 'directory'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0700'
+- name: 'GnuPG.'
+  tags:
+      - 'gnupg'
+  block:
+      - name: 'Create ~/.gnupg/.'
+        ansible.builtin.file:
+            path: '{{ ansible_env.HOME }}/.gnupg'
+            state: 'directory'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0700'
 
-- name: 'Replace ~/.gpg-agent.conf'
-  ansible.builtin.copy:
-      src: 'gnupg/gpg-agent.conf'
-      dest: '{{ ansible_env.HOME }}/.gnupg/gpg-agent.conf'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0600'
+      - name: 'Replace ~/.gpg-agent.conf'
+        ansible.builtin.copy:
+            src: 'gnupg/gpg-agent.conf'
+            dest: '{{ ansible_env.HOME }}/.gnupg/gpg-agent.conf'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0600'
 
-- name: 'Replace ~/.gpg.conf'
-  ansible.builtin.copy:
-      src: 'gnupg/gpg.conf'
-      dest: '{{ ansible_env.HOME }}/.gnupg/gpg.conf'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0600'
+      - name: 'Replace ~/.gpg.conf'
+        ansible.builtin.copy:
+            src: 'gnupg/gpg.conf'
+            dest: '{{ ansible_env.HOME }}/.gnupg/gpg.conf'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0600'
 
-- name: 'Copy in pubkey file.'
-  ansible.builtin.copy:
-      src: 'gnupg/public.asc'
-      dest: '{{ ansible_env.HOME }}/.gnupg/public.asc'
-      owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_group_id }}'
-      mode: '0600'
+      - name: 'Copy in pubkey file.'
+        ansible.builtin.copy:
+            src: 'gnupg/public.asc'
+            dest: '{{ ansible_env.HOME }}/.gnupg/public.asc'
+            owner: '{{ ansible_effective_user_id }}'
+            group: '{{ ansible_effective_group_id }}'
+            mode: '0600'
 
-- name: 'Import PGP key to user keyring.'
-  ansible.builtin.command: 'gpg --import {{ ansible_env.HOME }}/.gnupg/public.asc'
-  changed_when: false
+      - name: 'Import PGP key to user keyring.'
+        ansible.builtin.command: 'gpg --import {{ ansible_env.HOME }}/.gnupg/public.asc'
+        changed_when: false
 ...

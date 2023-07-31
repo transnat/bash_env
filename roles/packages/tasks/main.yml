@@ -2,16 +2,10 @@
 - name: 'Package tasks.'
   tags:
       - 'packages'
-  block:
-      - name: 'Update and install packages'
-        ansible.builtin.include_tasks: 'install_packages.yml'
-
-      - name: 'Remove snap.'
-        ansible.builtin.include_tasks: 'remove_snap.yml'
-
-      - name: 'Add user to new package groups.'
-        ansible.builtin.include_tasks: 'usermod.yml'
-
-      - name: 'Start system services, sockets, and timers.'
-        ansible.builtin.include_tasks: 'system_services.yml'
+  ansible.builtin.include_tasks: '{{ item }}'
+  loop:
+      - 'remove_snap.yml'
+      - 'install_packages.yml'
+      - 'usermod.yml'
+      - 'system_services.yml'
 ...

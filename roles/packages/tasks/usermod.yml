@@ -3,7 +3,6 @@
   become: true
   tags:
       - 'usermod'
-      - 'groupadd'
   block:
       - name: 'Create system groups.'
         ansible.builtin.group:

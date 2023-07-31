@@ -1,19 +1,22 @@
 ---
-- name: 'Create /etc/audit/rules.d/.'
+- name: 'Auditd.'
   become: true
-  ansible.builtin.file:
-      path: '/etc/audit/rules.d/'
-      state: 'directory'
-      mode: '0755'
-      owner: 'root'
-      group: 'root'
+  tags:
+      - 'auditd'
+  block:
+      - name: 'Create /etc/audit/rules.d/.'
+        ansible.builtin.file:
+            path: '/etc/audit/rules.d/'
+            state: 'directory'
+            mode: '0755'
+            owner: 'root'
+            group: 'root'
 
-- name: 'Replace auditd rules.'
-  become: true
-  ansible.builtin.copy:
-      src: 'audit.rules'
-      dest: '/etc/audit/rules.d/audit.rules'
-      mode: '0644'
-      owner: 'root'
-      group: 'root'
+      - name: 'Replace auditd rules.'
+        ansible.builtin.copy:
+            src: 'audit.rules'
+            dest: '/etc/audit/rules.d/audit.rules'
+            mode: '0644'
+            owner: 'root'
+            group: 'root'
 ...

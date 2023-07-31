@@ -2,49 +2,13 @@
 - name: 'Build preferred user environment.'
   tags:
       - 'environment'
-  block:
-      - name: 'Bash.'
-        ansible.builtin.include_tasks: 'bash.yml'
-        tags:
-            - 'bash'
-
-      - name: 'Git.'
-        ansible.builtin.include_tasks: 'git.yml'
-        tags:
-            - 'git'
-
-      - name: 'GnuPG.'
-        ansible.builtin.include_tasks: 'gnupg.yml'
-        tags:
-            - 'pgp'
-
-      - name: 'SSH.'
-        ansible.builtin.include_tasks: 'ssh.yml'
-        tags:
-            - 'ssh'
-
-      - name: 'Vim.'
-        ansible.builtin.include_tasks: 'vim.yml'
-        tags:
-            - 'vim'
-
-      - name: 'Scripts.'
-        ansible.builtin.include_tasks: 'script_dir.yml'
-        tags:
-            - 'scripts'
-
-      - name: 'Dotfiles.'
-        ansible.builtin.include_tasks: 'dotfiles.yml'
-        tags:
-            - 'dotfiles'
-
-      - name: 'Install user CA certificates.'
-        ansible.builtin.include_tasks: 'ca_certificates.yml'
-        tags:
-            - 'ca_certificates'
-
-      - name: 'Modify user crontab.'
-        ansible.builtin.include_tasks: 'cron.yml'
-        tags:
-            - 'cron'
+  ansible.builtin.include_tasks: '{{ item }}'
+  loop:
+      - 'bash.yml'
+      - 'git.yml'
+      - 'gnupg.yml'
+      - 'ssh.yml'
+      - 'vim.yml'
+      - 'script_dir.yml'
+      - 'dotfiles.yml'
 ...

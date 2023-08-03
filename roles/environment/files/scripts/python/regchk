@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Date: August 03, 2023
+# Author: Casey Sparks
+# Description:
+'''CLI tool to quickly check regex expression against a string.'''
+
+from argparse import ArgumentParser, Namespace
+from locale import setlocale, LC_ALL
+from logging import getLogger, Formatter, RootLogger, StreamHandler
+from typing import NoReturn
+import re
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def get_arguments() -> Namespace:
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+
+    parser.add_argument(
+        'expression',
+        type=str,
+        help='The RegEx expression to test.'
+    )
+    parser.add_argument(
+        'strings',
+        nargs="*",
+        type=str,
+        help='The string(s) to test. If zero strings are passed, regchk tests expression validity.'
+    )
+    parser.add_argument(                                                    # Specify logging verbosity.
+        '--verbose', '-v',
+        dest='log_level',
+        default=0,
+        action='count',
+        help='Specify logging verbosity. Default `CRITICAL`.'
+    )
+
+    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level from 10 - 50.
+
+    return arguments
+
+
+def enable_log(
+    log_level: int = 0
+        ) -> RootLogger:
+    '''
+    Enable logging and handle outputs.
+        :param log_level:   User-specified log level. Default NOTSET.
+        :return:            Instantiated logger.RootLogger instance.
+    '''
+    assert isinstance(log_level, int), '`log_level` must be int.'
+    assert log_level >= 0, '`log_level` must be >=0.'
+
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{'
+    )
+    log_root = getLogger()                                                  # Root logger instance.
+    log_console = StreamHandler()                                           # Log to screen.
+
+    log_console.setFormatter(formatter)                                     # Set log stream format.
+    log_root.addHandler(log_console)                                        # Log to screen.
+    log_root.setLevel(log_level)                                            # User-specified log_level.
+
+    return log_root
+
+def run_regex(
+    expression: str,
+    test_string: (str|None) = None
+        ) -> NoReturn:
+    '''
+    Runs a RegEx expression against a string and prints if match.
+        :param expression:  The regular expression to test.
+        :param test_string: The string to test the regex against.
+    '''
+    print(f'String "{test_string}": {re.search(expression, test_string)}')
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    enable_log(args.log_level)
+
+    header = f'Expression: "{args.expression}"'
+
+    print(header)
+    print('=' * len(header))
+
+    for string in args.strings:
+        run_regex(args.expression, string)

@@ -24,6 +24,7 @@ def get_arguments() -> Namespace:
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+
     parser.add_argument(                                                    # Specify an IPstack API key.
         'ip_addresses',
         type=str,
@@ -42,6 +43,7 @@ def get_location_table(
     Gets location data from IPStack.com and returns it as a list of lists.
         :param api_key:     The IPStack API key for the request.
         :param ip_address:  The IP address to get location info for.
+        :return:            List object containing GeoIP data.
     '''
     assert isinstance(api_key, str), '`api_key` must be str.'
     assert isinstance(ip_address, str), '`ip_address` must be str.'
@@ -51,13 +53,12 @@ def get_location_table(
         params={'access_key': api_key},
         timeout=2
     ).json()
-
     table = [
-        ['IP:', ip_info["ip"]],
-        ['City:', ip_info["city"]],
-        ['Region:', ip_info["region_name"]],
-        ['ZIP:', ip_info["zip"]],
-        ['Country:', ip_info["country_name"]],
+        ['IP:', ip_info['ip']],
+        ['City:', ip_info['city']],
+        ['Region:', ip_info['region_name']],
+        ['ZIP:', ip_info['zip']],
+        ['Country:', ip_info['country_name']],
         ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
     ]
 

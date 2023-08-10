@@ -4,13 +4,12 @@ on:
     push:
         branches:
             - 'main'
-            - 'WIP**'
-        paths: 'roles/environment/files/scripts/**'
+        paths: 'roles/environment/files/scripts/python/**'
 
     pull_request:
         branches:
             - 'main'
-        paths: 'roles/environment/files/scripts/**'
+        paths: 'roles/environment/files/scripts/python/**'
 jobs:
     pylint:
         runs-on: 'ubuntu-latest'
@@ -28,7 +27,6 @@ jobs:
             - name: 'Install dependencies'
               run: >
                   sudo apt update
-                  && sudo apt install shellcheck
                   && python -m pip install --no-cache-dir
                       pylint
                       -r python_requirements.txt
@@ -39,10 +37,10 @@ jobs:
                   pylint
                       --max-line-length=120
                       --disable E0611,R0801,W0212,W1203
-                      python/*
+                      ./*
                       # E0611: no-name-in-module
                       # R0801: similar-lines
                       # W0212: protected-acess
                       # W1203: logging-fstring-interpolation
-              working-directory: 'roles/environment/files/scripts/'
+              working-directory: 'roles/environment/files/scripts/python'
 ...

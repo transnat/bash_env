@@ -115,7 +115,9 @@ def enable_log(
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
-    assert isinstance(log_file, (Path | None)), '`log_file` must be Path or None.'
+
+    if log_file:
+        assert isinstance(log_file, Path), '`log_file` must be Path or None.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',

@@ -1,0 +1,60 @@
+---
+- name: 'Disable whoopsie.'
+  become: true
+  when: ansible_os == 'Ubuntu'
+  tags:
+      - 'ubuntu'
+      - 'whoopsie'
+  block:
+      - name: 'Get package facts.'
+        ansible.builtin.package_facts:
+            manager: 'auto'
+        no_log: true
+
+      - name: 'Whoopsie.'
+        when: _disable_crash_reporters.disable_whoopsie and 'whoopsie' in ansible_facts.packages
+        block:
+            - name: 'Deactivate Whoopsie daemon sending crash reports.'
+              ansible.builtin.lineinfile:
+                  dest: '/etc/default/whoopsie'
+                  regexp: '^report_crashes'
+                  line: 'report_crashes=false'
+                  state: present
+
+            - name: 'Ensure Whoopsie daemon is stopped and disabled.'
+              ansible.builtin.service:
+                  name: 'whoopsie'
+                  state: 'stopped'
+                  enabled: false
+
+            - name: 'Uninstall Whoopsie.'
+              ansible.builtin.apt:
+                  name: 'whoopsie'
+                  state: 'absent'
+
+      - name: 'Apport.'
+        when: _disable_crash_reporters.disable_apport and 'apport' in ansible_facts.packages
+        block:
+            - name: 'Deactivate apport daemon crash report collection.'
+              ansible.builtin.lineinfile:
+                  dest: '/etc/default/apport'
+                  regexp: '^enabled'
+                  line: 'enabled=0'
+                  state: 'present'
+
+            - name: 'Ensure apport daemon is stopped and disabled.'
+              ansible.builtin.service:
+                  name: 'apport'
+                  state: 'stopped'
+                  enabled: false
+
+            - name: 'Uninstall Apport.'
+              ansible.builtin.apt:
+                  name: 'apport'
+                  state: 'absent'
+
+      - name: 'Remove unneeded dependencies.'
+        ansible.builtin.apt:
+            autoremove: true
+            clean: true
+...

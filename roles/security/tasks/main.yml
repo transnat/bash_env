@@ -11,4 +11,5 @@
       - 'auditd.yml'
       - 'ssh.yml'
       - 'iptables.yml'
+      - 'disable_crash_reporters.yml'
 ...

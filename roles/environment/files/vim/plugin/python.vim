@@ -1,10 +1,7 @@
 " Python/YAML config ----------------------------------------------------------
 autocmd BufNewFile *.py
     \ :0r ~/.vim/templates/python.template                                  |
-    \ :3s/\<DATE\>/\=strftime("%B %d, %Y")/
-
-autocmd Filetype python
-    \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>
+    \ :4s/\<DATE\>/\=strftime("%B %d, %Y")/
 
 autocmd Filetype python
     \ set autoindent                                                        |
@@ -15,4 +12,5 @@ autocmd Filetype python
     \ set modeline                                                          |
     \ set textwidth=120                                                     |
     \ set linebreak                                                         |
-    \ set wrap
+    \ set wrap                                                              |
+    \ nnoremap <buffer> <C-h> :execute "!pydoc3 " . expand("<cword>")<CR>

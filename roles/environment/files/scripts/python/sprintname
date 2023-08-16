@@ -18,8 +18,8 @@ def get_word(
         ) -> str:
     '''
     Pull a word from list and format.
-        :param wordlist:   A list of wordlist to use in the sprint name.
-        :return:        A random word.
+        :param wordlist:    A list of wordlist to use in the sprint name.
+        :return:            A random word.
     '''
     return choice(wordlist).lower().translate(str.maketrans('', '', punctuation))
 
@@ -30,9 +30,12 @@ def create_sprint_name(
     '''
     Generate a sprint name from two random words.
         :param wordfile:    Path() object of the word file to use.
+        :return:            Error message, or sprint name.
     '''
+    assert isinstance(wordfile, Path), '`wordfile` must be instance of Path().'
+
     if not wordfile.exists():                                               # Check file exists.
-        return 'Install `words` package.'
+        return 'Word list not found. Install `words` package.'
 
     with open(wordfile, 'r', encoding='utf-8') as file:
         wordlist = file.read().splitlines()

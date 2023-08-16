@@ -94,9 +94,7 @@ def enable_log(
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
-
-    if log_file:
-        assert isinstance(log_file, Path), '`log_file` must be Path or None.'
+    assert isinstance(log_file, (Path, None)), '`log_file` must be Path or None.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -140,6 +138,8 @@ def iwlist(
         :param interface:   The network interface on which to run the scan.
         :return:            All advertised SSIDs found by `interface`.
     '''
+    assert isinstance(interface, str), '`interface` must be instance of str().'
+
     cells = []                                                              # List of SSIDs.
     cell_number_regex = re_compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
     regexps = [
@@ -173,12 +173,12 @@ def iwlist(
             cells.append(cell_number.groupdict())
 
         if wpa:
-            log.debug(f'Found wpa: {wpa}.')
-            cells[-1].update({'encryption': 'wpa'})
+            log.debug(f'Found WPA: {wpa}.')
+            cells[-1].update({'encryption': 'WPA'})
 
         if wpa2:
-            log.debug(f'Found wpa2: {wpa2}.')
-            cells[-1].update({'encryption': 'wpa2'})
+            log.debug(f'Found WPA2: {wpa2}.')
+            cells[-1].update({'encryption': 'WPA2'})
 
         for expression in regexps:
             if (result := expression.search(line)):
@@ -187,8 +187,10 @@ def iwlist(
                 if 'encryption' in result.groupdict():
                     if result.groupdict()['encryption'] == 'on':
                         cells[-1].update({'encryption': 'wep'})
+
                     else:
                         cells[-1].update({'encryption': 'off'})
+
                 else:
                     cells[-1].update(result.groupdict())
                     log.debug('Cells:\n{cells}')
@@ -214,12 +216,19 @@ def display_ssids(
         Ingest and pretty-print a dictionary to STDOUT.
             :param dictionary:  The dictionary to print.
         '''
-        for key, value in dictionary.items():                               # Iterate ssids and print name/timestamp.
+        assert isinstance(dictionary, dict), '`dictionary` must be instance of dict().'
+
+        for key, value in dictionary.items():                               # Print ssids/timestamps.
             print(f'{key} {value:>40}')
+
+    assert isinstance(interface, str), '`interface` must be instance of str().'
+    assert isinstance(ssids, (list, None)), '`ssids` must be instance of list() or None.'
+    assert refresh_interval >= 1, '`refresh_interval` must be instance of int() >= 1.'
 
     system('clear')                                                         # Clear terminal.
 
     now = datetime.now().strftime('%H:%M:%S')                               # Set timestamp.
+    div = 51 * '-'                                                          # Div for pretty formatting.
 
     for name in [ssid['essid'] for ssid in iwlist(interface)]:              # Grab SSIDs.
         if name not in advertised:                                          # Add found SSID to set.
@@ -234,21 +243,26 @@ def display_ssids(
     log.debug(f'Found: {advertised}')
     log.debug(f'Matched: {matched}')
 
-    print(51 * '=', '\nStreetShark', 51 * '-')                              # Print header.
+    print(                                                                  # Print header.
+        div.replace('-', '='),
+        '\nStreetShark\n',
+        print(div)
+    )
 
     if ssids:                                                               # Print matched SSIDs.
         if len(matched) == 0:
             print('No SSIDs matched yet.')
+
         else:
             _print_dict(timestamp['matched'])
 
-    elif len(advertised) == 0:                                          # Print found SSIDs.
+    elif len(advertised) == 0:                                              # Print found SSIDs.
         print('No SSIDs found yet.')
 
     else:
         _print_dict(timestamp['advertised'])
 
-    print(51 * '=')                                                         # Print div.
+    print(div)                                                              # Print footer.
     sleep(refresh_interval)
 
 
@@ -260,8 +274,4 @@ if __name__ == '__main__':
     timestamp = {'advertised': {}, 'matched': {}}                           # SSIDs + first time seen.
 
     while True:
-        display_ssids(
-            args.interface,
-            args.ssids,
-            args.interval
-        )
+        display_ssids(args.interface, args.ssids, args.interval)

@@ -7,13 +7,14 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from pprint import pp
 from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
 from subprocess import run
 from sys import exit as sys_exit, stderr
 from typing import NoReturn
+from ipaddress import ip_address
 from yaml import safe_load
 
 setlocale(LC_ALL, 'en_US.UTF-8')
@@ -65,6 +66,13 @@ def get_arguments() -> Namespace:
         dest='info',
         help='Print the default configuration and exit.'
     )
+    parser.add_argument(                                                    # Get application info.
+        '--config', '-c',
+        dest='config',
+        default = Path().home() / '.config/wakeonlan.yml',
+        type=Path(),
+        help='Path of the config file. Default ~/.config/wakeonlan.yml.'
+    )
     parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
         dest='log_level',
@@ -79,45 +87,25 @@ def get_arguments() -> Namespace:
         print_info(arguments)
         sys_exit()
 
-    if arguments.loglevel:                                                  # Set verbose logging.
-        log.setLevel(arguments.loglevel)
-
     if not arguments.hosts and not arguments.macs:
         parser.print_help(stderr)
         sys_exit()
 
-    match arguments.log_level:                                              # Set arguments.log_level.
-        case 0:
-            arguments.log_level = 50                                        # CRITICAL.
-        case 1:
-            arguments.log_level = 40                                        # ERROR.
-        case 2:
-            arguments.log_level = 30                                        # WARNING.
-        case 3:
-            arguments.log_level = 20                                        # INFO
-        case 4:
-            arguments.log_level = 10                                        # DEBUG.
-        case _:
-            arguments.log_level = 0                                         # NOTSET.
+    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level 10 - 50.
 
     return arguments
 
 
 def enable_log(
     log_level: int = 0,
-    log_file: (Path | None) = None
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
-        :param log_file:    User-specified path to write log file. Default None.
         :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
-
-    if log_file:
-        assert isinstance(log_file, Path), '`log_file` must be Path or None.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -130,12 +118,6 @@ def enable_log(
     log_root.addHandler(log_console)                                        # Log to screen.
     log_root.setLevel(log_level)                                            # User-specified log_level.
 
-    if log_file:                                                            # Log to file.
-        log_file = FileHandler(log_file)                                    # Set log file.
-
-        log_file.setFormatter(formatter)                                    # Set log file format.
-        log_root.addHandler(log_file)                                       # Log to file.
-
     return log_root
 
 
@@ -146,12 +128,14 @@ def print_info(
     Print known hosts and configuration.
         :param arguments: User-specified commandline arguments.
     '''
-    known_hosts = file_checks()
+    assert isinstance(arguments, Namespace), '`arguments must be instance of argparse.Namespace().'
+
     iface_table = [                                                         # Interface information.
         ['Interface', arguments.interface],
         ['Broadcast', arguments.broadcast],
         ['Port', arguments.port]
     ]
+    known_hosts = file_checks(arguments.config_file)
     known_hosts = [[k, v] for k, v in known_hosts.items()]                  # Known hosts information.
 
     print('---------------------------------')                              # Print formatted tables.
@@ -168,27 +152,21 @@ def print_info(
         print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(21))
 
 
-def file_checks() -> list:
+def file_checks(
+    config_file: Path = Path.home() / '.config/wakeonlan.yml'
+        ) -> list:
     '''
     Check for config directory/file, and create them if they do not exist.
-        :return:    List of known hosts.
+        :param config_file: Path of the YAML config file.
+        :return:            List of known hosts.
     '''
-    config_dir = Path(Path.home() / '.config/wakeonlan')                    # Directory for config files.
-    hostsfile = config_dir / 'known_hosts.yml'                              # File containing known host mappings.
+    assert isinstance(config_file, Path), '`config_file` must be instance of pathlib.Path().'
 
-    if not config_dir.exists():                                             # Create config dir.
-        log.debug(f'Creating config directory at {config_dir}.')
-        config_dir.mkdir(
-            parents=True,
-            mode=0o755,
-            exist_ok=True
-        )
+    if not config_file.exists():                                            # Create known hosts file.
+        log.debug(f'Creating config file at {config_file}.')
+        config_file.touch(mode=0o644, exist_ok=True)
 
-    if not hostsfile.exists():                                              # Create known hosts file.
-        log.debug(f'Creating config file at {hostsfile}.')
-        hostsfile.touch(mode=0o644, exist_ok=True)
-
-    with safe_load(open(hostsfile, 'rb', encoding='utf-8')) as file:        # Read hosts file into var.
+    with safe_load(open(config_file, 'rb', encoding='utf-8')) as file:      # Read hosts file into var.
         known_hosts = file.read()
 
     return known_hosts
@@ -204,13 +182,13 @@ class Network():
         Grok stdin and config files for the hosts to wake.
             :param arguments: User-provided cmdline arguments.
         '''
-        known_hosts = file_checks()                                         # Get known hosts from config file.
+        known_hosts = file_checks(arguments.config_file)                    # Get known hosts from config file.
         mac_addresses = []
 
-        if arguments.macs:                                                  # Set hosts based on MACs from STDIN.
+        if arguments.macs:                                                  # Set host MACs from STDIN.
             mac_addresses.append(arguments.macs)
 
-        if arguments.hosts:                                                 # Set hosts based on hostnames from STDIN.
+        if arguments.hosts:                                                 # Set host MACs from known hosts.
             for host in arguments.hosts:
                 try:
                     mac_addresses.append(known_hosts[host])
@@ -225,7 +203,7 @@ class Network():
     @staticmethod
     def get_default_interface() -> str:
         '''Return the default network interface.'''
-        interface = run(                                                    # Run subprocess to capture interface.
+        interface = run(                                                    # Capture interface name.
             ['ip', 'route', 'show'],
             capture_output=True,
             check=True
@@ -267,6 +245,13 @@ class Network():
             :param port:            The port to send the packet to.
             :param interface:       The network interface to bind the socket to.
         '''
+        assert isinstance(mac_addresses, list), '`mac_addresses` must be instance of list().'
+        assert all(isinstance(item, str) for item in mac_addresses), 'All mac_addresses items must be str().'
+        assert isinstance(broadcast_ip, str), '`broadcast_ip` must be instance of str().'
+        assert ip_address(broadcast_ip), '`broadcast_ip` not valid.'
+        assert isinstance(port, int), '`port` must be instance of int().'
+        assert isinstance(interface, str), '`interface` must be instance of str().'
+
         log.debug('Instantiating socket.')
 
         with socket(AF_INET, SOCK_DGRAM) as sock:

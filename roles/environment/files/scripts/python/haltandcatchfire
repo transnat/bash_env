@@ -14,6 +14,7 @@ from shutil import rmtree
 from socket import gethostname
 from typing import NoReturn
 from requests import get
+from requests.exceptions import HTTPError
 
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
@@ -67,8 +68,7 @@ def enable_log(
         :param log_level:   User-specified log level. Default NOTSET.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int), '`log_level` must be int.'
-    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -89,16 +89,28 @@ def remote_flag() -> bool:
     Checks remote for hostname match and returns true if true.
         :return:    Boolean for the existence of the remote flag.
     '''
-    host_flag = bool(                                                       # Check if flag exists.
-        get(
-            f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}',
-            timeout=5
-        ).text.lower()
-    )
+    status_code = get(                                                      # Check if flag exists.
+        f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}',
+        timeout=5
+    ).status_code
 
-    log.debug(f'Flag: {host_flag}')
+    match status_code:
+        case 200:
+            flag = True
 
-    return host_flag
+            log.debug('Flag found.')
+
+        case 404:
+            flag = False
+
+            log.debug('Flag not found.')
+
+        case _:
+            flag = False
+
+            raise HTTPError
+
+    return flag
 
 
 def destroy_user_data(
@@ -108,19 +120,21 @@ def destroy_user_data(
     Wipe sensitive user data from disk.
         :param debug:   Run steps without taking any action.
     '''
+    assert isinstance(debug, bool), '`debug` must be instance of bool().'
+
     dir_list = [                                                            # List of directories to erase.
-        Path.home(),
-        Path(f'/var/spool/cron/{getlogin()}')
+        Path.home(),                                                        # Home directory.
+        Path(f'/var/spool/cron/{getlogin()}')                               # User cronjobs.
     ]
 
     log.debug(f'Directory list: {dir_list}')
 
     for directory in dir_list:
         if debug:                                                           # Log removal ONLY.
-            log.debug(f'Simulating removal of {directory}')
+            log.debug(f'Debug mode. Not removing {directory}')
 
         else:
-            try:                                                                # Remove data.
+            try:                                                            # Remove data.
                 rmtree(directory)
                 log.debug(f'Removed {directory}.')
 

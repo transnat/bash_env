@@ -54,8 +54,7 @@ def enable_log(
         :param log_level:   User-specified log level. Default NOTSET.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int), '`log_level` must be int.'
-    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -70,6 +69,7 @@ def enable_log(
 
     return log_root
 
+
 def run_regex(
     expression: str,
     test_string: (str|None) = None
@@ -79,6 +79,9 @@ def run_regex(
         :param expression:  The regular expression to test.
         :param test_string: The string to test the regex against.
     '''
+    assert isinstance(expression, str), '`expression` must be instance of str().'
+    assert isinstance(test_string, (str, None)), '`test_str` must be instance of str() or None.'
+
     print(f'String "{test_string}": {re.search(expression, test_string)}')
 
 

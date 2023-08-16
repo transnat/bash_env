@@ -84,8 +84,7 @@ def enable_log(
         :param log_level:   User-specified log level. Default NOTSET.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int), '`log_level` must be int.'
-    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -109,6 +108,8 @@ def ingest_data(
         :param infile:  The file to ingest data from.
         :return:        Dictionary containing parsed data.
     '''
+    assert isinstance(infile, Path), '`infile` must be instance of Path().'
+
     with open(infile, 'r', encoding='utf-8') as data:                       # Open file handler.
         log.debug(f'Reading from file: {infile.name}')
 
@@ -133,7 +134,11 @@ def ingest_data(
                 print('Unsupported filetype. Please check the extension and try again.')
                 sys_exit(1)
 
-        log.debug(f'Input: {infile}\n', f'Input filetype: {infile.suffix.upper().replace(".", "")}\n\n', payload)
+        log.debug(
+            f'Input: {infile}\n',
+            f'Input filetype: {infile.suffix.upper().replace(".", "")}\n\n',
+            payload
+        )
 
     return payload
 
@@ -151,8 +156,6 @@ def output_data(
         :param out_format:  Output format of the data. One of ['ini', 'json', 'xml', 'yaml']
         :param write:       Boolean specifying whether data should be written to a file.
     '''
-    assert out_format in SUPPORTED_TYPES, f'`out_format must be one of {SUPPORTED_TYPES}'
-
     def _write_out(
         payload: dict,
         out_format: str,
@@ -164,9 +167,7 @@ def output_data(
             :param out_format:  Output format of the data. One of ['ini', 'json', 'xml', 'yaml']
             :param outfile:     TextIOWrapper to write data to. Either an open filehandle, or stdout.
         '''
-        assert isinstance(payload, dict), '`payload` must be dict.'
-        assert out_format in SUPPORTED_TYPES, 'Unsupported output format.'
-        assert isinstance(outfile, TextIOWrapper), '`outfile` must be io.TextIOWrapper.'
+        assert isinstance(outfile, TextIOWrapper), '`outfile` must be instance of io.TextIOWrapper().'
 
         log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
 
@@ -193,6 +194,12 @@ def output_data(
             case _:                                                         # YAML (default).
                 outfile.write(ydump(payload))
 
+    assert isinstance(payload, dict), '`payload` must be instance of dict().'
+    assert isinstance(infile, Path), '`infile` must be instance of Path().'
+    assert isinstance(out_format, str), '`out_format` must be instance of str().'
+    assert isinstance(write, bool), '`write` must be instance of bool().'
+    assert out_format in SUPPORTED_TYPES, f'`out_format must be one of {SUPPORTED_TYPES}'
+
     if write:                                                               # Write to file.
         with open(infile.with_suffix(f'.{out_format}'), 'w', encoding='utf-8') as outfile:
             _write_out(payload, out_format, outfile)
@@ -204,4 +211,9 @@ if __name__ == '__main__':
     args = get_arguments()
     log = enable_log(args.log_level)
 
-    output_data(ingest_data(args.infile), args.infile, args.format, args.write)
+    output_data(
+        ingest_data(args.infile),
+        args.infile,
+        args.format,
+        args.write
+    )

@@ -63,20 +63,7 @@ def get_arguments() -> Namespace:
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-
-    match arguments.log_level:                                              # Set arguments.log_level.
-        case 0:
-            arguments.log_level = 50                                        # CRITICAL.
-        case 1:
-            arguments.log_level = 40                                        # ERROR.
-        case 2:
-            arguments.log_level = 30                                        # WARNING.
-        case 3:
-            arguments.log_level = 20                                        # INFO
-        case 4:
-            arguments.log_level = 10                                        # DEBUG.
-        case _:
-            arguments.log_level = 0                                         # NOTSET.
+    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level 10 - 50.
 
     return arguments
 
@@ -90,7 +77,7 @@ def enable_log(
         :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
-    assert log_level >= 0, '`log_level` must be >=0.'
+    assert 50 >= log_level >= 0, '`log_level` must be between 0 - 50.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -111,7 +98,6 @@ def generate_qr() -> NoReturn:
     qr_code = QRCode()                                                      # Instantiate QR class.
     qr_str= f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'     # String to be encoded in the QR.
 
-
     if args.string:                                                         # Only print the string to stdout.
         print(qr_str)
         sys_exit()
@@ -122,7 +108,7 @@ def generate_qr() -> NoReturn:
     log.debug('QR code created.')
 
     if args.output:
-        img = qr_code.make_image(fill_color="black", back_color="white")    # Create PNG.
+        img = qr_code.make_image(fill_color='black', back_color='white')    # Create PNG.
 
         log.debug(qr_code.print_tty())
         img.save(args.output)                                               # Save PNG to disk.

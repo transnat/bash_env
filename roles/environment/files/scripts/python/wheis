@@ -12,6 +12,7 @@ Uses api.ipstack.com for IP data.
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
 from os import getenv
+from ipaddress import ip_address
 from requests import get
 from tabulate import tabulate
 
@@ -37,19 +38,19 @@ def get_arguments() -> Namespace:
 
 def get_location_table(
     api_key: str,
-    ip_address: str
+    ip_addr: str
         ) -> list:
     '''
     Gets location data from IPStack.com and returns it as a list of lists.
         :param api_key:     The IPStack API key for the request.
-        :param ip_address:  The IP address to get location info for.
+        :param ip_addr:     The IP address to get location info for.
         :return:            List object containing GeoIP data.
     '''
     assert isinstance(api_key, str), '`api_key` must be str.'
-    assert isinstance(ip_address, str), '`ip_address` must be str.'
+    assert isinstance(ip_addr, str) and ip_address(ip_addr), '`ip_addr` must be valid IP string.'
 
     ip_info = get(
-        f'http://api.ipstack.com/{ip_address}',
+        f'http://api.ipstack.com/{ip_addr}',
         params={'access_key': api_key},
         timeout=2
     ).json()

@@ -67,8 +67,7 @@ def enable_log(
         :param log_level:   User-specified log level. Default NOTSET.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int), '`log_level` must be int.'
-    assert log_level >= 0, '`log_level` must be >=0.'
+    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -91,6 +90,8 @@ def prechecks_pass(
     Check that inputs and processes are as expected.
         :param arguments: User-specified cmdline arguments.
     '''
+    assert isinstance(arguments, Namespace), '`arguments` must be instance of Namespace().'
+
     for gpg_proc in ('gpg-agent', 'gpgconf'):                               # Check that a GPG agent is running.
         for proc in process_iter():
             try:
@@ -123,13 +124,18 @@ def encrypt(
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
         :param recipients:  The recipient emails of the cipherfile.
+        :return:            Path of the resultant cipherfile.
     '''
+    assert isinstance(file, Path), '`file` must be instance of Path().'
+    assert isinstance(recipients, list), '`recipients` must be instance of list().'
+    assert {type(item) for item in recipients} == {str}, '`recipeints` must be list of strings.'
+
     gpg = GPG(gpgbinary='/usr/bin/gpg2', use_agent=True, verbose=False)     # Instantiate GPG agent class.
     outfile = file.with_suffix('')                                          # Strip suffix, if one exists.
 
-    log.debug(f'Encrypting file {file.name} to {outfile.name}')
-
     with open(file, 'rb') as infile:
+        log.debug(f'Encrypting file {file.name} to {outfile.name}')
+
         try:
             cipherfile = gpg.encrypt_file(                                  # Encrypt the file.
                 infile,
@@ -138,12 +144,13 @@ def encrypt(
                 always_trust=True,
                 output=outfile
             )
+
             log.debug(f'{file.name} encrypted as {cipherfile}.')
 
-        except BaseException as exc:
+        except BaseException as err:
             log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
 
-            raise exc
+            raise err
 
     return outfile
 
@@ -155,6 +162,8 @@ def munge_cipherfile(
     Add lines to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.
     '''
+    assert isinstance(cipherfile, Path), '`cipherfile` must be instance of Path().'
+
     with open(cipherfile, 'r', encoding='utf-8') as prefile:
         script = [                                                          # GSHscript cleartext doc stub.
             '#!/usr/bin/env python3\n',

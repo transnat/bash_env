@@ -11,6 +11,7 @@ from locale import setlocale, LC_ALL
 from math import ceil, log
 from sys import exit as sys_exit
 from typing import NoReturn
+from re import match as re_match
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -64,20 +65,22 @@ def print_table(
         :param table_list:      The table to print.
         :param right_padding:   The amount of whitespace padding in the table.
     '''
+    assert isinstance(table_list, list), '`table_list` must be instance of list().'
+    assert isinstance(right_padding, int), '`right_padding` must be instance of int().'
+
     for heading, data in table_list:                                        # Print table.
         print(f'{heading:<18}{data:>{right_padding}}')
 
 
 def get_network_table(
     subnet: (IPv4Network | IPv6Network)
-        ) -> (tuple | None):
+        ) -> tuple:
     '''
     Create and print a network table.
         :param subnet:  The network string to print (like 10.10.10.10/24).
-        :return:        The network table.
+        :return:        Tuple containing (the network table list, right padding int for the table).
     '''
-    if subnet is None:
-        return None
+    assert isinstance(subnet, (IPv4Network, IPv6Network)), '`subnet` must be instance of ipaddress.ip_network().'
 
     host_bits = str(subnet).split('/', maxsplit=1)[0]                       # Get host bits.
     div = 34 * '='                                                          # Div length for IPv4 addresses.
@@ -118,8 +121,10 @@ def get_netmask_table(
     '''
     Print the minimum netmask/prefix length for a subnet with a given number of hosts.
         :param hosts:   The maximum number of hosts on the subnet.
-        :return:        The netmask table.
+        :return:        None, or a tuple containing (the netmask table list, right padding int for the table).
     '''
+    assert isinstance(hosts, (int, None)) and hosts > 0, '`hosts` must be instance of None or int() (> 0).'
+
     if hosts is None:
         return None
 
@@ -168,6 +173,10 @@ def get_max_hosts_table(
         return f'{2 ** (max_prefix - int(netmask)):,}' if netmask <= max_prefix else 'Network too large'
 
     netmask = netmask.lstrip('/')                                           # Remove leading slash if present.
+    ip_regex = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+
+    assert isinstance(netmask, str), '`netmask` must be instance of str().'
+    assert re_match(ip_regex, netmask.lstrip) or 0 <= int(netmask) <= 32, 'Invalid netmask.'
 
     match netmask.count('.'):                                               # Check if netmask.
         case 3:                                                             # Is netmask.
@@ -185,6 +194,7 @@ def get_max_hosts_table(
 
 if __name__ == '__main__':
     args = get_arguments()
+
     if args.address:
         table, padding = get_network_table(args.address)
     elif args.number_of_hosts:

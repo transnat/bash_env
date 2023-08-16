@@ -115,6 +115,8 @@ def read_qr_code_from_file(
         :param filename: Path to file.
         :return: Value from QR code.
     '''
+    assert isinstance(filename, (Path, str)), '`filename` must be instance of Path() or str().'
+
     try:
         log.debug(f'Reading QR code from {filename}.')
 
@@ -125,6 +127,7 @@ def read_qr_code_from_file(
             value = 'No QR data found.'
 
             log.warning(value)
+
         else:
             log.debug(f'QR data found: {value}')
 

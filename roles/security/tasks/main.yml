@@ -2,14 +2,14 @@
 - name: 'Security tasks.'
   tags:
       - 'security'
-  ansible.builtin.include_tasks: '{{ item }}'
+  ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
-      - 'kernel.yml'
-      - 'filesystem.yml'
-      - 'priviledge_escalation.yml'
-      - 'ulimit.yml'
-      - 'auditd.yml'
-      - 'ssh.yml'
-      - 'iptables.yml'
-      - 'disable_crash_reporters.yml'
+      - 'kernel'
+      - 'filesystem'
+      - 'priviledge_escalation'
+      - 'ulimit'
+      - 'auditd'
+      - 'ssh'
+      - 'iptables'
+      - 'disable_crash_reporters'
 ...

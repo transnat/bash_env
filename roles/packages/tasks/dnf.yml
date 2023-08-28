@@ -1,0 +1,10 @@
+---
+- name: 'Install DNF packages.'
+  become: true
+  when: ansible_os_family == 'RedHat'
+  tags:
+      - 'dnf'
+  ansible.builtin.dnf:
+      name: '{{ packages_dnf }}'
+      state: 'present'
+...

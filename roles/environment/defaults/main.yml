@@ -25,4 +25,20 @@ environment_dotfiles:
         - <<: *default_file
           src: '{{ role_path }}/files/screen/screenrc'
           dest: '{{ ansible_env.HOME }}/.screenrc'
+environment_requirements:
+    python:
+        - 'dict2xml>=1.7,<2.0'
+        - 'ipython>=8.14,<9.0'
+        - 'j2cli>=0.3,<1.0'
+        - 'jinja2>=3.1,<4.0'
+        - 'opencv-python>=4.7,<5.0'
+        - 'pillow>=9.4,<10.0'
+        - 'psutil>=5.9,<6.0'
+        - 'pylint>=2.17,<3.0'
+        - 'python-gnupg>=0.5,<1.0'
+        - 'pyyaml>=6.0,<7.0'
+        - 'qrcode>=7.4,<8.0'
+        - 'requests>=2.26,<3.0'
+        - 'tabulate>=0.9,<1.0'
+        - 'xmltodict>=0.13,<1.0'
 ...

@@ -1,0 +1,18 @@
+---
+- name: 'Install Apt packages.'
+  become: true
+  when: ansible_os_family == 'Debian'
+  tags:
+      - 'apt'
+  block:
+      - name: 'Update APT cache.'
+        ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+            name: '*'
+
+      - name: 'Install APT packages.'
+        loop: '{{ packages_apt }}'
+        ansible.builtin.apt:
+            name: '{{ item.name }}'
+...

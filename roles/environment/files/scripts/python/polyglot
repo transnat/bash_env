@@ -15,12 +15,14 @@ from pathlib import Path
 from sys import exit as sys_exit, stdout
 from typing import NoReturn
 from dict2xml import dict2xml
+from pandas import json_normalize, read_csv
 from xmltodict import parse
 from yaml import safe_load, dump as ydump
 
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
-SUPPORTED_TYPES = ['ini', 'json', 'xml', 'yaml']                            # Supported outfile types.
+
+SUPPORTED_TYPES = ['csv', 'ini', 'json', 'xml', 'yaml']                     # Supported outfile types.
 
 
 def get_arguments() -> Namespace:
@@ -84,7 +86,7 @@ def enable_log(
         :param log_level:   User-specified log level. Default NOTSET.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
+    assert 50 >= log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -96,12 +98,13 @@ def enable_log(
     log_console.setFormatter(formatter)                                     # Set log stream format.
     log_root.addHandler(log_console)                                        # Log to screen.
     log_root.setLevel(log_level)                                            # User-specified log_level.
+    log_root.debug(f'Log level set to {log_level}.')
 
     return log_root
 
 
 def ingest_data(
-    infile: Path
+    infile: Path | str
         ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
@@ -109,25 +112,35 @@ def ingest_data(
         :return:        Dictionary containing parsed data.
     '''
     assert isinstance(infile, Path), '`infile` must be instance of Path().'
+    
+    infile_suffix = infile.suffix.lower()
 
     with open(infile, 'r', encoding='utf-8') as data:                       # Open file handler.
-        log.debug(f'Reading from file: {infile.name}')
+        log.debug(f'Reading from {infile_suffix} file: {infile.name}')
 
-        match infile.suffix.lower():
-            case '.json':                                                   # JSON
+        match infile_suffix:
+            case '.csv':                                                    # CSV.
+                payload = read_csv(
+                    data,
+                    skip_blank_lines=True,
+                    encoding='utf-8',
+                    index_col=False
+                ).to_dict()
+
+            case '.json':                                                   # JSON.
                 payload = load(data)
 
-            case '.ini':                                                    # INI
+            case '.ini':                                                    # INI.
                 config = ConfigParser()
 
                 config.read(infile)
 
                 payload = config._sections
 
-            case '.html' | '.xml':                                          # HTML/XML
+            case '.html' | '.xml':                                          # HTML/XML.
                 payload = parse(data.read())
 
-            case '.yaml' | '.yml':                                          # YAML (default)
+            case '.yaml' | '.yml':                                          # YAML [default].
                 payload = safe_load(data)
 
             case _:
@@ -136,8 +149,8 @@ def ingest_data(
 
         log.debug(
             f'Input: {infile}\n',
-            f'Input filetype: {infile.suffix.upper().replace(".", "")}\n\n',
-            payload
+            f'Input filetype: {infile.suffix.upper().replace(".", "")}\n',
+            f'Payload: {payload}\n\n'
         )
 
     return payload
@@ -172,6 +185,13 @@ def output_data(
         log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
 
         match out_format.lower():
+            case 'csv':                                                     # CSV.
+                json_normalize(payload).to_csv(
+                    outfile,
+                    index=False,
+                    encoding='utf-8'
+                )
+
             case 'html' | 'xml':                                            # HTML/XML.
                 outfile.write(dict2xml(payload))
 
@@ -181,12 +201,16 @@ def output_data(
 
                 for key in payload.keys():
                     if iter(key):                                           # Keys are nested.
-                        log.warning('Warning! INI does not support nested values. Values will be flattened to strings.')
+                        log.warning(
+                            'Warning! INI does not support nested values.\n'
+                            'Values will be flattened to strings.'
+                        )
 
-                        if input('Proceed? [y/N] ').lower().startswith('y'):
-                            config.write(outfile)
+                        if input('Proceed? [y/N] ').lower().startswith('n'):
+                            log.critical('Exiting.')
+                            sys_exit(1)
 
-                        sys_exit(1)
+                        config.write(outfile)
 
             case 'json':                                                    # JSON.
                 outfile.write(jdumps(payload, indent=2))

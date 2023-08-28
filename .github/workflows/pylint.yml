@@ -36,11 +36,12 @@ jobs:
               run: >
                   pylint
                       --max-line-length=120
-                      --disable E0611,R0801,W0212,W1203
+                      --disable E0611,R0801,W0212,W1116,W1203
                       ./*
                       # E0611: no-name-in-module
                       # R0801: similar-lines
                       # W0212: protected-acess
+                      # W1116: isinstance-second-argument-not-valid-type
                       # W1203: logging-fstring-interpolation
               working-directory: 'roles/environment/files/scripts/python'
 ...

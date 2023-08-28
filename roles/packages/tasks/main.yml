@@ -2,10 +2,12 @@
 - name: 'Package tasks.'
   tags:
       - 'packages'
-  ansible.builtin.include_tasks: '{{ item }}'
+  ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
-      - 'remove_snap.yml'
-      - 'install_packages.yml'
-      - 'usermod.yml'
-      - 'system_services.yml'
+      - 'remove_snap'
+      - 'apt'
+      - 'dnf'
+      - 'pacman'
+      - 'system_services'
+      - 'usermod'
 ...

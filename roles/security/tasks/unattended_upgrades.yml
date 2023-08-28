@@ -1,0 +1,35 @@
+---
+- name: 'Configure unattended upgrades to only install security upgrades.'
+  become: true
+  when: ansible_os_family == 'Debian'
+  tags:
+      - 'unattended_upgrades'
+      - 'debian'
+  ansible.builtin.blockinfile:
+      path: '/etc/apt/apt.conf.d/51unattended-upgrades'
+      block: |
+          APT::Periodic::Enable "1";
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Download-Upgradeable-Packages "1";
+          APT::Periodic::AutocleanInterval "7";
+          APT::Periodic::Unattended-Upgrade "1";
+          Unattended-Upgrade::Origins-Pattern {
+                // "o=Debian,a=stable";
+                //"o=Debian,a=stable-updates";
+                "origin=Debian,codename=${distro_codename},label=Debian-Security";
+          };
+          Unattended-Upgrade::Package-Blacklist {
+          };
+          Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+          Unattended-Upgrade::InstallOnShutdown "false";
+          Unattended-Upgrade::Mail "root";
+          Unattended-Upgrade::MailOnlyOnError "false";
+          Unattended-Upgrade::Remove-Unused-Dependencies "true";
+          Unattended-Upgrade::Remove-New-Unused-Dependencies "true";
+          Unattended-Upgrade::Automatic-Reboot "true";
+          Unattended-Upgrade::Automatic-Reboot-WithUsers "false";
+      create: true
+      owner: 'root'
+      group: 'root'
+      mode: '0644'
+...

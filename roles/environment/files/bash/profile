@@ -5,16 +5,16 @@ if [ -n "${BASH_VERSION}" ]; then
   fi
 fi
 
+PATH_DIRS=(
+    "/usr/local/bin"
+    "${HOME}/.local/bin"
+    "${HOME}/.local/lib/scripts/python"
+    "${HOME}/.local/lib/scripts/sh"
+    "${HOME}/.local/lib/scripts/gsh"
+)
 
-PATH="${PATH}:/usr/local/bin"
-
-## Include local bin, if exists.
-if [ -d "${HOME}/.local/bin" ] ; then
-  PATH="${HOME}/.local/bin:${PATH}"
-fi
-
-# PATH directories below listed from lowest to highest priority.
-## Set PATH so it includes script directories.
-PATH="${PATH}:${HOME}/.local/lib/scripts/python"    # Python scripts.
-PATH="${PATH}:${HOME}/.local/lib/scripts/sh"        # Shell scripts.
-PATH="${PATH}:${HOME}/.local/lib/scripts/gsh"       # Encrypted scripts/binaries.
+for DIR in ${PATH_DIRS[@]}; do
+    if [ -d "${DIR}" ]; then
+        PATH="${PATH}:${DIR}"
+    fi
+done

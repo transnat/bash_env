@@ -1,5 +1,5 @@
 ---
-- name: 'Disable whoopsie.'
+- name: 'Disable crash reporters.'
   become: true
   when: ansible_os == 'Ubuntu'
   tags:
@@ -11,7 +11,7 @@
             manager: 'auto'
         no_log: true
 
-      - name: 'Whoopsie.'
+      - name: 'Disable Whoopsie.'
         when: _disable_crash_reporters.disable_whoopsie and 'whoopsie' in ansible_facts.packages
         block:
             - name: 'Deactivate Whoopsie daemon sending crash reports.'
@@ -32,7 +32,7 @@
                   name: 'whoopsie'
                   state: 'absent'
 
-      - name: 'Apport.'
+      - name: 'Disable Apport.'
         when: _disable_crash_reporters.disable_apport and 'apport' in ansible_facts.packages
         block:
             - name: 'Deactivate apport daemon crash report collection.'
@@ -53,7 +53,7 @@
                   name: 'apport'
                   state: 'absent'
 
-      - name: 'Remove unneeded dependencies.'
+      - name: 'Remove orphan dependencies.'
         ansible.builtin.apt:
             autoremove: true
             clean: true

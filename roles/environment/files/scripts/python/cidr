@@ -67,6 +67,7 @@ def print_table(
     '''
     assert isinstance(table_list, list), '`table_list` must be instance of list().'
     assert isinstance(right_padding, int), '`right_padding` must be instance of int().'
+    assert all(type(item) == int for item in table_list), '`table_list` items must be int or str.'
 
     for heading, data in table_list:                                        # Print table.
         print(f'{heading:<18}{data:>{right_padding}}')
@@ -80,14 +81,14 @@ def get_network_table(
         :param subnet:  The network string to print (like 10.10.10.10/24).
         :return:        Tuple containing (the network table list, right padding int for the table).
     '''
-    assert isinstance(subnet, (IPv4Network, IPv6Network)), '`subnet` must be instance of ipaddress.ip_network().'
+    assert isinstance(subnet, (IPv4Network, IPv6Network)), '`subnet` must be instance of ip_network().'
 
     host_bits = str(subnet).split('/', maxsplit=1)[0]                       # Get host bits.
     div = 34 * '='                                                          # Div length for IPv4 addresses.
     r_pad = 16                                                              # Right padding for IPv4 addresses.
     netmask = 'Netmask'
 
-    if isinstance(subnet, IPv6Network):                                     # Increase div, padding for IPv6 addresses.
+    if isinstance(subnet, IPv6Network):                                     # Increase div, padding for IPv6.
         div += 24 * '='
         r_pad += 24
         netmask = 'Prefix'                                                  # IPv6 terminology.

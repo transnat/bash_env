@@ -5,7 +5,6 @@
       - 'systemd'
   block:
       - name: 'Copy systemd service files.'
-        when: ansible_distribution == 'Ubuntu'
         ansible.builtin.copy:
             src: '{{ role_path }}/files/etc/systemd/system/{{ item }}'
             dest: '/etc/systemd/system/{{ item }}'

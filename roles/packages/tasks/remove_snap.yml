@@ -81,10 +81,8 @@
               ansible.builtin.apt:
                   update_cache: true
 
-      - name: 'System user tasks.'
-        block:
-            - name: 'Remove snap directory from system user home.'
-              ansible.builtin.file:
-                  name: '{{ ansible_env.HOME }}/snap'
-                  state: 'absent'
+      - name: 'Remove snap directory from system user home.'
+        ansible.builtin.file:
+            name: '{{ ansible_env.HOME }}/snap'
+            state: 'absent'
 ...

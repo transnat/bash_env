@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         August 14, 2023
+# Description:
+'''You know it do.'''
+
+from locale import setlocale, LC_ALL
+from random import randint
+from sys import exit as sys_exit
+from time import sleep
+from typing import NoReturn
+from pyautogui import Point, moveTo, position
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+
+def move_cursor(
+    start_vector: Point,
+    interval: int = 5
+        ) -> NoReturn:
+    '''
+    Move the cursor in a 10px square.
+        :param start_vector:    The X,Y positions of the cursor start vector. Defaults to current cursor position.
+        :param interval:        The sleep interval.
+    '''
+    assert isinstance(start_vector, (Point, tuple)), '`start_vector` must be instance of tuple() or Point().'
+    assert interval > 0, '`interval` must be instance of int() > 0.'
+
+    random_x = randint(10, 100)                                             # Random X scalar.
+    random_y = randint(10, 100)                                             # Random Y scalar.
+
+    moveTo(start_vector[0] + random_x, start_vector[1] + random_y)
+    sleep(interval)
+    moveTo(start_vector[0], start_vector[1])
+    sleep(interval)
+
+
+if __name__ == '__main__':
+    input('Center your cursor and hit <Enter>.')
+    print('Move it, move it.')
+
+    while True:
+        try:
+            move_cursor(position(), 5)
+
+        except KeyboardInterrupt:
+            print('\nSIGTERM caught. Exiting.')
+            sys_exit(1)

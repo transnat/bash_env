@@ -2,13 +2,14 @@
 - name: 'Build preferred user environment.'
   tags:
       - 'environment'
-  ansible.builtin.include_tasks: '{{ item }}'
+  ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
-      - 'bash.yml'
-      - 'git.yml'
-      - 'gnupg.yml'
-      - 'ssh.yml'
-      - 'vim.yml'
-      - 'script_dir.yml'
-      - 'dotfiles.yml'
+      - 'bash'
+      - 'git'
+      - 'gnupg'
+      - 'ssh'
+      - 'vim'
+      - 'python_requirements'
+      - 'script_dir'
+      - 'dotfiles'
 ...

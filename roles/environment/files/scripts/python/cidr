@@ -67,7 +67,6 @@ def print_table(
     '''
     assert isinstance(table_list, list), '`table_list` must be instance of list().'
     assert isinstance(right_padding, int), '`right_padding` must be instance of int().'
-    assert all(type(item) == int for item in table_list), '`table_list` items must be int or str.'
 
     for heading, data in table_list:                                        # Print table.
         print(f'{heading:<18}{data:>{right_padding}}')

@@ -104,15 +104,15 @@ def enable_log(
 
 
 def ingest_data(
-    infile: Path | str
+    infile: Path
         ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
-        :param infile:  The file to ingest data from.
+        :param infile:  The file to ingest data from. Instance of Path().
         :return:        Dictionary containing parsed data.
     '''
     assert isinstance(infile, Path), '`infile` must be instance of Path().'
-    
+
     infile_suffix = infile.suffix.lower()
 
     with open(infile, 'r', encoding='utf-8') as data:                       # Open file handler.

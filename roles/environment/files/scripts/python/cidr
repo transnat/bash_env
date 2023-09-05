@@ -9,9 +9,9 @@ from argparse import ArgumentParser, Namespace
 from ipaddress import ip_network, IPv4Network, IPv6Network
 from locale import setlocale, LC_ALL
 from math import ceil, log
+from re import match as re_match
 from sys import exit as sys_exit
 from typing import NoReturn
-from re import match as re_match
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -67,6 +67,10 @@ def print_table(
     '''
     assert isinstance(table_list, list), '`table_list` must be instance of list().'
     assert isinstance(right_padding, int), '`right_padding` must be instance of int().'
+    assert all(len(sublist) == 2 for sublist in table_list), '`table_list sublists must have length 2.'
+    assert all(
+            isinstance(item, str) for item in [item for sublist in table_list for item in sublist]
+    ), '`table_list` must be list of lists of str().'
 
     for heading, data in table_list:                                        # Print table.
         print(f'{heading:<18}{data:>{right_padding}}')
@@ -123,14 +127,10 @@ def get_netmask_table(
         :param hosts:   The maximum number of hosts on the subnet.
         :return:        None, or a tuple containing (the netmask table list, right padding int for the table).
     '''
-    assert isinstance(hosts, (int, None)) and hosts > 0, '`hosts` must be instance of None or int() (> 0).'
-
-    if hosts is None:
-        return None
+    assert isinstance(hosts, int) and hosts > 0, '`hosts` must be instance of int() > 0.'
 
     div = 57 * '='                                                          # Div length for IPv4 addresses.
     ip6_cidr = f'/{128 - ceil(log(hosts, 2))}'                              # IPv6 CIDR.
-    ip6_netmask = str(ip_network(f'::{ip6_cidr}').netmask)                  # IPv6 netmask.
     ip4_cidr = ip4_netmask = '-'                                            # Set default for IPv4.
 
     if hosts <= 2 ** 32:
@@ -144,7 +144,7 @@ def get_netmask_table(
         ['IPv4 CIDR', ip4_cidr],
         ['IPv4 Netmask', ip4_netmask],
         ['IPv6 CIDR', ip6_cidr],
-        ['IPv6 Netmask', ip6_netmask],
+        ['IPv6 Netmask', str(ip_network(f'::{ip6_cidr}').netmask)]
     ]
 
     return net_table, 39
@@ -170,13 +170,15 @@ def get_max_hosts_table(
         assert isinstance(max_prefix, int), '`max_prefix` must be int.'
         assert max_prefix in {32, 128}, '`max_prefix` must be either 32 or 128.'
 
-        return f'{2 ** (max_prefix - int(netmask)):,}' if netmask <= max_prefix else 'Network too large'
+        return f'{2 ** (max_prefix - netmask):,}' if netmask <= max_prefix else 'Network too large'
 
+    heading = f'Max. hosts for {netmask} mask.'
     netmask = netmask.lstrip('/')                                           # Remove leading slash if present.
     ip_regex = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    div = 69 * '='                                                          # Div length for IPv4 addresses.
 
     assert isinstance(netmask, str), '`netmask` must be instance of str().'
-    assert re_match(ip_regex, netmask.lstrip) or 0 <= int(netmask) <= 32, 'Invalid netmask.'
+    assert re_match(ip_regex, netmask) or 0 <= int(netmask) <= 32, 'Invalid netmask.'
 
     match netmask.count('.'):                                               # Check if netmask.
         case 3:                                                             # Is netmask.
@@ -185,8 +187,12 @@ def get_max_hosts_table(
             pass
 
     host_table = [                                                          # Hosts table.
+        [div, ''],
+        [heading, ''],
+        [div.replace('=', '-'), ''],
         ['Max. IPv4 hosts', _max_hosts(int(netmask), 32)],
-        ['Max. IPv6 hosts', _max_hosts(int(netmask), 128)]
+        ['Max. IPv6 hosts', _max_hosts(int(netmask), 128)],
+        [div.replace('=', '-'), ''],
     ]
 
     return host_table, 51
@@ -197,10 +203,13 @@ if __name__ == '__main__':
 
     if args.address:
         table, padding = get_network_table(args.address)
+
     elif args.number_of_hosts:
         table, padding = get_netmask_table(args.number_of_hosts)
+
     elif args.prefix:
         table, padding = get_max_hosts_table(args.prefix)
+
     else:
         sys_exit(1)
 

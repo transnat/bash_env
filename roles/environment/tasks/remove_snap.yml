@@ -1,26 +1,37 @@
 ---
-- name: 'Purge and replace Snap packages.'
+- name: 'Purge Snap.'
   when: ansible_distribution == 'Ubuntu'
+  become: true
   tags:
       - 'snap'
   block:
-      - name: 'Root user tasks.'
-        become: true
+      - name: 'Collect package facts.'
+        ansible.builtin.package_facts:
+        register: packages_state
+
+      - name: 'Debug system packages facts.'
+        ansible.builtin.debug:
+            var: '{{ packages_state.packages }}'
+            verbosity: 3
+
+      - name: 'Uninstall snap.'
+        when: '"snapd" in packages_state.packages'
         block:
             - name: 'Collect system service facts.'
               ansible.builtin.service_facts:
               register: services_state
 
-            - name: 'Stop and disable snapd systemd service.'
+            - name: 'Debug system service facts.'
+              ansible.builtin.debug:
+                  var: '{{ services_state.services }}'
+                  verbosity: 3
+
+            - name: 'Stop, disable, and mask snapd system service.'
+              when: '"snapd.service" in services_state.ansible_facts.services'
               ansible.builtin.systemd_service:
                   name: 'snapd.service'
                   state: 'stopped'
                   enabled: false
-              when: "'snapd.service' in services_state.ansible_facts.services"
-
-            - name: 'Mask snapd systemd service.'
-              ansible.builtin.systemd_service:
-                  name: 'snapd'
                   masked: true
 
             - name: 'Uninstall snapd package.'
@@ -59,30 +70,28 @@
                   name: '{{ item }}'
                   state: 'absent'
 
-            - name: 'Replace Snap packages with Apt.'
-              loop: '{{ packages_apt }}'
-              block:
-                  - name: 'Add Apt preferences for  {{ item.name }}.'
-                    when: item | selectattr('pref', 'defined')
-                    ansible.builtin.copy:
-                        dest: '/etc/apt/preferences.d/{{ item.name }}.pref'
-                        content: '{{ item.pref }}'
-                        owner: 'root'
-                        group: 'root'
-                        mode: '0644'
-
-                  - name: 'Add Apt repository for  {{ item.name }}'
-                    when: item | selectattr('repo', 'defined')
-                    ansible.builtin.apt_repository:
-                        repo: '{{ item.repo }}'
-                        state: 'present'
-
             - name: 'Update Apt cache.'
               ansible.builtin.apt:
                   update_cache: true
 
-      - name: 'Remove snap directory from system user home.'
+      - name: 'Find snap directories in user homes.'
+        ansible.builtin.find:
+            paths: '/home'
+            depth: 2
+            file_type: 'directory'
+            recurse: true
+            patterns: 'snap'
+        register: 'user_snap_dirs'
+
+      - name: 'Debug snap dirs.'
+        ansible.builtin.debug:
+            var: '{{ user_snap_dirs }}'
+            verbosity: 3
+
+      - name: 'Remove all ~/snap directories.'
+        when: user_snap_dirs.files | length > 0
         ansible.builtin.file:
-            name: '{{ ansible_env.HOME }}/snap'
+            path: '{{ item.path }}'
             state: 'absent'
+        loop: '{{ user_snap_dirs.files }}'
 ...

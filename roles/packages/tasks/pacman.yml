@@ -1,6 +1,6 @@
 ---
 - name: 'Install Pacman packages.'
-  when: ansible_os_family == 'Archlinux'
+  when: "ansible_os_family == 'Archlinux'"
   become: true
   tags:
       - 'pacman'

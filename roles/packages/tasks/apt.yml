@@ -1,7 +1,7 @@
 ---
 - name: 'Install Apt packages.'
   become: true
-  when: ansible_os_family == 'Debian'
+  when: "ansible_os_family == 'Debian'"
   tags:
       - 'apt'
   block:

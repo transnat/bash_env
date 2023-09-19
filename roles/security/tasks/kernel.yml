@@ -20,7 +20,7 @@
         register: 'security_etcdefaultgrub'
 
       - name: 'Deploy grub flags.'
-        when: security_etcdefaultgrub.stat.exists
+        when: 'security_etcdefaultgrub.stat.exists'
         ansible.builtin.replace:
             path: '/etc/default/grub'
             regexp: >

@@ -1,6 +1,6 @@
 ---
 - name: 'Enable reflector.'
-  when: ansible_os_family == 'ArchLinux'
+  when: "ansible_os_family == 'ArchLinux'"
   become: true
   tags:
       - 'systemd'

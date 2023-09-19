@@ -1,13 +1,13 @@
 ---
 - name: 'Purge Snap.'
-  when: ansible_distribution == 'Ubuntu'
+  when: "ansible_distribution == 'Ubuntu'"
   become: true
   tags:
       - 'snap'
   block:
       - name: 'Collect package facts.'
         ansible.builtin.package_facts:
-        register: packages_state
+        register: 'packages_state'
 
       - name: 'Debug system packages facts.'
         ansible.builtin.debug:
@@ -19,7 +19,7 @@
         block:
             - name: 'Collect system service facts.'
               ansible.builtin.service_facts:
-              register: services_state
+              register: 'services_state'
 
             - name: 'Debug system service facts.'
               ansible.builtin.debug:
@@ -56,9 +56,9 @@
                   group: 'root'
                   mode: '0644'
                   content: |
-                      Package: snapd
+                      "Package: snapd
                       Pin: release a=*
-                      Pin-Priority: -10
+                      Pin-Priority: -10"
 
             - name: 'Remove snap system directories.'
               loop:
@@ -89,7 +89,7 @@
             verbosity: 3
 
       - name: 'Remove all ~/snap directories.'
-        when: user_snap_dirs.files | length > 0
+        when: "user_snap_dirs.files | length > 0"
         ansible.builtin.file:
             path: '{{ item.path }}'
             state: 'absent'

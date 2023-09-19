@@ -1,7 +1,7 @@
 ---
 - name: 'Disable crash reporters.'
   become: true
-  when: ansible_os == 'Ubuntu'
+  when: "ansible_distribution == 'Ubuntu'"
   tags:
       - 'ubuntu'
       - 'whoopsie'
@@ -12,14 +12,14 @@
         no_log: true
 
       - name: 'Disable Whoopsie.'
-        when: _disable_crash_reporters.disable_whoopsie and 'whoopsie' in ansible_facts.packages
+        when: "'whoopsie' in ansible_facts.packages"
         block:
             - name: 'Deactivate Whoopsie daemon sending crash reports.'
               ansible.builtin.lineinfile:
                   dest: '/etc/default/whoopsie'
                   regexp: '^report_crashes'
                   line: 'report_crashes=false'
-                  state: present
+                  state: 'present'
 
             - name: 'Ensure Whoopsie daemon is stopped and disabled.'
               ansible.builtin.service:
@@ -33,7 +33,7 @@
                   state: 'absent'
 
       - name: 'Disable Apport.'
-        when: _disable_crash_reporters.disable_apport and 'apport' in ansible_facts.packages
+        when: "'apport' in ansible_facts.packages"
         block:
             - name: 'Deactivate apport daemon crash report collection.'
               ansible.builtin.lineinfile:

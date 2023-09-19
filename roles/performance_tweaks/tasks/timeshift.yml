@@ -6,7 +6,7 @@
       - 'timeshift'
   block:
       - name: 'Enable timeshift-boot.'
-        when: ansible_os_family == 'ArchLinux'
+        when: "ansible_os_family == 'ArchLinux'"
         ansible.builtin.systemd:
             name: 'timeshift-boot.timer'
             state: 'started'
@@ -14,7 +14,7 @@
             daemon_reload: true
 
       - name: 'Enable timeshift-hourly.'
-        when: ansible_os_family == 'ArchLinux'
+        when: "ansible_os_family == 'ArchLinux'"
         ansible.builtin.systemd:
             name: 'timeshift-boot.timer'
             state: 'started'

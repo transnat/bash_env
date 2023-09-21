@@ -3,6 +3,16 @@
   become: true
   tags:
       - 'filesystem'
+  vars:
+      drives:
+          - '/boot'
+          - '/dev/shm'
+          - '/home'
+          - '/tmp'
+          - '/var'
+          - '/var/tmp'
+          - '/var/log'
+          - '/proc'
   block:
       - name: 'Disable coredump storage.'
         ansible.builtin.blockinfile:
@@ -26,7 +36,7 @@
             src: '{{ item.split(" ")[0] }}'
             opts: '{{ item.split(" ")[3].split(",") | union(["nodev"]) | unique | join(",") }}'
         loop: '{{ security_mount_options.stdout_lines }}'
-        when: "item.split(' ')[1] in ['/boot' , '/dev/shm', '/home', '/tmp', '/var', '/var/tmp', '/var/log', '/proc']"
+        when: "item.split(' ')[1] in drives"
 
       - name: 'Get mounts from /etc/mtab.'
         ansible.builtin.command: 'cat /etc/mtab'
@@ -41,7 +51,7 @@
             src: '{{ item.split(" ")[0] }}'
             opts: '{{ item.split(" ")[3].split(",") | union(["noexec"]) | unique | join(",") }}'
         loop: '{{ security_mount_options.stdout_lines }}'
-        when: "item.split(' ')[1] in ['/boot' , '/dev/shm', '/tmp', '/var', '/var/tmp', '/var/log', '/proc']"
+        when: "item.split(' ')[1] in drives"
 
       - name: 'Get mounts from /etc/mtab.'
         ansible.builtin.command: 'cat /etc/mtab'
@@ -56,7 +66,7 @@
             src: '{{ item.split(" ")[0] }}'
             opts: '{{ item.split(" ")[3].split(",") | union(["nosuid"]) | unique | join(",") }}'
         loop: '{{ security_mount_options.stdout_lines }}'
-        when: "item.split(' ')[1] in ['/boot' , '/dev/shm', '/tmp', '/var', '/var/tmp', '/var/log', '/proc']"
+        when: "item.split(' ')[1] in drives"
 
       - name: 'Fix directory permissions.'
         ansible.builtin.file:

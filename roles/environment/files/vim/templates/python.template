@@ -4,13 +4,14 @@
 # Date:     DATE
 # Description:
 '''
+MODULE DOCSTRING
 '''
 
 from argparse import ArgumentParser, Namespace
+from sys import exit as sys_exit
 from locale import setlocale, LC_ALL
 from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
-from typing import Optional
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -25,19 +26,27 @@ def get_arguments() -> Namespace:
     parser.add_argument(                                                    # Set path for the output log file.
         '--logfile', '-l',
         dest='log_file',
-        type=Optional[Path],
+        type=Path,
         default=None,
         help='Absolute path to write the logfile to. Default `None`.'
     )
     parser.add_argument(                                                    # Specify logging verbosity.
         '--verbose', '-v',
         dest='log_level',
-        default=0,
         action='count',
+        default=None,
         help='Specify logging verbosity. Default `CRITICAL`.'
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
+
+    if set(arguments.__dict__.values()) == {None}:
+        parser.print_help()
+        sys_exit(1)
+
+    if arguments.log_level is None:
+        arguments.log_level = 30
+
     arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level from 10 - 50.
 
     return arguments
@@ -45,7 +54,7 @@ def get_arguments() -> Namespace:
 
 def enable_log(
     log_level: int = 30,
-    log_file: Optional[Path] = None
+    log_file: (Path, None) = None
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
@@ -58,7 +67,7 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
+        style='{'                                                           # Lazy string interpolation.
     )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
@@ -79,3 +88,5 @@ def enable_log(
 if __name__ == '__main__':
     args = get_arguments()
     log = enable_log(args.log_level, args.log_file)
+
+    log.debug(args)

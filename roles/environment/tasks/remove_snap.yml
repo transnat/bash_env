@@ -56,9 +56,9 @@
                   group: 'root'
                   mode: '0644'
                   content: |
-                      "Package: snapd
+                      Package: snapd
                       Pin: release a=*
-                      Pin-Priority: -10"
+                      Pin-Priority: -10
 
             - name: 'Remove snap system directories.'
               loop:

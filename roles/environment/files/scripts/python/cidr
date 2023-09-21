@@ -48,7 +48,7 @@ def get_arguments() -> Namespace:
 
     if set(arguments.__dict__.values()) == {None}:
         parser.print_help()
-        sys_exit()
+        sys_exit(1)
 
     if arguments.number_of_hosts and not 0 < arguments.number_of_hosts <= 2 ** 128:
         parser.error('Number of hosts must be between 1 and 2^128.')

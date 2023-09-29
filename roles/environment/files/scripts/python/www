@@ -10,7 +10,6 @@ from http import server
 from locale import setlocale, LC_ALL
 from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
-from socket import socket, AF_INET, SOCK_DGRAM
 from socketserver import TCPServer
 from sys import exit as sysexit
 from typing import NoReturn
@@ -64,7 +63,7 @@ def enable_log(
         :return:            Instantiated logger.RootLogger instance.
     '''
     assert 50 >= log_level >= 0, '`log_level` must be intstance of int() between 0 and 50 (incl.).'
-    assert isinstance(log_file, (Path, None)), '`log_file` must be Path or None.'
+    assert isinstance(log_file, (Path | None)), '`log_file` must be Path or None.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -93,28 +92,14 @@ def run_http_server(
     Run a simple HTTP server.
         :param port:    The port to run the server on.
     '''
-    def _get_lan_ip() -> str:
-        '''
-        Get the LAN IP address of the host.
-            :return:    The LAN IP address of the host.
-        '''
-        with socket(AF_INET, SOCK_DGRAM) as sock:
-            sock.connect(('1.1.1.1', 80))
-
-            socket_name = sock.getsockname()[0]
-
-            assert isinstance(socket_name, str), '`socket_name` must be instance of str().'
-
-            return socket_name
-
     assert port >= 1024, '`port should be instance of int() in the non-reserved range of 1024-65535.'
 
-    httpd = TCPServer(('', port), server.SimpleHTTPRequestHandler)
-
-    log.debug(print('Instantiated HTTP server.'))
-
     try:
-        log.info(print(f'HTTP server running on http://{_get_lan_ip()}:{port}'))
+        log.debug(print('Instantiating HTTP server.'))
+
+        httpd = TCPServer(('', port), server.SimpleHTTPRequestHandler)
+
+        log.info(print(f'HTTP server running on http://localhost:{port}'))
         httpd.serve_forever()
 
     except KeyboardInterrupt:

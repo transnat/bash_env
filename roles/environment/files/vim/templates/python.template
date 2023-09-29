@@ -42,10 +42,7 @@ def get_arguments() -> Namespace:
 
     if set(arguments.__dict__.values()) == {None}:
         parser.print_help()
-        sys_exit(1)
-
-    if arguments.log_level is None:
-        arguments.log_level = 30
+        sys_exit(0)
 
     arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level from 10 - 50.
 

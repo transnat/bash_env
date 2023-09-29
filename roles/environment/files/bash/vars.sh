@@ -12,6 +12,7 @@ export FUNCTIONS="${HOME}/.bash/functions/"
 export SCRIPTS="${HOME}/.local/lib/scripts/"
 export SECRETS="${HOME}/.bash/secrets.asc"
 export VARS="${HOME}/.bash/vars.sh"
+export GH="git@github.com"
 
 ## Ansible
 export ANSIBLE_DUPLICATE_YAML_DICT_KEY=ignore

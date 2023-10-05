@@ -42,5 +42,6 @@ environment_requirements:
         - 'qrcode>=7.4,<8.0'
         - 'requests>=2.31,<3.0'
         - 'tabulate>=0.9,<1.0'
+        - 'toml>=0.10,<1.0'
         - 'xmltodict>=0.13,<1.0'
 ...

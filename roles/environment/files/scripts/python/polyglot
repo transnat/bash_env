@@ -8,14 +8,16 @@
 from argparse import ArgumentParser, Namespace
 from configparser import ConfigParser
 from io import TextIOWrapper
-from json import dumps as jdumps, load
+from json import dumps as json_dumps, load as json_load
 from locale import setlocale, LC_ALL
 from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from sys import exit as sys_exit, stdout
 from typing import NoReturn
+
 from dict2xml import dict2xml
 from pandas import json_normalize, read_csv
+from toml import dumps as toml_dumps, load as toml_load
 from xmltodict import parse
 from yaml import safe_load, dump as ydump
 
@@ -127,8 +129,11 @@ def ingest_data(
                     index_col=False
                 ).to_dict()
 
+            case '.html' | '.xml':                                          # HTML/XML.
+                payload = parse(data.read())
+
             case '.json':                                                   # JSON.
-                payload = load(data)
+                payload = json_load(data)
 
             case '.ini':                                                    # INI.
                 config = ConfigParser()
@@ -137,8 +142,8 @@ def ingest_data(
 
                 payload = config._sections
 
-            case '.html' | '.xml':                                          # HTML/XML.
-                payload = parse(data.read())
+            case '.toml':
+                payload = toml_load(data)
 
             case '.yaml' | '.yml':                                          # YAML [default].
                 payload = safe_load(data)
@@ -213,7 +218,10 @@ def output_data(
                         config.write(outfile)
 
             case 'json':                                                    # JSON.
-                outfile.write(jdumps(payload, indent=2))
+                outfile.write(json_dumps(payload, indent=2))
+
+            case 'toml':
+                outfile.write(toml_dumps(payload))
 
             case _:                                                         # YAML (default).
                 outfile.write(ydump(payload))

@@ -26,7 +26,7 @@ def get_arguments() -> Namespace:
     parser.add_argument(                                                    # Set path for the output log file.
         '--logfile', '-l',
         dest='log_file',
-        type=(Path | None),
+        type=Path,
         default=None,
         help='Absolute path to write the logfile to. Default `None`.'
     )

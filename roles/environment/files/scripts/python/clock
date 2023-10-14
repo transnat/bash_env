@@ -37,8 +37,9 @@ def get_arguments() -> Namespace:
 if __name__ == '__main__':
     args = get_arguments()
     FSTRING = '%I:%M:%S %p' if args.twelve else '%H:%M:%S'
+    DIV = '=' * len(FSTRING)
 
     while True:
         system('clear')
-        print(f'===========\n{datetime.now().strftime(FSTRING)}\n===========')
+        print(f'{DIV}\n{datetime.now().strftime(FSTRING)}\n{DIV}')
         sleep(1)

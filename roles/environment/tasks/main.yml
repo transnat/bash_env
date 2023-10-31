@@ -12,7 +12,6 @@
       - 'git'
       - 'gnupg'
       - 'python_requirements'
-      - 'remove_snap'
       - 'screen'
       - 'script_dir'
       - 'ssh'

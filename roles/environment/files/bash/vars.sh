@@ -22,7 +22,7 @@ export ANSIBLE_DUPLICATE_YAML_DICT_KEY=ignore
 
 ## PGP
 export GPG_TTY="$(tty)"
-export PGP_KEY_ID="0x3260255327CBCDA1"
+export PGP_KEY_ID="0xF64015B97A016D10"
 
 ## SSH
 export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"

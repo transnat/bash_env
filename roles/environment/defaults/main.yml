@@ -1,5 +1,5 @@
 ---
-_default:
+_defaults:
     dir: &default_dir
         owner: '{{ ansible_effective_user_id }}'
         group: '{{ ansible_effective_group_id }}'
@@ -30,7 +30,7 @@ environment_requirements:
         - 'dict2xml>=1.7,<2.0'
         - 'ipython>=8.14,<9.0'
         - 'j2cli>=0.3,<1.0'
-        - 'jinja2>=3.1,<4.0'
+        - 'jinja2>3.0,<=3.1'
         - 'opencv-python>=4.7,<5.0'
         - 'pandas>=1.5,<2.0'
         - 'pillow>=10.0.1,<11.0.0'

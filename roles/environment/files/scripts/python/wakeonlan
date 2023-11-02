@@ -146,7 +146,7 @@ def print_info(
         print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(23))
 
     print('\n---------------------------------')
-    print('''Known Hosts\n---------------------------------''')
+    print('Known Hosts\n---------------------------------')
 
     for row in known_hosts:
         print(f'{row[0]}:'.ljust(10) + f'{row[1]}'.rjust(21))
@@ -233,7 +233,7 @@ class Network():
 
     @staticmethod
     def send_packet(
-        mac_addresses: list,
+        mac_addresses: list[str],
         broadcast_ip: str,
         port: int,
         interface: str

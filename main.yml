@@ -1,7 +1,7 @@
 ---
 - name: 'Build end-user Linux system.'
   gather_facts: true                                                        # Gather facts.
-  ignore_errors: true                                                       # Ignore errors.
+  ignore_errors: false                                                       # Ignore errors.
   hosts: 'localhost'
   roles:                                                                    # Order matters!
       - 'security'                                                          # Do security tasks.

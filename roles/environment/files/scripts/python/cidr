@@ -78,7 +78,7 @@ def print_table(
 
 def get_network_table(
     subnet: (IPv4Network | IPv6Network)
-        ) -> tuple:
+        ) -> tuple[list[list], int]:
     '''
     Create and print a network table.
         :param subnet:  The network string to print (like 10.10.10.10/24).
@@ -121,7 +121,7 @@ def get_network_table(
 
 def get_netmask_table(
     hosts: int
-        ) -> (tuple | None):
+        ) -> (tuple[list[list], int] | None):
     '''
     Print the minimum netmask/prefix length for a subnet with a given number of hosts.
         :param hosts:   The maximum number of hosts on the subnet.

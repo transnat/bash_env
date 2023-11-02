@@ -23,7 +23,7 @@
 
       - name: 'Enumerate CA certificates (CRT).'
         ansible.builtin.find:
-            paths: '{{ role_dir }}/files/ca-certificates/'
+            paths: '{{ role_path }}/files/ca-certificates/'
             file_type: 'file'
             patterns: '*.crt'
         register: 'environment_ca_certificates_crt'
@@ -92,14 +92,14 @@
                   group: 'root'
                   mode: '0755'
 
-            - name: 'Copy CRT files.'
-              ansible.builtin.copy:
-                  src: '{{ role_path }}/files/ca-certificates/{{ item.path }}'
-                  dest: '/etc/pki/ca-trust/source/anchors/{{ item.path | basename }}'
-                  owner: 'root'
-                  group: 'root'
-                  mode: '0644'
-              loop: 'environment_ca_certificates_crt.files'
+#           - name: 'Copy CRT files.'
+#             ansible.builtin.copy:
+#                 src: '{{ role_path }}/files/ca-certificates/{{ item.path }}'
+#                 dest: '/etc/pki/ca-trust/source/anchors/{{ item.path | basename }}'
+#                 owner: 'root'
+#                 group: 'root'
+#                 mode: '0644'
+#             loop: 'environment_ca_certificates_crt.files'
 
             - name: 'Update CA trust.'
               ansible.builtin.command: 'update-ca-certificates'

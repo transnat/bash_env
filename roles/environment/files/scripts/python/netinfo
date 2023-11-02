@@ -125,7 +125,7 @@ def public_ip() -> str:
     return public_ip_addr
 
 
-def convert_from_hex(
+def hex_to_octet(
     hex_data: str
         ) -> str:
     '''
@@ -161,14 +161,14 @@ def interface_info(
         0x8915,
         pack('256s', bytes(iface[:15], 'utf-8'))
     )[20:24])
-    iface_gateway = convert_from_hex([                                      # Gateway.
+    iface_gateway = hex_to_octet([                                          # Gateway.
         route
         for route
         in all_routes()
         if route[0] == iface
         and route[1] == '00000000'
     ][0][2])
-    iface_netmask = convert_from_hex([                                      # Netmask.
+    iface_netmask = hex_to_octet([                                          # Netmask.
         route
         for route
         in all_routes()

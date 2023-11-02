@@ -142,7 +142,7 @@ def ingest_data(
 
                 payload = config._sections
 
-            case '.toml':
+            case '.toml':                                                   # TOML
                 payload = toml_load(data)
 
             case '.yaml' | '.yml':                                          # YAML [default].
@@ -244,8 +244,8 @@ if __name__ == '__main__':
     log = enable_log(args.log_level)
 
     output_data(
-        ingest_data(args.infile),
-        args.infile,
-        args.format,
-        args.write
+        payload=ingest_data(args.infile),
+        infile=args.infile,
+        out_format=args.format,
+        write=args.write
     )

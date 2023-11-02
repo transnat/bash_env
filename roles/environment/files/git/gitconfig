@@ -1,7 +1,8 @@
 [user]
-	email = himself@caseyspar.kz
-	name = caseysparkz
-	signingKey = 0x2027DEDFECE6A3D5
+	email = casey@taumotors.com
+	name = tau-caseysparkz
+	signingKey = 0xF64015B97A016D10
+
 [core]
 	editor = vim
 [init]

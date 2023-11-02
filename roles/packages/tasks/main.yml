@@ -4,7 +4,6 @@
       - 'packages'
   ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
-      - 'remove_snap'
       - 'apt'
       - 'dnf'
       - 'pacman'

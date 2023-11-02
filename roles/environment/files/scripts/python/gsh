@@ -117,6 +117,7 @@ def prechecks_pass(
 
         except FileNotFoundError as file_err:
             log.exception(f'File {file} not found: {file_err}')
+
             raise file_err
 
     return True

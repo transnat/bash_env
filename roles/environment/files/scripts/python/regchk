@@ -8,8 +8,8 @@
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
 from logging import getLogger, Formatter, RootLogger, StreamHandler
+from re import search
 from typing import NoReturn
-import re
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
@@ -72,7 +72,7 @@ def enable_log(
 
 def run_regex(
     expression: str,
-    test_string: (str|None) = None
+    test_string: (str | None) = None
         ) -> NoReturn:
     '''
     Runs a RegEx expression against a string and prints if match.
@@ -82,16 +82,14 @@ def run_regex(
     assert isinstance(expression, str), '`expression` must be instance of str().'
     assert isinstance(test_string, (str, None)), '`test_str` must be instance of str() or None.'
 
-    print(f'String "{test_string}": {re.search(expression, test_string)}')
+    print(f'String "{test_string}": {search(expression, test_string)}')
 
 
 if __name__ == '__main__':
     args = get_arguments()
-
-    enable_log(args.log_level)
-
     header = f'Expression: "{args.expression}"'
 
+    enable_log(args.log_level)
     print(header)
     print('=' * len(header))
 

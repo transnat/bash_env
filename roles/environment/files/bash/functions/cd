@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
+#-*- coding:utf-8 -*-
 # Change directory and clear terminal
 cdc() {
-  cd $1
+  cd "${1}" || exit
   clear
 }
 
 # Change directory, clear terminal, and display directory contents as list 
 cdl() {
-  cd $1
+  cd "$1" || exit
   clear
   ls -l
 }
 
 # Make a directory and enter it.
 mkcd() {
-  mkdir -p ${1} &&
-    cd ${1}
+  mkdir -p "${1}" &&
+    cd "${1}" || exit
 }

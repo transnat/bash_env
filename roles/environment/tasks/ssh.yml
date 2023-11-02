@@ -11,7 +11,7 @@
             group: '{{ ansible_effective_group_id }}'
             mode: '0700'
 
-      - name: 'Copy SSH pubkey.'
+      - name: 'Copy SSH pubkey'
         ansible.builtin.copy:
             src: 'files/ssh/smartcard'
             dest: '{{ ansible_env.HOME }}/.ssh/smartcard'
@@ -20,7 +20,7 @@
             mode: '0600'
             force: true
 
-      - name: 'Copy SSH config.'
+      - name: 'Copy SSH config'
         ansible.builtin.copy:
             src: 'files/ssh/config'
             dest: '{{ ansible_env.HOME }}/.ssh/config'

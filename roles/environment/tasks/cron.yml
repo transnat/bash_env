@@ -1,5 +1,5 @@
 ---
-- name: 'Delete screenshots.'
+- name: 'Delete screenshots'
   ansible.builtin.cron:
       name: 'Delete screenshots.'
       minute: 0

@@ -1,64 +1,64 @@
 ---
-- name: 'Disable crash reporters.'
+- name: 'Disable crash reporters'
   become: true
   when: "ansible_distribution == 'Ubuntu'"
   tags:
       - 'ubuntu'
       - 'whoopsie'
   block:
-      - name: 'Get package facts.'
+      - name: 'Get package facts'
         ansible.builtin.package_facts:
             manager: 'auto'
         no_log: true
 
-      - name: 'Get Whoopsie config path.'
+      - name: 'Get Whoopsie config path'
         ansible.builtin.stat:
             path: '/etc/default/whoopsie'
         register: 'whoopsie_config_path'
 
-      - name: 'Disable Whoopsie.'
+      - name: 'Disable Whoopsie'
         when: "'whoopsie' in ansible_facts.packages and whoopsie_config_path.stat.exists"
         block:
-            - name: 'Deactivate Whoopsie daemon sending crash reports.'
+            - name: 'Deactivate Whoopsie daemon sending crash reports'
               ansible.builtin.lineinfile:
                   dest: '/etc/default/whoopsie'
                   regexp: '^report_crashes'
                   line: 'report_crashes=false'
                   state: 'present'
 
-            - name: 'Ensure Whoopsie daemon is stopped and disabled.'
+            - name: 'Ensure Whoopsie daemon is stopped and disabled'
               ansible.builtin.service:
                   name: 'whoopsie'
                   state: 'stopped'
                   enabled: false
 
-            - name: 'Uninstall Whoopsie.'
+            - name: 'Uninstall Whoopsie'
               ansible.builtin.apt:
                   name: 'whoopsie'
                   state: 'absent'
 
-      - name: 'Disable Apport.'
+      - name: 'Disable Apport'
         when: "'apport' in ansible_facts.packages"
         block:
-            - name: 'Deactivate apport daemon crash report collection.'
+            - name: 'Deactivate apport daemon crash report collection'
               ansible.builtin.lineinfile:
                   dest: '/etc/default/apport'
                   regexp: '^enabled'
                   line: 'enabled=0'
                   state: 'present'
 
-            - name: 'Ensure apport daemon is stopped and disabled.'
+            - name: 'Ensure apport daemon is stopped and disabled'
               ansible.builtin.service:
                   name: 'apport'
                   state: 'stopped'
                   enabled: false
 
-            - name: 'Uninstall Apport.'
+            - name: 'Uninstall Apport'
               ansible.builtin.apt:
                   name: 'apport'
                   state: 'absent'
 
-      - name: 'Remove orphan dependencies.'
+      - name: 'Remove orphan dependencies'
         ansible.builtin.apt:
             autoremove: true
             autoclean: true

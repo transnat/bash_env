@@ -1,5 +1,5 @@
 ---
-- name: 'Symlink ~/.gitconfig.'
+- name: 'Symlink ~/.gitconfig'
   tags:
       - 'git'
   ansible.builtin.file:

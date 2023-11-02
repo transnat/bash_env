@@ -1,5 +1,5 @@
 ---
-- name: 'Run performance tweaks.'
+- name: 'Run performance tweaks'
   tags:
       - 'performance_tweaks'
       - 'optional'

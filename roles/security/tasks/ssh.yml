@@ -1,10 +1,10 @@
 ---
-- name: 'Harden sshd.'
+- name: 'Harden sshd'
   become: true
   tags:
       - 'ssh'
   block:
-      - name: 'Check sshd exists.'
+      - name: 'Check sshd exists'
         ansible.builtin.stat:
             path: '/usr/sbin/sshd'
         register: 'security_sshd_path'
@@ -21,10 +21,10 @@
             mode: '0644'
         loop: '{{ security_ssh_config }}'
 
-      - name: 'Remove short Diffie-Hellman.'
+      - name: 'Remove short Diffie-Hellman'
         ansible.builtin.shell: |
             awk '$5 >= 3071' /etc/ssh/moduli | tee /etc/ssh/moduli.tmp;
             mv /etc/ssh/moduli.tmp /etc/ssh/moduli
         changed_when: false
-        notify: 'Restart SSHD.'
+        notify: 'Restart SSHD'
 ...

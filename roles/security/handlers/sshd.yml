@@ -1,5 +1,5 @@
 ---
-- name: 'Restart SSHD.'
+- name: 'Restart SSHD'
   become: true
   ansible.builtin.service:
       name: 'ssh'

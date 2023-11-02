@@ -1,5 +1,5 @@
 ---
-- name: 'Install PIP packages.'
+- name: 'Install PIP packages'
   tags:
       - 'pip'
   ansible.builtin.pip:

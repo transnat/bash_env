@@ -1,5 +1,5 @@
 ---
-- name: 'Filesystem.'
+- name: 'Filesystem'
   become: true
   tags:
       - 'filesystem'
@@ -14,7 +14,7 @@
         tags:
             - 'fstab'
 
-      - name: 'Discard trim enable.'
+      - name: 'Discard trim enable'
         ansible.builtin.systemd:
             name: 'fstrim.timer'
             state: 'started'

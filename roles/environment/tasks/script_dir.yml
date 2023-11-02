@@ -1,9 +1,9 @@
 ---
-- name: 'User scripts.'
+- name: 'User scripts'
   tags:
       - 'scripts'
   block:
-      - name: 'Make ~/.local/lib/.'
+      - name: 'Make ~/.local/lib/'
         ansible.builtin.file:
             path: '{{ ansible_env.HOME }}/.local/lib'
             state: 'directory'
@@ -11,7 +11,7 @@
             group: '{{ ansible_effective_group_id }}'
             mode: '0700'
 
-      - name: 'Symlink ~/.local/lib/scripts.'
+      - name: 'Symlink ~/.local/lib/scripts'
         ansible.builtin.file:
             src: '{{ role_path }}/files/scripts/'
             dest: '{{ ansible_env.HOME }}/.local/lib/scripts'

@@ -1,5 +1,5 @@
 ---
-- name: 'Symlink ~/.screenrc.'
+- name: 'Symlink ~/.screenrc'
   tags:
       - 'screen'
   ansible.builtin.file:

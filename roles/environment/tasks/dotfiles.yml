@@ -1,9 +1,9 @@
 ---
-- name: 'Dotfiles.'
+- name: 'Dotfiles'
   tags:
       - 'dotfiles'
   block:
-      - name: 'Create ~/.config/ subdirectories.'
+      - name: 'Create ~/.config/ subdirectories'
         ansible.builtin.file:
             path: '{{ item.path }}'
             owner: '{{ item.owner }}'
@@ -12,7 +12,7 @@
             state: 'directory'
         loop: '{{ environment_dotfiles.subdirectories }}'
 
-      - name: 'Symlink configuration files.'
+      - name: 'Symlink configuration files'
         ansible.builtin.file:
             src: '{{ item.src }}'
             dest: '{{ item.dest }}'

@@ -1,5 +1,5 @@
 ---
-- name: 'Build preferred user environment.'
+- name: 'Build preferred user environment'
   tags:
       - 'environment'
   ansible.builtin.include_tasks: '{{ item }}.yml'

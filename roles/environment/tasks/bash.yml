@@ -1,9 +1,9 @@
 ---
-- name: 'Bash.'
+- name: 'Bash'
   tags:
       - 'bash'
   block:
-      - name: 'Symlink ~/.bash.'
+      - name: 'Symlink ~/.bash'
         ansible.builtin.file:
             src: '{{ role_path }}/files/bash/'
             dest: '{{ ansible_env.HOME }}/.bash'
@@ -12,7 +12,7 @@
             force: true
             state: 'link'
 
-      - name: 'Symlink ~/.profile.'
+      - name: 'Symlink ~/.profile'
         ansible.builtin.file:
             src: '{{ role_path }}/files/bash/profile'
             dest: '{{ ansible_env.HOME }}/.profile'
@@ -21,7 +21,7 @@
             force: true
             state: 'link'
 
-      - name: 'Symlink ~/.bashrc.'
+      - name: 'Symlink ~/.bashrc'
         ansible.builtin.file:
             src: '{{ role_path }}/files/bash/bashrc'
             dest: '{{ ansible_env.HOME }}/.bashrc'
@@ -30,7 +30,7 @@
             force: true
             state: 'link'
 
-      - name: 'Touch ~/.bashrc.local.'
+      - name: 'Touch ~/.bashrc.local'
         ansible.builtin.file:
             path: '{{ ansible_env.HOME }}/.bashrc.local'
             state: 'touch'
@@ -38,7 +38,7 @@
             group: '{{ ansible_effective_group_id }}'
             mode: '0755'
 
-      - name: 'Symlink ~/.bash_logout.'
+      - name: 'Symlink ~/.bash_logout'
         ansible.builtin.file:
             src: '{{ role_path }}/files/bash/bash_logout'
             dest: '{{ ansible_env.HOME }}/.bash_logout'

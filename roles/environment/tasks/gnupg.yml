@@ -1,9 +1,9 @@
 ---
-- name: 'GnuPG.'
+- name: 'GnuPG'
   tags:
       - 'gnupg'
   block:
-      - name: 'Create ~/.gnupg/.'
+      - name: 'Create ~/.gnupg/'
         ansible.builtin.file:
             path: '{{ ansible_env.HOME }}/.gnupg'
             state: 'directory'
@@ -27,15 +27,17 @@
             group: '{{ ansible_effective_group_id }}'
             mode: '0600'
 
-      - name: 'Copy in pubkey file.'
-        ansible.builtin.copy:
-            src: 'gnupg/public.asc'
-            dest: '{{ ansible_env.HOME }}/.gnupg/public.asc'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
+      - name: 'Enumerate local PGP pubkeys'
+        ansible.builtin.find:
+            paths: '{{ role_path }}/files/'
+            patterns: '*.asc'
+            recurse: false
+            file_type: 'file'
+        register: 'pgp_pubkeys'
 
-      - name: 'Import PGP key to user keyring.'
-        ansible.builtin.command: 'gpg --import {{ ansible_env.HOME }}/.gnupg/public.asc'
+      - name: 'Import PGP keys to user keyring'
+        loop: '{{ pgp_pubkeys.files }}'
+        ansible.builtin.command:
+            cmd: 'gpg --import {{ item.path }}'
         changed_when: false
 ...

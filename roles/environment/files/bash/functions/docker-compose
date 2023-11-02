@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+#-*- coding:utf-8 -*-
 # docker-compose wrapper.
 docker-compose(){
     case "$@" in

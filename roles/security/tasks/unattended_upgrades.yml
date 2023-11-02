@@ -1,5 +1,5 @@
 ---
-- name: 'Configure unattended upgrades to only install security upgrades.'
+- name: 'Configure unattended upgrades to only install security upgrades'
   become: true
   when: "ansible_os_family == 'Debian'"
   tags:

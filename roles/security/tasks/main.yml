@@ -1,5 +1,5 @@
 ---
-- name: 'Security tasks.'
+- name: 'Security tasks'
   tags:
       - 'security'
   ansible.builtin.include_tasks: '{{ item }}.yml'

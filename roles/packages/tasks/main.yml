@@ -1,5 +1,5 @@
 ---
-- name: 'Package tasks.'
+- name: 'Package tasks'
   tags:
       - 'packages'
   ansible.builtin.include_tasks: '{{ item }}.yml'

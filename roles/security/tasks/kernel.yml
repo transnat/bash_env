@@ -1,10 +1,10 @@
 ---
-- name: 'Harden kernel.'
+- name: 'Harden kernel'
   become: true
   tags:
       - 'kernel'
   block:
-      - name: 'Set sysctl variables.'
+      - name: 'Set sysctl variables'
         ansible.posix.sysctl:
             ignoreerrors: true
             name: '{{ item.name }}'
@@ -14,12 +14,12 @@
             reload: true
         loop: '{{ security_sysctl_vars }}'
 
-      - name: 'Check /etc/default/grub exists.'
+      - name: 'Check /etc/default/grub exists'
         ansible.builtin.stat:
             path: '/etc/default/grub'
         register: 'security_etcdefaultgrub'
 
-      - name: 'Deploy grub flags.'
+      - name: 'Deploy grub flags'
         when: 'security_etcdefaultgrub.stat.exists'
         ansible.builtin.replace:
             path: '/etc/default/grub'
@@ -30,10 +30,10 @@
             backup: true
         loop: '{{ security_grub_flags }}'
         notify:
-            - 'Update grub.'
-            - 'Update initramfs.'
+            - 'Update grub'
+            - 'Update initramfs'
 
-      - name: 'Use jitterentropy_rng.'
+      - name: 'Use jitterentropy_rng'
         ansible.builtin.blockinfile:
             path: '/etc/modules-load.d/jitterentropy_rng.conf'
             create: true

@@ -15,4 +15,5 @@
         loop: '{{ packages_apt }}'
         ansible.builtin.apt:
             name: '{{ item.name }}'
+            state: 'present'
 ...

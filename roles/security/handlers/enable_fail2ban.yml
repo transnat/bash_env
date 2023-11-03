@@ -1,0 +1,17 @@
+---
+- name: 'Enable fail2ban system service'
+  become: true
+  tags:
+      - 'fail2ban'
+      - 'systemd'
+  block:
+      - name: 'Reload systemd configs'
+        ansible.builtin.systemd_service:
+            daemon_reload: true
+
+      - name: 'Enable/start fail2ban.service'
+        ansible.builtin.systemd_service:
+            name: 'fail2ban.service'
+            state: 'started'
+            enabled: true
+...

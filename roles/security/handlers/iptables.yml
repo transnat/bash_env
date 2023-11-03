@@ -1,0 +1,11 @@
+---
+- name: 'Restart iptables'
+  become: true
+  tags:
+      - 'firewall'
+      - 'iptables'
+  ansible.builtin.systemd_service:
+      name: 'iptables'
+      state: 'restarted'
+      daemon_reload: true
+...

@@ -14,6 +14,13 @@
             reload: true
         loop: '{{ security_sysctl_vars }}'
 
+      - name: 'Use jitterentropy_rng'
+        ansible.builtin.blockinfile:
+            path: '/etc/modules-load.d/jitterentropy_rng.conf'
+            create: true
+            mode: '644'
+            block: 'jitterentropy_rng'
+
       - name: 'Check /etc/default/grub exists'
         ansible.builtin.stat:
             path: '/etc/default/grub'
@@ -32,11 +39,4 @@
         notify:
             - 'Update grub'
             - 'Update initramfs'
-
-      - name: 'Use jitterentropy_rng'
-        ansible.builtin.blockinfile:
-            path: '/etc/modules-load.d/jitterentropy_rng.conf'
-            create: true
-            mode: '644'
-            block: 'jitterentropy_rng'
 ...

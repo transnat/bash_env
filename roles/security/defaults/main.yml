@@ -1,4 +1,6 @@
 ---
+security_fail2ban_services:
+    - 'sshd'
 security_file_modes:
     - path: '/etc/group'
       mode: '0644'

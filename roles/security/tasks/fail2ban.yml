@@ -14,7 +14,7 @@
                   update_cache: true
                   cache_valid_time: 3600
 
-            - name: 'Install fail2ban'
+            - name: 'Install fail2ban [APT]'
               ansible.builtin.apt:
                   name: 'fail2ban'
                   state: 'present'
@@ -42,14 +42,20 @@
             owner: 'root'
             group: 'root'
             mode: '0644'
-            backup: true
 
       - name: 'Enable default jail'
         ansible.builtin.replace:
             path: '/etc/fail2ban/jail.local'
             after: '[DEFAULT]'
             regexp: '^enabled = false$'
-            replace: '^enabled = true$'
+            replace: 'enabled = true'
+
+      - name: 'Enable default jail'
+        ansible.builtin.replace:
+            path: '/etc/fail2ban/jail.local'
+            after: '[DEFAULT]'
+            regexp: '^backend = .*$'
+            replace: 'backend = systemd'
 
       - name: 'Enable service jails'                                        # Default configs.
         loop: '{{ security_fail2ban_services }}'

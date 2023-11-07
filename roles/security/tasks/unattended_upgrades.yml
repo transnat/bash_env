@@ -15,7 +15,7 @@
           APT::Periodic::Unattended-Upgrade "1";
           Unattended-Upgrade::Origins-Pattern {
                 // "o=Debian,a=stable";
-                //"o=Debian,a=stable-updates";
+                // "o=Debian,a=stable-updates";
                 "origin=Debian,codename=${distro_codename},label=Debian-Security";
           };
           Unattended-Upgrade::Package-Blacklist {

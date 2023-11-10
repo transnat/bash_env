@@ -4,6 +4,8 @@
   become: true
   tags:
       - 'snap'
+      - 'ubuntu'
+      - 'uninstall'
   block:
       - name: 'Collect package facts'
         ansible.builtin.package_facts:

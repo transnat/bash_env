@@ -2,7 +2,6 @@
 - name: 'Build preferred user environment'
   tags:
       - 'environment'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
       - 'bash'
       - 'ca_certificates'
@@ -12,8 +11,11 @@
       - 'git'
       - 'gnupg'
       - 'python_requirements'
+      - 'remove_default_packages'
+      - 'remove_snap'
       - 'screen'
       - 'script_dir'
       - 'ssh'
       - 'vim'
+  ansible.builtin.include_tasks: '{{ item }}.yml'
 ...

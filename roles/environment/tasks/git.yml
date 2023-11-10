@@ -1,10 +1,12 @@
 ---
-- name: 'Symlink ~/.gitconfig'
+- name: 'Copy in ~/.gitconfig'
   tags:
       - 'git'
   ansible.builtin.file:
       src: '{{ role_path }}/files/git/gitconfig'
       dest: '{{ ansible_env.HOME }}/.gitconfig'
+      owner: '{{ ansible_effective_user_id }}'
+      group: '{{ ansible_effective_user_id }}'
+      mode: '0600'
       force: true
-      state: 'link'
 ...

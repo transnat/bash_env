@@ -1,29 +1,28 @@
 [user]
-	email = casey@taumotors.com
-	name = tau-caseysparkz
+    email = himself@caseyspar.kz
+    name = caseysparkz
     signingKey = 0x2027DEDFECE6A3D5
-    ;signingKey = 0xF64015B97A016D10
 [core]
-	editor = vim
+    editor = vim
 [init]
-	defaultBranch = main
+    defaultBranch = main
 [fetch]
-	prune = true
-	pruneTags = true
+    prune = true
+    pruneTags = true
 [pull]
-	default = current
-	rebase = true
+    default = current
+    rebase = true
 [commit]
-	gpgsign = true
+    gpgsign = true
 [push]
-	default = current
+    default = current
 [diff]
-	colorMoved = zebra
+    colorMoved = zebra
 [http]
-	postBuffer = 1048576000
+    postBuffer = 1048576000
 [ssh]
-	postBuffer = 1048576000
+    postBuffer = 1048576000
 [gc]
-	pruneexpire = 14 days
+    pruneexpire = 14 days
 [advice]
-	addIgnoredFile = false
+    addIgnoredFile = false

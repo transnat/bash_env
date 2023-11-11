@@ -13,13 +13,13 @@
       - 'ca_certificates'
   block:
       - name: 'Copy PEM files'
+        loop: '{{ ca_certificates.files }}'
         ansible.builtin.copy:
             src: '{{ item.path }}'
             dest: '/usr/local/share/ca-certificates/{{ item.path | basename }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
-        loop: '{{ ca_certificates.files }}'
 
       - name: 'Enumerate CA certificates (CRT)'
         ansible.builtin.find:
@@ -41,13 +41,13 @@
             mode: '0755'
 
       - name: 'Copy PEM files'
+        loop: '{{ ca_certificates.files }}'
         ansible.builtin.copy:
             src: '{{ item.path }}'
             dest: '/etc/pki/ca-trust/source/anchors/{{ item.path | basename }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
-        loop: '{{ ca_certificates.files }}'
 
 - name: 'Install CA certificates'                                           # Arch-based distros.
   when: "ansible_os_family == 'ArchLinux' and ca_certificates.matched >= 1"
@@ -62,13 +62,13 @@
             mode: '0755'
 
       - name: 'Copy PEM files'
+        loop: '{{ ca_certificates.files }}'
         ansible.builtin.copy:
             src: '{{ item.path }}'
             dest: '/etc/pki/ca-trust/source/anchors/{{ item.path | basename }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
-        loop: '{{ ca_certificates.files }}'
 
       - name: 'Update CA trust'
         ansible.builtin.command: 'update-ca-certificates'

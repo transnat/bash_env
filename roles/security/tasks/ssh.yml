@@ -11,6 +11,7 @@
 
       - name: 'Harden /etc/ssh/sshd_config'
         when: 'security_sshd_path.stat.exists'
+        loop: '{{ security_ssh_config }}'
         ansible.builtin.lineinfile:
             create: true
             path: '/etc/ssh/sshd_config'
@@ -19,7 +20,6 @@
             state: 'present'
             validate: '/usr/sbin/sshd -t -f %s'
             mode: '0644'
-        loop: '{{ security_ssh_config }}'
 
       - name: 'Remove short Diffie-Hellman'
         ansible.builtin.shell: |

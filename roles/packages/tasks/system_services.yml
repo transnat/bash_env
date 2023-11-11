@@ -5,33 +5,33 @@
       - 'systemd'
   block:
       - name: 'Copy systemd service files'
+        loop:
+            - 'docker.service'
+            - 'docker.socket'
         ansible.builtin.copy:
             src: '{{ role_path }}/files/etc/systemd/system/{{ item }}'
             dest: '/etc/systemd/system/{{ item }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
-        loop:
-            - 'docker.service'
-            - 'docker.socket'
 
       - name: 'Start systemd services'
+        loop: '{{ packages_systemd.services }}'
         ansible.builtin.systemd:
             name: '{{ item }}.service'
             enabled: true
-        loop: '{{ packages_systemd.services }}'
 
       - name: 'Start systemd sockets'
+        loop: '{{ packages_systemd.sockets }}'
         ansible.builtin.systemd:
             name: '{{ item }}.socket'
             enabled: true
-        loop: '{{ packages_systemd.sockets }}'
 
       - name: 'Start systemd timers'
+        loop: '{{ packages_systemd.timers }}'
         ansible.builtin.systemd:
             name: '{{ item }}.timer'
             enabled: true
-        loop: '{{ packages_systemd.timers }}'
 
       - name: 'Reload systemd daemon'
         ansible.builtin.systemd:

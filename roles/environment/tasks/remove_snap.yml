@@ -92,8 +92,8 @@
 
       - name: 'Remove all ~/snap directories'
         when: "user_snap_dirs.files | length > 0"
+        loop: '{{ user_snap_dirs.files }}'
         ansible.builtin.file:
             path: '{{ item.path }}'
             state: 'absent'
-        loop: '{{ user_snap_dirs.files }}'
 ...

@@ -6,9 +6,9 @@
   when: "ansible_os_family == 'Debian'"
   block:
       - name: 'apt'
-        loop: '{{ environment_remove_defaults.apt }}'
         tags:
             - 'apt'
+        loop: '{{ environment_remove_defaults.apt }}'
         ansible.builtin.apt:
             name: '{{ item }}'
             state: 'absent'
@@ -17,9 +17,9 @@
             clean: true
 
       - name: 'dnf'
-        loop: '{{ environment_remove_defaults.dnf }}'
         tags:
             - 'dnf'
+        loop: '{{ environment_remove_defaults.dnf }}'
         ansible.builtin.dnf:
             name: '{{ item }}'
             state: 'absent'

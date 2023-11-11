@@ -2,11 +2,11 @@
 - name: 'Package tasks'
   tags:
       - 'packages'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
       - 'apt'
       - 'dnf'
       - 'pacman'
       - 'system_services'
       - 'usermod'
+  ansible.builtin.include_tasks: '{{ item }}.yml'
 ...

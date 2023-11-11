@@ -2,8 +2,8 @@
 - name: 'Security tasks'
   tags:
       - 'security'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
   loop:
+      - 'faillock'
       - 'kernel'
       - 'auditd'
       - 'disable_crash_reporters'
@@ -15,4 +15,5 @@
       - 'ulimit'
       - 'unattended_upgrades'
       - 'filesystem'
+  ansible.builtin.include_tasks: '{{ item }}.yml'
 ...

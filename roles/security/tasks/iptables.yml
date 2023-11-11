@@ -9,12 +9,12 @@
         when: "ansible_os_family == 'Debian'"
         tags:
             - 'apt'
-        ansible.builtin.apt:
-            name: '{{ item }}'
-            state: 'present'
         loop:
             - 'iptables-persistent'
             - 'netfilter-persistent'
+        ansible.builtin.apt:
+            name: '{{ item }}'
+            state: 'present'
 
       - name: 'Drop all incoming traffic'
         ansible.builtin.iptables:

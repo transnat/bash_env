@@ -5,6 +5,7 @@
       - 'kernel'
   block:
       - name: 'Set sysctl variables'
+        loop: '{{ security_sysctl_vars }}'
         ansible.posix.sysctl:
             ignoreerrors: true
             name: '{{ item.name }}'
@@ -12,7 +13,6 @@
             state: 'present'
             sysctl_set: true
             reload: true
-        loop: '{{ security_sysctl_vars }}'
 
       - name: 'Use jitterentropy_rng'
         ansible.builtin.blockinfile:
@@ -28,6 +28,7 @@
 
       - name: 'Deploy grub flags'
         when: 'security_etcdefaultgrub.stat.exists'
+        loop: '{{ security_grub_flags }}'
         ansible.builtin.replace:
             path: '/etc/default/grub'
             regexp: >
@@ -35,7 +36,6 @@
                 {{ item.option | regex_escape }}=\S+)?(.*")$'
             replace: '\1 {{ item.option }}={{ item.value }}\2'
             backup: true
-        loop: '{{ security_grub_flags }}'
         notify:
             - 'Update grub'
             - 'Update initramfs'

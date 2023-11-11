@@ -36,11 +36,11 @@
         register: 'security_pkexec'
 
       - name: 'Disable pkexec binary for non-sudo users'
+        when: "security_pkexec.examined | length != 0"
+        loop: '{{ security_pkexec.files }}'
         ansible.builtin.file:
             dest: '{{ item }}'
             owner: 'root'
             group: 'root'
             mode: '0700'
-        loop: '{{ security_pkexec.files }}'
-        when: "security_pkexec.examined | length != 0"
 ...

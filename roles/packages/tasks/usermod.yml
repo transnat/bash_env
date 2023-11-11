@@ -5,18 +5,18 @@
       - 'usermod'
   block:
       - name: 'Create system groups'
+        loop:
+            - 'docker'
         ansible.builtin.group:
             name: '{{ item }}'
             state: 'present'
             system: true
-        loop:
-            - 'docker'
 
       - name: 'Add ansible_user to groups'
+        loop:
+            - 'docker'
         ansible.builtin.user:
             name: '{{ ansible_user_id }}'
             groups: '{{ item }}'
             append: true
-        loop:
-            - 'docker'
 ...

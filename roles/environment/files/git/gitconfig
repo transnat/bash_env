@@ -12,10 +12,12 @@
 [pull]
     default = current
     rebase = true
-[commit]
-    gpgsign = true
 [push]
     default = current
+[commit]
+    gpgsign = true
+[merge]
+    squash = true
 [diff]
     colorMoved = zebra
 [http]

@@ -11,6 +11,7 @@ export ALIASES="${HOME}/.bash/aliases.sh"
 export FUNCTIONS="${HOME}/.bash/functions/"
 export SCRIPTS="${HOME}/.local/lib/scripts/"
 export SECRETS="${HOME}/.bash/secrets.asc"
+export WSECRETS="${HOME}/.bash/wsecrets.asc"
 export VARS="${HOME}/.bash/vars.sh"
 export GH="git@github.com"
 

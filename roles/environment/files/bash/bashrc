@@ -98,7 +98,7 @@ if [ -x "$(which wal)" ]; then                                                  
   wal -i "$(grep file ${HOME}/.config/nitrogen/bg-saved.cfg | cut -c 6-99)" -q -b 000000
 fi
 
-complete -C /usr/bin/terraform terraform                                        # Enable bash completion for terraform.
+complete -C /usr/bin/terraform tf                                               # Enable bash completion for terraform.
 
 getsecrets                                                                      # Get encrypted env vars.
 

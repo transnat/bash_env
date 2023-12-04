@@ -1,4 +1,4 @@
-" Python/YAML config ----------------------------------------------------------
+" Javascript config -----------------------------------------------------------
 autocmd BufNewFile *.js
     \ :0r ~/.vim/templates/javascript.template                              |
     \ :2s/\<DATE\>/\=strftime("%B %d, %Y")/

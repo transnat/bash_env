@@ -1,3 +1,4 @@
+# Misc. files.
 **/*.log
 **/*.lock
 **/*.tmp

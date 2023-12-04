@@ -8,7 +8,17 @@
 from argparse import ArgumentParser, Namespace
 from http import server
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import (
+    getLogger,
+    FileHandler,
+    Formatter,
+    RootLogger,
+    StreamHandler,
+    DEBUG,
+    ERROR,
+    INFO,
+    WARNING,
+)
 from pathlib import Path
 from socketserver import TCPServer
 from sys import exit as sysexit
@@ -47,7 +57,16 @@ def get_arguments() -> Namespace:
     )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = 50 * min(arguments.log_level, 4) * 10             # Set log_level 10 - 50.
+
+    match arguments.log_level:
+        case 1:
+            arguments.log_level = WARNING
+        case 2:
+            arguments.log_level = INFO
+        case 3:
+            arguments.log_level = DEBUG
+        case _:
+            arguments.log_level = ERROR
 
     return arguments
 

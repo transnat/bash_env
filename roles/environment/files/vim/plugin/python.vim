@@ -1,4 +1,4 @@
-" Python/YAML config ----------------------------------------------------------
+" Python config ---------------------------------------------------------------
 autocmd BufNewFile *.py
     \ :0r ~/.vim/templates/python.template                                  |
     \ :4s/\<DATE\>/\=strftime("%B %d, %Y")/

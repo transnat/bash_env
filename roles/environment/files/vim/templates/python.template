@@ -1,16 +1,25 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Author:   Casey Sparks
-# Date:     DATE
+# Author:       Casey Sparks
+# Date:         DATE
 # Description:
 '''
-MODULE DOCSTRING
+SCRIPT DOCSTRING
 '''
 
 from argparse import ArgumentParser, Namespace
-from sys import exit as sys_exit
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import (
+    getLogger,
+    FileHandler,
+    Formatter,
+    RootLogger,
+    StreamHandler,
+    DEBUG,
+    ERROR,
+    INFO,
+    WARNING,
+)
 from pathlib import Path
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
@@ -40,11 +49,15 @@ def get_arguments() -> Namespace:
 
     arguments = parser.parse_args()                                         # Parse arguments.
 
-    if set(arguments.__dict__.values()) == {None}:
-        parser.print_help()
-        sys_exit(0)
-
-    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level from 10 - 50.
+    match arguments.log_level:
+        case 1:
+            arguments.log_level = WARNING
+        case 2:
+            arguments.log_level = INFO
+        case 3:
+            arguments.log_level = DEBUG
+        case _:
+            arguments.log_level = ERROR
 
     return arguments
 

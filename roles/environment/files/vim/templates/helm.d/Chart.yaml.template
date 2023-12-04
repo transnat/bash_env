@@ -1,0 +1,33 @@
+---
+apiVersion: 'v2'
+name: ''
+version: '0.0.1'
+kubeVersion: '>= 1.27.4 < 2.0.0'
+description: ''
+type: 'application'
+keywords:
+    - ''
+home: ''
+sources:
+    - ''
+dependencies:
+    - name: ''
+      version: ''
+      repository: ''
+      condition: ''
+      tags:
+          - ''
+      import-values:
+          - ''
+      alias: ''
+maintainers:
+    - name: 'Casey Sparks'
+      email: 'helm@caseyspar.kz'
+      url: ''
+icon: ''
+appVersion: ''
+deprecated: false
+#annotations:
+#    example:
+#        - ''
+...

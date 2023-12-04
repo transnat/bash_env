@@ -1,4 +1,4 @@
-" Python/YAML config ----------------------------------------------------------
+" YAML config -----------------------------------------------------------------
 autocmd Filetype yaml
     \ set autoindent                                                        |
     \ set tabstop=4                                                         |

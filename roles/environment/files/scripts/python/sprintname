@@ -3,9 +3,9 @@
 # Author:       Casey Sparks
 # Date:         September 13, 2022
 # Description:
-'''Procedurally generate a name for a sprint.'''
+'''Generate a random sprint name.'''
 
-from locale import setlocale, LC_ALL
+from locale import LC_ALL, setlocale
 from pathlib import Path
 from random import choice
 from string import punctuation
@@ -13,34 +13,26 @@ from string import punctuation
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_word(
-    wordlist: list
-        ) -> str:
-    '''
-    Pull a word from list and format.
-        :param wordlist:    A list of wordlist to use in the sprint name.
-        :return:            A random word.
-    '''
-    return choice(wordlist).lower().translate(str.maketrans('', '', punctuation))
-
-
 def create_sprint_name(
-    wordfile: Path = Path('/usr/share/dict/words')                          # Installed by `words` package.
-        ) -> str:
+    wordfile: (str, Path) = Path('/usr/share/dict/words'),
+    count: int = 2
+    ) -> str:
     '''
     Generate a sprint name from two random words.
-        :param wordfile:    Path() object of the word file to use.
+        :param wordfile:    Path() object of the word file to use. Defaults to /usr/share/dict/words, installed by 
+                            'words' package.
+        :param count:       The number of words to choose.
         :return:            Error message, or sprint name.
     '''
-    assert isinstance(wordfile, Path), '`wordfile` must be instance of Path().'
-
-    if not wordfile.exists():                                               # Check file exists.
-        return 'Word list not found. Install `words` package.'
+    assert isinstance(wordfile, (str, Path)), ':param wordfile: must be instance of str() or Path().'
+    assert Path(wordfile).exists(), ':param wordfile: does not exist. Install "words" package.'
+    assert isinstance(count, int), ':param count: must be instance of int().'
+    assert 5 >= count >= 1, ':param count: must be >= 1, <= 5.'
 
     with open(wordfile, 'r', encoding='utf-8') as file:
         wordlist = file.read().splitlines()
 
-    return f'{get_word(wordlist)}-{get_word(wordlist)}'
+        return '-'.join([choice(wordlist).lower().translate(str.maketrans('', '', punctuation)) for i in range(count)])
 
 
 if __name__ == '__main__':

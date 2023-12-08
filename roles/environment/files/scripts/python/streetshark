@@ -8,19 +8,19 @@
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler, WARNING, INFO, DEBUG, NOTSET
 from os import system
 from pathlib import Path
 from re import compile as re_compile
 from subprocess import run, Popen, PIPE
 from time import sleep
-from typing import NoReturn
 
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments() -> Namespace:
+def get_arguments(
+    ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    Argparse namespace.
@@ -28,64 +28,55 @@ def get_arguments() -> Namespace:
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
 
-    parser.add_argument(                                                    # Set wireless interface.
+    parser.add_argument(                                                    # --interface
         '--interface', '-i',
         dest='interface',
         default=get_default_interface(),
-        help='Set the wireless interface to scan from.'
-    )
-    parser.add_argument(                                                    # Scan interval.
+        help='Set the wireless interface to scan from.')
+    parser.add_argument(                                                    # --interval.
         '--interval', '-n',
         dest='interval',
         type=int,
         default=5,
-        help='Set the scan interval (seconds).'
-    )
-    scan_type.add_argument(                                                 # Matched scan.
+        help='Set the scan interval (seconds).')
+    scan_type.add_argument(                                                 # --match
         '--match', '-m',
         dest='ssids',
         type=str,
         nargs='*',
-        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.'
-    )
-    parser.add_argument(                                                    # Set path for the output log file.
+        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.')
+    parser.add_argument(                                                    # --logfile
         '--logfile', '-l',
         dest='log_file',
         type=Path,
         default=None,
-        help='Absolute path to write the logfile to. Default `None`.'
-    )
-    parser.add_argument(                                                    # Specify logging verbosity.
+        help='Absolute path to write the logfile to. Default `None`.')
+    parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
-    )
+        help='Specify logging verbosity. Default `WARNING`.')
 
     arguments = parser.parse_args()                                         # Parse arguments.
 
     match arguments.log_level:                                              # Set arguments.log_level.
         case 0:
-            arguments.log_level = 50                                        # CRITICAL.
+            arguments.log_level = WARNING
         case 1:
-            arguments.log_level = 40                                        # ERROR.
+            arguments.log_level = INFO
         case 2:
-            arguments.log_level = 30                                        # WARNING.
-        case 3:
-            arguments.log_level = 20                                        # INFO
-        case 4:
-            arguments.log_level = 10                                        # DEBUG.
+            arguments.log_level = DEBUG
         case _:
-            arguments.log_level = 0                                         # NOTSET.
+            arguments.log_level = NOTSET
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 0,
-    log_file: (Path | None) = None
-        ) -> RootLogger:
+    log_level: int = WARNING,
+    log_file: (Path, None) = None
+    ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
@@ -98,8 +89,7 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
-    )
+        style='{')
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -116,7 +106,8 @@ def enable_log(
     return log_root
 
 
-def get_default_interface() -> str:
+def get_default_interface(
+    ) -> str:
     '''
     Gets the name of the current WAN-connected interface.
         :return:    Name of the default gateway interface.
@@ -124,15 +115,14 @@ def get_default_interface() -> str:
     interface = run(
         ['ip', 'route', 'show'],
         capture_output=True,
-        check=True
-    ).stdout.decode('utf-8').split()[4]
+        check=True).stdout.decode('utf-8').split()[4]
 
     return interface
 
 
 def iwlist(
     interface: str = 'wlan0'
-        ) -> list:
+    ) -> list:
     '''
     Scans for advertised SSIDs.
         :param interface:   The network interface on which to run the scan.
@@ -152,7 +142,7 @@ def iwlist(
             r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"
         ),
         re_compile(r"^Signal level=(?P<signal_quality>\d+)/(?P<signal_total>\d+).*$"),
-    ]
+        ]
     wpa_regex = re_compile(r"IE:\ WPA\ Version\ 1$")
     wpa2_regex = re_compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
 
@@ -202,7 +192,7 @@ def display_ssids(
     interface: str,
     ssids: (list[str] | None),
     refresh_interval: int = 5
-        ) -> NoReturn:
+    ) -> None:
     '''
     Display a list of discovered SSIDS to STDOUT.
        :param interface:        The interface to scan on.
@@ -211,7 +201,7 @@ def display_ssids(
     '''
     def _print_dict(
         dictionary: dict
-            ) -> NoReturn:
+        ) -> None:
         '''
         Ingest and pretty-print a dictionary to STDOUT.
             :param dictionary:  The dictionary to print.
@@ -242,12 +232,7 @@ def display_ssids(
 
     log.debug(f'Found: {advertised}')
     log.debug(f'Matched: {matched}')
-
-    print(                                                                  # Print header.
-        div.replace('-', '='),
-        '\nStreetShark\n',
-        print(div)
-    )
+    print(div.replace('-', '='), '\nStreetShark\n', print(div))             # Print header.
 
     if ssids:                                                               # Print matched SSIDs.
         if len(matched) == 0:

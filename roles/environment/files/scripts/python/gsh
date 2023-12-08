@@ -17,52 +17,58 @@ To optionally encrypt the resultant script to yourself automatically:
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler
+from logging import getLogger, Formatter, RootLogger, StreamHandler, WARNING, INFO, DEBUG, NOTSET
 from pathlib import Path
-from typing import NoReturn
 from gnupg import GPG
 from psutil import process_iter, AccessDenied, ZombieProcess
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments() -> Namespace:
+def get_arguments(
+    ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate parser.
 
-    parser.add_argument(                                                    # Specify input files.
+    parser.add_argument(                                                    # file
         'file',
         type=Path,
         nargs='+',
-        help='Specify files to encrypt.'
-    )
-    parser.add_argument(                                                    # Specify recipients.
+        help='Specify files to encrypt.')
+    parser.add_argument(                                                    # --recipients
         '--recipients', '-r',
         dest='recipients',
         nargs='+',
         default=[],
-        help='Specify who can decrypt the file.'
-    )
-    parser.add_argument(                                                    # Specify logging verbosity.
+        help='Specify who can decrypt the file.')
+    parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
-    )
+        help='Specify logging verbosity. Default `CRITICAL`.')
 
     arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = 50 - min(arguments.log_level * 10, 40)            # Set arguments.log_level from 10-50
+
+    match arguments.log_level:                                              # Set log level.
+        case 0:
+            arguments.log_level = WARNING
+        case 1:
+            arguments.log_level = INFO
+        case 2:
+            arguments.log_level = DEBUG
+        case _:
+            arguments.log_level = NOTSET
 
     return arguments
 
 
 def enable_log(
     log_level: int = 0
-        ) -> RootLogger:
+    ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
@@ -73,7 +79,7 @@ def enable_log(
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
         style='{'
-    )
+        )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -86,7 +92,7 @@ def enable_log(
 
 def prechecks_pass(
     arguments: Namespace
-        ) -> bool:
+    ) -> bool:
     '''
     Check that inputs and processes are as expected.
         :param arguments:   User-specified cmdline arguments.
@@ -126,7 +132,7 @@ def prechecks_pass(
 def encrypt(
     file: Path,
     recipients: list
-        ) -> Path:
+    ) -> Path:
     '''
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
@@ -140,33 +146,31 @@ def encrypt(
     gpg = GPG(gpgbinary='/usr/bin/gpg2', use_agent=True, verbose=False)     # Instantiate GPG agent class.
     outfile = file.with_suffix('')                                          # Strip suffix, if one exists.
 
-    with open(file, 'rb') as infile:
-        log.debug(f'Encrypting file {file.name} to {outfile.name}')
+    log.debug(f'Encrypting file {file.name} to {outfile.name}')
 
-        try:
-            cipherfile = gpg.encrypt_file(                                  # Encrypt the file.
+    try:
+        with open(file, 'rb') as infile:
+            gpg.encrypt_file(                                               # Encrypt the file.
                 infile,
                 recipients=recipients,
                 armor=True,                                                 # Output as ASCII text.
                 always_trust=True,
                 output=outfile
-            )
+                )
 
-            log.debug(f'{file.name} encrypted as {cipherfile}.')
+    except BaseException as err:
+        log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
 
-        except BaseException as err:
-            log.exception('Unhandled exception occured.\nEncryption failed for {file}.')
-
-            raise err
+        raise err
 
     return outfile
 
 
 def munge_cipherfile(
     cipherfile: Path
-        ) -> NoReturn:
+    ) -> None:
     '''
-    Add lines to cipherfile needed for shell interpretation.
+    Headers and footers to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.
     '''
     assert isinstance(cipherfile, Path), '`cipherfile` must be instance of Path().'
@@ -179,7 +183,7 @@ def munge_cipherfile(
         '\n',
         'gpg2 --decrypt 2> /dev/null << EOF | bash -s $@\n',
         '\n',
-    ]
+        ]
 
     with open(cipherfile, 'r', encoding='utf-8') as prefile:
         newlines.extend(prefile.readlines())                                # Ciphertext.

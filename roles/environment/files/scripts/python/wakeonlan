@@ -7,79 +7,71 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler
+from logging import getLogger, Formatter, RootLogger, StreamHandler, WARNING, INFO, DEBUG, NOTSET
 from pathlib import Path
 from pprint import pp
 from socket import socket, AF_INET, SOCK_DGRAM, SOL_SOCKET, SO_BROADCAST
 from subprocess import run
 from sys import exit as sys_exit, stderr
-from typing import NoReturn
 from ipaddress import ip_address
 from yaml import safe_load
 
 setlocale(LC_ALL, 'en_US.UTF-8')
 
 
-def get_arguments() -> Namespace:
+def get_arguments(
+    ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
-    parser.add_argument(                                                    # The LAN interface.
+    parser.add_argument(                                                    # --interface
         '--interface', '-i',
         dest='interface',
         narguments=1,
         default=Network.get_default_interface(),
-        help='Specify the broadcast IP address.'
-    )
-    parser.add_argument(                                                    # The broadcast IP address.
+        help='Specify the broadcast IP address.')
+    parser.add_argument(                                                    # --broadcast
         '--broadcast', '-b',
         dest='broadcast',
         narguments=1,
         default='255.255.255.255',
-        help='Specify the broadcast IP address.'
-    )
-    parser.add_argument(                                                    # The port to use.
+        help='Specify the broadcast IP address.')
+    parser.add_argument(                                                    # --port
         '--port', '-p',
         dest='port',
         narguments=1,
         default=9,
-        help='Specify the port to use.'
-    )
-    parser.add_argument(                                                    # STDIN-specified MAC addresses.
+        help='Specify the port to use.')
+    parser.add_argument(                                                    # --macs
         '--macs', '-M',
         dest='macs',
         narguments='+',
-        help='Specify a list of MAC addresses to send WoL packets to.'
-    )
-    parser.add_argument(                                                    # STDIN-specified hosts.
+        help='Specify a list of MAC addresses to send WoL packets to.')
+    parser.add_argument(                                                    # --hosts
         '--hosts', '-H',
         dest='hosts',
         narguments='+',
-        help='Specify a list of known hosts to send WoL packets to.'
-    )
-    parser.add_argument(                                                    # Get application info.
+        help='Specify a list of known hosts to send WoL packets to.')
+    parser.add_argument(                                                    # --info
         '--info',
         action='store_true',
         dest='info',
-        help='Print the default configuration and exit.'
-    )
-    parser.add_argument(                                                    # Get application info.
+        help='Print the default configuration and exit.')
+    parser.add_argument(                                                    # --config
         '--config', '-c',
         dest='config',
         default = Path().home() / '.config/wakeonlan.yml',
         type=Path(),
-        help='Path of the config file. Default ~/.config/wakeonlan.yml.'
-    )
-    parser.add_argument(                                                    # Specify logging verbosity.
+        help='Path of the config file. Default ~/.config/wakeonlan.yml.')
+    parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
-    )
+        help='Specify logging verbosity. Default `CRITICAL`.')
 
     arguments = parser.parse_args()
 
@@ -91,17 +83,25 @@ def get_arguments() -> Namespace:
         parser.print_help(stderr)
         sys_exit()
 
-    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level 10 - 50.
+    match arguments.log_level:
+        case 0:
+            arguments.log_level = WARNING
+        case 1:
+            arguments.log_level = INFO
+        case 2:
+            arguments.log_level = DEBUG
+        case _:
+            arguments.log_level = NOTSET
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 0,
-        ) -> RootLogger:
+    log_level: int = WARNING,
+    ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param log_level:   User-specified log level. Default NOTSET.
+        :param log_level:   User-specified log level. Default WARNING.
         :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
@@ -109,8 +109,7 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
-    )
+        style='{')
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -123,7 +122,7 @@ def enable_log(
 
 def print_info(
     arguments: Namespace
-        ) -> NoReturn:
+    ) -> None:
     '''
     Print known hosts and configuration.
         :param arguments: User-specified commandline arguments.
@@ -134,7 +133,7 @@ def print_info(
         ['Interface', arguments.interface],
         ['Broadcast', arguments.broadcast],
         ['Port', arguments.port]
-    ]
+        ]
     known_hosts = file_checks(arguments.config_file)
     known_hosts = [[k, v] for k, v in known_hosts.items()]                  # Known hosts information.
 
@@ -154,7 +153,7 @@ def print_info(
 
 def file_checks(
     config_file: Path = Path.home() / '.config/wakeonlan.yml'
-        ) -> list:
+    ) -> list:
     '''
     Check for config directory/file, and create them if they do not exist.
         :param config_file: Path of the YAML config file.
@@ -177,7 +176,7 @@ class Network():
     @staticmethod
     def get_mac_addresses(
         arguments: Namespace
-            ) -> list:
+        ) -> list:
         '''
         Grok stdin and config files for the hosts to wake.
             :param arguments: User-provided cmdline arguments.
@@ -201,7 +200,8 @@ class Network():
         return mac_addresses
 
     @staticmethod
-    def get_default_interface() -> str:
+    def get_default_interface(
+        ) -> str:
         '''Return the default network interface.'''
         interface = run(                                                    # Capture interface name.
             ['ip', 'route', 'show'],
@@ -214,7 +214,7 @@ class Network():
     @staticmethod
     def magic_packet(
         mac_address: str
-            ) -> bytes:
+        ) -> bytes:
         '''
         Create a magic packet used to wake a LAN device.
             :param mac_address: The MAC address that should be parsed into a magic packet.
@@ -237,7 +237,7 @@ class Network():
         broadcast_ip: str,
         port: int,
         interface: str
-            ) -> NoReturn:
+        ) -> None:
         '''
         Send a network packet to a socket.
             :param mac_addresses:   The MAC addresses to send the packet to.
@@ -281,5 +281,4 @@ if __name__ == '__main__':
         mac_addresses=Network.get_mac_addresses(args),
         broadcast_ip=args.broadcast,
         port=args.port,
-        interface=args.interface
-    )
+        interface=args.interface)

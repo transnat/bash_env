@@ -3,84 +3,63 @@
 # Author:       Casey Sparks
 # Date:         DATE
 # Description:
-'''
-SCRIPT DOCSTRING
-'''
+'''SCRIPT DOCSTRING'''
 
 from argparse import ArgumentParser, Namespace
-from locale import setlocale, LC_ALL
-from logging import (
-    getLogger,
-    FileHandler,
-    Formatter,
-    RootLogger,
-    StreamHandler,
-    DEBUG,
-    ERROR,
-    INFO,
-    WARNING,
-)
+from locale import LC_ALL, setlocale
+from logging import FileHandler, Formatter, RootLogger, StreamHandler, getLogger, NOTSET, DEBUG, INFO, WARNING
 from pathlib import Path
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments() -> Namespace:
+def get_arguments(
+    ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    log_levels = [WARNING, INFO, DEBUG, NOTSET]
 
-    parser.add_argument(                                                    # Set path for the output log file.
+    parser.add_argument(                                                    # --logfile
         '--logfile', '-l',
         dest='log_file',
-        type=Path,
         default=None,
-        help='Absolute path to write the logfile to. Default `None`.'
-    )
-    parser.add_argument(                                                    # Specify logging verbosity.
+        type=Path,
+        help='Absolute path to write the logfile to. Default `None`.')
+    parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         action='count',
-        default=None,
-        help='Specify logging verbosity. Default `CRITICAL`.'
-    )
+        default=0,
+        help='Specify logging verbosity. Default `WARNING`.')
 
     arguments = parser.parse_args()                                         # Parse arguments.
-
-    match arguments.log_level:
-        case 1:
-            arguments.log_level = WARNING
-        case 2:
-            arguments.log_level = INFO
-        case 3:
-            arguments.log_level = DEBUG
-        case _:
-            arguments.log_level = ERROR
+    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
+        min(arguments.log_level, len(log_levels) - 1)]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30,
+    log_level: int = WARNING,
     log_file: (Path, None) = None
         ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param log_level:   User-specified log level. Default NOTSET.
+        :param log_level:   User-specified log level. Default WARNING.
         :param log_file:    User-specified path to write log file. Default None.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert 50 >= log_level >= 0, '`log_level` must be instance of int() between 0 and 50 (incl.).'
-    assert isinstance(log_file, (Path, None)), '`log_file` must be Path or None.'
+    assert 50 >= log_level >= 0, ':param log_level: must be instance of int() between 0 and 50 (incl.).'
+    assert isinstance(log_file, (Path, type(None))), ':param log_file: must be instance of pathlib.Path() or None.'
 
-    formatter = Formatter(                                                  # Log message header format.
-        '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'                                                           # Lazy string interpolation.
-    )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
+    formatter = Formatter(                                                  # Log message header format.
+        '{asctime} {threadName:12} {levelname:8}: "{message}"',
+        style='{')                                                          # Lazy f-string interpolation.
 
     log_console.setFormatter(formatter)                                     # Set log stream format.
     log_root.addHandler(log_console)                                        # Log to screen.
@@ -98,5 +77,3 @@ def enable_log(
 if __name__ == '__main__':
     args = get_arguments()
     log = enable_log(args.log_level, args.log_file)
-
-    log.debug(args)

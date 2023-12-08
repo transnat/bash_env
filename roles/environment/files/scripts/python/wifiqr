@@ -7,16 +7,16 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, Formatter, RootLogger
+from logging import getLogger, StreamHandler, Formatter, RootLogger, WARNING, INFO, DEBUG, NOTSET
 from pathlib import Path
 from sys import exit as sys_exit
-from typing import NoReturn
 from qrcode import QRCode
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments() -> Namespace:
+def get_arguments(
+    ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
@@ -24,53 +24,57 @@ def get_arguments() -> Namespace:
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     mutex_group = parser.add_mutually_exclusive_group()
 
-    parser.add_argument(                                                    # SSID of the wifi network.
+    parser.add_argument(                                                    # ssid
         'ssid',
         type=str,
-        help='SSID of the wifi network.'
-    )
-    parser.add_argument(                                                    # Password of the wifi network.
+        help='SSID of the wifi network.')
+    parser.add_argument(                                                    # passwd
         'passwd',
         type=str,
-        help='Password of the wifi network (pass an empty string for no password).'
-    )
-    parser.add_argument(                                                    # Encryption of the wifi network.
+        help='Password of the wifi network (pass an empty string for no password).')
+    parser.add_argument(                                                    # --encryption
         '--encryption', '-e',
         dest='encryption',
         type=str,
         default='WPA',
         choices=['WPA', 'WEP'],
-        help='Encryption used by the SSID (default WPA).'
-    )
-    parser.add_argument(                                                    # Specify logging verbosity.
+        help='Encryption used by the SSID (default WPA).')
+    parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
-    )
-    mutex_group.add_argument(                                               # Output connection string.
+        help='Specify logging verbosity. Default `WARNING`.')
+    mutex_group.add_argument(                                               # --string-only
         '--string-only',
         dest='string',
         action='store_true',
-        help='Output the QR wifi connection string and exit.'
-    )
-    mutex_group.add_argument(                                               # Output file.
+        default=False,
+        help='Output the QR wifi connection string and exit.')
+    mutex_group.add_argument(                                               # --output
         '--output', '-o',
         dest='output',
         type=Path,
-        help='Path to write the resultant PNG.'
-    )
+        help='Path to write the resultant PNG.')
 
     arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = 50 - min(arguments.log_level, 4) * 10             # Set log level 10 - 50.
+
+    match arguments.log_level:
+        case 0:
+            arguments.log_level = WARNING
+        case 1:
+            arguments.log_level = INFO
+        case 2:
+            arguments.log_level = DEBUG
+        case _:
+            arguments.log_level = NOTSET
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 0
-        ) -> RootLogger:
+    log_level: int = WARNING
+    ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
@@ -81,8 +85,7 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
-    )
+        style='{')
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -93,25 +96,33 @@ def enable_log(
     return log_root
 
 
-def generate_qr() -> NoReturn:
-    '''Generate a QR and print to stdout or a PNG.'''
+def generate_qr(
+    to_string: bool = False,
+    output: (str, Path, None) = None
+    ) -> None:
+    '''
+    Generate a QR and print to stdout or a PNG.
+        :param to_string:   If True, export QR string and exit.
+        :param output:      Path to save the PNG to.
+    '''
+    assert isinstance(to_string, bool), ':param to_string: must be bool.'
     qr_code = QRCode()                                                      # Instantiate QR class.
     qr_str= f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'     # String to be encoded in the QR.
 
     if args.string:                                                         # Only print the string to stdout.
         print(qr_str)
-        sys_exit()
+        sys_exit(0)
 
     log.debug(f'Connection string: {qr_str}')
     qr_code.add_data(qr_str)                                                # Add data to the QR class.
     qr_code.make()                                                          # Generate the QR code.
     log.debug('QR code created.')
 
-    if args.output:
+    if output:
         img = qr_code.make_image(fill_color='black', back_color='white')    # Create PNG.
 
         log.debug(qr_code.print_tty())
-        img.save(args.output)                                               # Save PNG to disk.
+        img.save(output)                                                    # Save PNG to disk.
 
     else:
         qr_code.print_tty()                                                 # Print to screen.
@@ -121,4 +132,4 @@ if __name__ == '__main__':
     args = get_arguments()                                                  # Get cmdline arguments.
     log = enable_log(args.log_level)                                        # Enable logging.
 
-    generate_qr()
+    generate_qr(args.string, args.output)

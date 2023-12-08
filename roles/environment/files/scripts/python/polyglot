@@ -10,11 +10,9 @@ from configparser import ConfigParser
 from io import TextIOWrapper
 from json import dumps as json_dumps, load as json_load
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler
+from logging import Formatter, RootLogger, StreamHandler, getLogger, WARNING, DEBUG, INFO, NOTSET
 from pathlib import Path
 from sys import exit as sys_exit, stdout
-from typing import NoReturn
-
 from dict2xml import dict2xml
 from pandas import json_normalize, read_csv
 from toml import dumps as toml_dumps, load as toml_load
@@ -27,73 +25,65 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 SUPPORTED_TYPES = {'csv', 'ini', 'json', 'xml', 'yml'}                      # Supported outfile types.
 
 
-def get_arguments() -> Namespace:
+def get_arguments(
+    ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
-    parser.add_argument(                                                    # Read data from file.
+    parser.add_argument(                                                    # infile
         'infile',
         type=Path,
-        help='File to read from.'
-    )
-    parser.add_argument(                                                    # Specify an output format.
+        help='File to read from.')
+    parser.add_argument(                                                    # --output-format
         '--output-format', '-o',
         dest='format',
         choices=SUPPORTED_TYPES,
         default='yml',
         type=str,
-        help='Data format to output.'
-    )
-    parser.add_argument(                                                    # Output data to file.
+        help='Data format to output.')
+    parser.add_argument(                                                    # --write
         '--write', '-w',
         dest='write',
         action='store_true',
-        help='Write file to disk instead of stdout.'
-    )
-    parser.add_argument(                                                    # Specify logging verbosity.
+        help='Write file to disk instead of stdout.')
+    parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
-    )
+        help='Specify logging verbosity. Default `CRITICAL`.')
 
     arguments = parser.parse_args()                                         # Parse arguments.
 
     match arguments.log_level:                                              # Set arguments.log_level.
         case 0:
-            arguments.log_level = 50                                        # CRITICAL.
+            arguments.log_level = WARNING
         case 1:
-            arguments.log_level = 40                                        # ERROR.
+            arguments.log_level = INFO
         case 2:
-            arguments.log_level = 30                                        # WARNING.
-        case 3:
-            arguments.log_level = 20                                        # INFO
-        case 4:
-            arguments.log_level = 10                                        # DEBUG.
+            arguments.log_level = DEBUG
         case _:
-            arguments.log_level = 0                                         # NOTSET.
+            arguments.log_level = NOTSET
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 0
-        ) -> RootLogger:
+    log_level: int = WARNING
+    ) -> RootLogger:
     '''
     Enable logging and handle outputs.
-        :param log_level:   User-specified log level. Default NOTSET.
+        :param log_level:   User-specified log level. Default WARNING.
         :return:            Instantiated logger.RootLogger instance.
     '''
     assert 50 >= log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
-    )
+        style='{')
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -107,7 +97,7 @@ def enable_log(
 
 def ingest_data(
     infile: Path
-        ) -> dict:
+    ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
         :param infile:  The file to ingest data from. Instance of Path().
@@ -115,9 +105,7 @@ def ingest_data(
     '''
     assert isinstance(infile, Path), '`infile` must be instance of Path().'
 
-    infile_suffix = infile.suffix.lower()
-
-    with open(infile, 'r', encoding='utf-8') as data:                       # Open file handler.
+    with open((infile_suffix := infile.suffix.lower()), 'r', encoding='utf-8') as data:
         log.debug(f'Reading from {infile_suffix} file: {infile.name}')
 
         match infile_suffix:
@@ -147,11 +135,10 @@ def ingest_data(
                 print('Unsupported filetype. Please check the extension and try again.')
                 sys_exit(1)
 
-        log.debug(
-            f'Input: {infile}\n',
-            f'Input filetype: {infile.suffix.upper().replace(".", "")}\n',
-            f'Payload: {payload}\n\n'
-        )
+    log.debug(
+        f'Input: {infile}\n',
+        f'Input filetype: {infile.suffix.upper().replace(".", "")}\n',
+        f'Payload: {payload}\n\n')
 
     return payload
 
@@ -161,7 +148,7 @@ def output_data(
     infile: Path,
     out_format: str = 'yaml',
     write: bool = False
-        ) -> NoReturn:
+    ) -> None:
     '''
     Formats and outputs a data object as JSON or YAML to a file or STDOUT.
         :param payload:     The Python dict to format and output.
@@ -173,7 +160,7 @@ def output_data(
         payload: dict,
         out_format: str,
         outfile: TextIOWrapper = stdout
-            ) -> NoReturn:
+        ) -> None:
         '''
         Write data to a TextIOWrapper.
             :param payload:     The Python dict to format and output.
@@ -189,8 +176,7 @@ def output_data(
                 json_normalize(payload).to_csv(
                     outfile,
                     index=False,
-                    encoding='utf-8'
-                )
+                    encoding='utf-8')
 
             case 'html' | 'xml':                                            # HTML/XML.
                 outfile.write(dict2xml(payload))
@@ -203,8 +189,7 @@ def output_data(
                     if iter(key):                                           # Keys are nested.
                         log.warning(
                             'Warning! INI does not support nested values.\n'
-                            'Values will be flattened to strings.'
-                        )
+                            'Values will be flattened to strings.')
 
                         if input('Proceed? [y/N] ').lower().startswith('n'):
                             log.critical('Exiting.')
@@ -242,5 +227,4 @@ if __name__ == '__main__':
         payload=ingest_data(args.infile),
         infile=args.infile,
         out_format=args.format,
-        write=args.write
-    )
+        write=args.write)

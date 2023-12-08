@@ -24,7 +24,7 @@ from yaml import safe_load, dump as ydump
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
-SUPPORTED_TYPES = ['csv', 'ini', 'json', 'xml', 'yaml']                     # Supported outfile types.
+SUPPORTED_TYPES = {'csv', 'ini', 'json', 'xml', 'yml'}                      # Supported outfile types.
 
 
 def get_arguments() -> Namespace:
@@ -43,7 +43,7 @@ def get_arguments() -> Namespace:
         '--output-format', '-o',
         dest='format',
         choices=SUPPORTED_TYPES,
-        default='yaml',
+        default='yml',
         type=str,
         help='Data format to output.'
     )
@@ -122,12 +122,7 @@ def ingest_data(
 
         match infile_suffix:
             case '.csv':                                                    # CSV.
-                payload = read_csv(
-                    data,
-                    skip_blank_lines=True,
-                    encoding='utf-8',
-                    index_col=False
-                ).to_dict()
+                payload = read_csv(data, skip_blank_lines=True, encoding='utf-8', index_col=False).to_dict()
 
             case '.html' | '.xml':                                          # HTML/XML.
                 payload = parse(data.read())

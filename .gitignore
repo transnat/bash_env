@@ -3,6 +3,7 @@
 **/vim/spell/
 **/nohup.out
 **/.*.swp
+**/*swp
 
 # Ansible
 **/*.retry

@@ -1,5 +1,5 @@
 ---
-packages_apt:
+performance_tweaks_apt_packages:
     - 'dirmngr'
     - 'dnsutils'
     - 'docker'
@@ -19,7 +19,7 @@ packages_apt:
     - 'wget'
     - 'yubikey-manager'
     - 'yubikey-personalization'
-packages_dnf:
+performance_tweaks_dnf_packages:
     - 'ModemManager'
     - 'bind-utils'
     - 'cryptsetup'
@@ -42,14 +42,7 @@ packages_dnf:
     - 'wget'
     - 'ykpers'
     - 'yubikey-manager'
-packages_pacman:
+performance_tweaks_pacman_packages:
     - 'reflector'
     - 'timeshift'
-packages_systemd:
-    services:
-        - 'reflector'
-    sockets:
-        - 'pcscd'
-    timers:
-        - 'fstrim'
 ...

@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Name:         convertbase
+# Author:       Casey Sparks
+# Date:         December 22, 2023
+# Description:
+'''Convert a number to a different base system.'''
+
+from argparse import ArgumentParser, Namespace
+from locale import LC_ALL, setlocale
+from string import ascii_letters, digits
+from sys import exit as sys_exit
+
+setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+
+DIGITS = digits + ascii_letters
+
+
+def get_arguments(
+    ) -> Namespace:
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+
+    parser.add_argument(                                                    # integer
+        'integer',
+        type=str,
+        help='The integer to convert.'
+        )
+    parser.add_argument(                                                    # inbase
+        'input_base',
+        type=int,
+        default=10,
+        help='The base system of :arg integer:.'
+        )
+    parser.add_argument(                                                    # output_base
+        'output_base',
+        type=int,
+        default=2,
+        help='The base system to convert to.'
+        )
+
+    return parser.parse_args()
+
+
+def convert(
+    integer: (int, str),
+    input_base: int = 10,
+    output_base: int = 2
+    ) -> str:
+    '''
+    Convert an integer of an arbitrary base system to a different base system.
+        :param integer:     The integer to convert.
+        :param input_base:  The input base system.
+        :param output_base: The output base system.
+        :return:            The converted integer string.
+    '''
+    assert isinstance(integer, (int, str)), ':param integer: must be instance of str() or int().'
+    assert isinstance(input_base, int), ':param input_base: must be instance of int().'
+    assert isinstance(output_base, int), ':param output_base: must be instance of int().'
+
+    try:
+        if (inter_decimal := int(str(integer), input_base)) < 0:
+            sign = -1
+        elif inter_decimal == 0:
+            return DIGITS[0]
+        else:
+            sign = 1
+
+        inter_decimal *= sign
+        digit_stack = []
+
+        while inter_decimal:
+            digit_stack.append(DIGITS[inter_decimal % output_base])
+
+            inter_decimal = inter_decimal // output_base
+
+        if sign < 0:
+            digit_stack.append('-')
+
+        digit_stack.reverse()
+
+    except ValueError:
+        print(f'Invalid input: {integer}')
+        sys_exit(1)
+
+    return ''.join(digit_stack)
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    print(convert(
+        args.integer,
+        args.input_base,
+        args.output_base
+        ))

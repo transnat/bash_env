@@ -1,30 +1,23 @@
 ---
-_defaults:
-    dir: &default_dir
-        owner: '{{ ansible_effective_user_id }}'
-        group: '{{ ansible_effective_group_id }}'
-        mode: '0700'
-    file: &default_file
-        <<: *default_dir
-        mode: '0600'
-
 environment_dotfiles:
     subdirectories:
-        - <<: *default_dir
-          path: '{{ ansible_env.HOME }}/.config/Yubico'
+        - path: '{{ ansible_env.HOME }}/.config/Yubico'
+          owner: '{{ ansible_effective_user_id }}'
+          group: '{{ ansible_effective_group_id }}'
+          mode: '0700'
     symlinks:
-        - <<: *default_file
-          src: '{{ role_path }}/files/config/pylint.pylintrc'
+        - src: '{{ role_path }}/files/config/pylint.pylintrc'
           dest: '{{ ansible_env.HOME }}/.config/pylint.pylintrc'
-        - <<: *default_file
-          src: '{{ role_path }}/files/config/Yubico/u2f_keys'
+          mode: '0600'
+        - src: '{{ role_path }}/files/config/Yubico/u2f_keys'
           dest: '{{ ansible_env.HOME }}/.config/Yubico/u2f_keys'
-        - <<: *default_file
-          src: '{{ role_path }}/files/config/yamllint.yml'
+          mode: '0600'
+        - src: '{{ role_path }}/files/config/yamllint.yml'
           dest: '{{ ansible_env.HOME }}/.config/yamllint.yml'
-        - <<: *default_file
-          src: '{{ role_path }}/files/screen/screenrc'
+          mode: '0600'
+        - src: '{{ role_path }}/files/screen/screenrc'
           dest: '{{ ansible_env.HOME }}/.screenrc'
+          mode: '0600'
 environment_requirements:
     python:
         - 'dict2xml>=1.7,<2.0'

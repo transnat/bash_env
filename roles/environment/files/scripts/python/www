@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         www
 # Author:       Casey Sparks
 # Date:         March 20, 2023
 # Description:
@@ -27,7 +28,8 @@ def get_arguments(
         dest='port',
         type=int,
         default=8000,
-        help='The port to run the webserver on. Default 8000')
+        help='The port to run the webserver on. Default 8000'
+        )
 
     return parser.parse_args()
 
@@ -42,15 +44,13 @@ def run_http_server(
     assert port >= 1024, '`port should be instance of int() in the non-reserved range of 1024-65535.'
 
     try:
-        print('Instantiating HTTP server.')
-
         httpd = TCPServer(('', port), server.SimpleHTTPRequestHandler)
 
         print(f'HTTP server running on http://localhost:{port}')
         httpd.serve_forever()
 
     except KeyboardInterrupt:
-        print('\nCaught keyboard interrupt. Exiting.')
+        print('\nExiting.')
         sysexit(1)
 
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         wifiqr
 # Author:       Casey Sparks
 # Date:         February 08, 2023
 # Description:
@@ -7,8 +8,8 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, Formatter, RootLogger, WARNING, INFO, DEBUG, NOTSET
 from pathlib import Path
+from subprocess import run as sp_run
 from sys import exit as sys_exit
 from qrcode import QRCode
 
@@ -21,100 +22,117 @@ def get_arguments(
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
+    def _read_nmconnections(
+        ssid: str
+        ):
+        '''
+        Search /etc/NetworkManager/system-connections/ for a file named <ssid>.nmconnection and return its connection
+        information.
+            :param ssid:    The SSID to search for. Config file
+        '''
+        assert isinstance(ssid, str), ':param ssid: must be instance of str().'
+
+        config_dict = {}
+        config_list = sp_run(                                                   # Read config to list[str].
+            [
+                'sudo',
+                'cat',
+                str(list(Path('/etc/NetworkManager/system-connections/').glob(f'{ssid}.nmconnection'))[0])
+                ],
+            capture_output=True,
+            check=True
+            ).stdout.decode('utf-8').split('\n')
+
+        for item in config_list:
+            if '=' in item:
+                kv_pair = item.split('=')
+                config_dict[kv_pair[0]] = kv_pair[1]
+
+        return config_dict.get('psk'), str(config_dict.get('key-mgmt')).upper()[:3]
+
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    mutex_group = parser.add_mutually_exclusive_group()
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
+    output_mutex_group = parser.add_mutually_exclusive_group()
 
     parser.add_argument(                                                    # ssid
         'ssid',
         type=str,
-        help='SSID of the wifi network.')
-    parser.add_argument(                                                    # passwd
-        'passwd',
+        help='SSID of the wifi network.'
+        )
+    parser.add_argument(                                                    # --passwd
+        '-p', '--passwd',
         type=str,
-        help='Password of the wifi network (pass an empty string for no password).')
+        default='',
+        help='''
+            Password of the wifi network (pass an empty string for no password).
+            If no password is provided, `wifiqr` must be run as root in order to search
+            /etc/NetworkManager/system-connections/ for a file named <ssid>.nmconnection and read it's connection
+            information.
+            '''
+        )
     parser.add_argument(                                                    # --encryption
-        '--encryption', '-e',
+        '-e', '--encryption',
         dest='encryption',
         type=str,
         default='WPA',
         choices=['WPA', 'WEP'],
-        help='Encryption used by the SSID (default WPA).')
-    parser.add_argument(                                                    # --verbose
-        '--verbose', '-v',
-        dest='log_level',
-        default=0,
-        action='count',
-        help='Specify logging verbosity. Default `WARNING`.')
-    mutex_group.add_argument(                                               # --string-only
+        help='Encryption used by the SSID (default WPA).'
+        )
+    output_mutex_group.add_argument(                                        # --string-only
         '--string-only',
         dest='string',
         action='store_true',
         default=False,
-        help='Output the QR wifi connection string and exit.')
-    mutex_group.add_argument(                                               # --output
+        help='Output the QR wifi connection string and exit.'
+        )
+    output_mutex_group.add_argument(                                        # --output
         '--output', '-o',
         dest='output',
         type=Path,
-        help='Path to write the resultant PNG.')
+        help='Path to write the resultant PNG.'
+        )
 
     arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+
+    if not arguments.passwd:                                                # Read connection info from config file.
+        arguments.passwd, arguments.encryption = _read_nmconnections(arguments.ssid)
 
     return arguments
 
 
-def enable_log(
-    log_level: int = WARNING
-    ) -> RootLogger:
-    '''
-    Enable logging and handle outputs.
-        :param log_level:   User-specified log level. Default NOTSET.
-        :return:            Instantiated logger.RootLogger instance.
-    '''
-    assert isinstance(log_level, int), '`log_level` must be int.'
-    assert 50 >= log_level >= 0, '`log_level` must be between 0 - 50.'
-
-    formatter = Formatter(                                                  # Log message header format.
-        '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{')
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
-
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
-
-    return log_root
-
-
 def generate_qr(
+    ssid: str,
+    passwd: str = '',
+    encryption: str = 'WPA',
     to_string: bool = False,
     output: (str, Path, None) = None
     ) -> None:
     '''
     Generate a QR and print to stdout or a PNG.
+        :param ssid:        The SSID of the wifi network.
+        :param passwd:      Password of the wifi network.
+        :param encryption:  Encryption used by the wifi network.
         :param to_string:   If True, export QR string and exit.
         :param output:      Path to save the PNG to.
     '''
+    assert isinstance(ssid, str), ':param ssid: must be instance of str().'
+    assert isinstance(passwd, str), ':param passw: must be instance of str().'
+    assert isinstance(encryption, str), ':param encryption: must be instance of str().'
+    assert encryption in {'WEP', 'WPA'}, ':param encryption: must be one of {"WEP", "WPA"}.'
     assert isinstance(to_string, bool), ':param to_string: must be bool.'
-    qr_code = QRCode()                                                      # Instantiate QR class.
-    qr_str= f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'     # String to be encoded in the QR.
+
+    qr_str = f'WIFI:T:{encryption};S:{ssid};P:{passwd};;'                   # String to be encoded in the QR.
 
     if args.string:                                                         # Only print the string to stdout.
         print(qr_str)
         sys_exit(0)
 
-    log.debug(f'Connection string: {qr_str}')
-    qr_code.add_data(qr_str)                                                # Add data to the QR class.
+    (qr_code := QRCode()).add_data(qr_str)                                  # Add data to the QR class.
     qr_code.make()                                                          # Generate the QR code.
-    log.debug('QR code created.')
 
     if output:
         img = qr_code.make_image(fill_color='black', back_color='white')    # Create PNG.
 
-        log.debug(qr_code.print_tty())
+        qr_code.print_tty()                                                 # Print to STDOUT.
         img.save(output)                                                    # Save PNG to disk.
 
     else:
@@ -122,7 +140,12 @@ def generate_qr(
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get cmdline arguments.
-    log = enable_log(args.log_level)                                        # Enable logging.
+    args = get_arguments()                                                  # Get CLI arguments.
 
-    generate_qr(args.string, args.output)
+    generate_qr(
+        args.ssid,
+        args.passwd,
+        args.encryption,
+        args.string,
+        args.output
+        )

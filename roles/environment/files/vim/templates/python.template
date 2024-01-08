@@ -7,7 +7,7 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import LC_ALL, setlocale
-from logging import FileHandler, Formatter, RootLogger, StreamHandler, getLogger, NOTSET, DEBUG, INFO, WARNING
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
@@ -20,30 +20,31 @@ def get_arguments(
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
+    log_levels = [30, 20, 10, 0]
 
     parser.add_argument(                                                    # --logfile
         '--logfile', '-l',
         dest='log_file',
         default=None,
         type=Path,
-        help='Absolute path to write the logfile to. Default `None`.')
+        help='Absolute path to write the logfile to. Default `None`.'
+        )
     parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         action='count',
         default=0,
-        help='Specify logging verbosity. Default `WARNING`.')
+        help='Specify logging verbosity. Default `WARNING`.'
+        )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
+    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
         min(arguments.log_level, len(log_levels) - 1)]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = WARNING,
+    log_level: int = 30,
     log_file: (Path, None) = None
         ) -> RootLogger:
     '''

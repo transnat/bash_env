@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         gsh
 # Author:       Casey Sparks
 # Date:         November 24, 2022
 # Description:
@@ -17,7 +18,7 @@ To optionally encrypt the resultant script to yourself automatically:
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler, WARNING, INFO, DEBUG, NOTSET
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from gnupg import GPG
 from psutil import process_iter, AccessDenied, ZombieProcess
@@ -31,36 +32,40 @@ def get_arguments(
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
+    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
     parser = ArgumentParser(description=__doc__)                            # Instantiate parser.
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
 
     parser.add_argument(                                                    # file
         'file',
         type=Path,
         nargs='+',
-        help='Specify files to encrypt.')
+        help='Specify files to encrypt.'
+        )
     parser.add_argument(                                                    # --recipients
         '--recipients', '-r',
         dest='recipients',
         nargs='+',
         default=[],
-        help='Specify who can decrypt the file.')
+        help='Specify who can decrypt the file.'
+        )
     parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.')
+        help='Specify logging verbosity. Default `CRITICAL`.'
+        )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments = parser.parse_args()
     arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) -1)]
+        min(arguments.log_level, len(log_levels) - 1)
+        ]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 0
+    log_level: int = 30
     ) -> RootLogger:
     '''
     Enable logging and handle outputs.
@@ -71,7 +76,8 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{')
+        style='{'
+        )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -184,12 +190,12 @@ def munge_cipherfile(
     with open(cipherfile, 'w', encoding='utf-8') as postfile:
         postfile.writelines(newlines)                                       # Write header/ciphertext/footer.
 
-    cipherfile.chmod(775)                                                   # Make cipherfile executable.
+    cipherfile.chmod(0o755)                                                 # Make cipherfile executable.
 
 
 if __name__ == '__main__':
-    args = get_arguments()
-    log = enable_log(args.log_level)
+    args = get_arguments()                                                  # Get CLI arguments.
+    log = enable_log(args.log_level)                                        # Instantiate logger.
 
     if prechecks_pass(args):
         for clearfile in args.file:

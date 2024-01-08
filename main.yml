@@ -3,9 +3,6 @@
   gather_facts: true                                                        # Gather facts.
   ignore_errors: false                                                      # Ignore errors.
   hosts: 'localhost'
-  collections:                                                              # Dependencies.
-      - 'ansible.posix'
-      - 'community.general'
   roles:                                                                    # Order matters!
       - 'security'                                                          # Do security tasks.
       - 'performance_tweaks'                                                # Improve performance.

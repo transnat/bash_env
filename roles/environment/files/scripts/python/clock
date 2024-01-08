@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         clock
 # Author:       Casey Sparks
 # Date:         January 25, 2022
 # Description:
@@ -9,6 +10,7 @@ from argparse import Namespace, ArgumentParser
 from datetime import datetime
 from locale import setlocale, LC_ALL
 from os import system
+from sys import exit as sys_exit
 from time import sleep
 
 
@@ -28,17 +30,46 @@ def get_arguments(
         action='store_true',
         dest='twelve',
         help='Set format to 12hr time.'
-    )
+        )
+    parser.add_argument(                                                    # --utc
+        '-u', '--utc',
+        action='store_true',
+        dest='utc',
+        help='Set clock to UTC.'
+        )
 
     return parser.parse_args()
 
 
-if __name__ == '__main__':
-    args = get_arguments()
-    FSTRING = '%I:%M:%S %p' if args.twelve else '%H:%M:%S'
-    DIV = '=' * len(FSTRING)
+def run_clock(
+    twelve_hour: bool = False,
+    utc: bool = False
+    ) -> None:
+    '''
+    Continuously display a text-based clock.
+        :param twelve_hour: Boolean indicating if clock should show twelve-hour time.
+        :param utc:         Boolean indicating if clock should show UTC time.
+    '''
+    assert isinstance(twelve_hour, bool), ':param twelve_hour: must be instance of bool().'
+    assert isinstance(utc, bool), ':param utc: must be instance of bool().'
+
+    div = '=' * len((time_string := '%I:%M:%S %p' if twelve_hour else '%H:%M:%S'))
 
     while True:
-        system('clear')
-        print(f'{DIV}\n{datetime.now().strftime(FSTRING)}\n{DIV}')
-        sleep(1)
+        try:
+            system('clear')                                                 # Clear screen.
+
+            time = datetime.utcnow() if utc else datetime.now()             # UTC or local time.
+
+            print(f'{div}\n{time.strftime(time_string)}\n{div}')            # Print clock.
+            sleep(1)                                                        # Sleep one second.
+
+        except KeyboardInterrupt:                                           # Exit without stack trace.
+            print()
+            sys_exit(1)
+
+
+if __name__ == '__main__':
+    args = get_arguments()
+
+    run_clock(args.twelve, args.utc)

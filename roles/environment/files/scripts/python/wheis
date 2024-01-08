@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         wheis
 # Author:       Casey Sparks
 # Date:         January 25, 2022
 # Description:
@@ -31,7 +32,8 @@ def get_arguments(
         'ip_addresses',
         type=str,
         nargs='+',
-        help='List of IP addresses to retrieve.')
+        help='List of IP addresses to retrieve.'
+        )
 
     return parser.parse_args()
 
@@ -52,7 +54,8 @@ def get_location_table(
     ip_info = get(
         f'http://api.ipstack.com/{ip_addr}',
         params={'access_key': api_key},
-        timeout=2).json()
+        timeout=2
+        ).json()
     table = [
         ['IP:', ip_info['ip']],
         ['City:', ip_info['city']],
@@ -66,7 +69,5 @@ def get_location_table(
 
 
 if __name__ == '__main__':
-    args = get_arguments()
-
-    for ip in args.ip_addresses:
+    for ip in get_arguments().ip_addresses:
         print(tabulate(get_location_table(getenv('IPSTACK_API_KEY'), ip)))

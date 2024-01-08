@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         streetshark
 # Author:       Casey Sparks
 # Date:         May 13, 2022
 # Description:
@@ -8,7 +9,7 @@
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler, WARNING, INFO, DEBUG, NOTSET
+from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
 from os import system
 from pathlib import Path
 from re import compile as re_compile
@@ -25,49 +26,55 @@ def get_arguments(
     Get cmdline arguments.
         :return:    Argparse namespace.
     '''
+    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
 
     parser.add_argument(                                                    # --interface
         '--interface', '-i',
         dest='interface',
         default=get_default_interface(),
-        help='Set the wireless interface to scan from.')
+        help='Set the wireless interface to scan from.'
+        )
     parser.add_argument(                                                    # --interval.
         '--interval', '-n',
         dest='interval',
         type=int,
         default=5,
-        help='Set the scan interval (seconds).')
+        help='Set the scan interval (seconds).'
+        )
     scan_type.add_argument(                                                 # --match
         '--match', '-m',
         dest='ssids',
         type=str,
         nargs='*',
-        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.')
+        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.'
+        )
     parser.add_argument(                                                    # --logfile
         '--logfile', '-l',
         dest='log_file',
         type=Path,
         default=None,
-        help='Absolute path to write the logfile to. Default `None`.')
+        help='Absolute path to write the logfile to. Default `None`.'
+        )
     parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `WARNING`.')
+        help='Specify logging verbosity. Default `WARNING`.'
+        )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments = parser.parse_args()
     arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+        min(arguments.log_level, len(log_levels) - 1)
+        ]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = WARNING,
+    log_level: int = 30,
     log_file: (Path, None) = None
     ) -> RootLogger:
     '''
@@ -82,7 +89,8 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{')
+        style='{'
+        )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -108,7 +116,8 @@ def get_default_interface(
     interface = run(
         ['ip', 'route', 'show'],
         capture_output=True,
-        check=True).stdout.decode('utf-8').split()[4]
+        check=True
+        ).stdout.decode('utf-8').split()[4]
 
     return interface
 
@@ -133,7 +142,7 @@ def iwlist(
         re_compile(r"^Encryption key:(?P<encryption>.+)$"),
         re_compile(
             r"^Quality=(?P<signal_quality>\d+)/(?P<signal_total>\d+)\s+Signal level=(?P<signal_level_dBm>.+) d.+$"
-        ),
+            ),
         re_compile(r"^Signal level=(?P<signal_quality>\d+)/(?P<signal_total>\d+).*$"),
         ]
     wpa_regex = re_compile(r"IE:\ WPA\ Version\ 1$")
@@ -245,11 +254,14 @@ def display_ssids(
 
 
 if __name__ == '__main__':
-    args= get_arguments()                                                   # Get cmdline arguments.
+    args = get_arguments()                                                  # Get cmdline arguments.
     log = enable_log(args.log_level, args.log_file)                         # Instantiate logger.
-    advertised = set()                                                      # Found SSIDs.
-    matched = set()                                                         # Matched SSIDs.
+    advertised = matched = set()                                            # Found SSIDs and matched SSIDs.
     timestamp = {'advertised': {}, 'matched': {}}                           # SSIDs + first time seen.
 
     while True:
-        display_ssids(args.interface, args.ssids, args.interval)
+        display_ssids(
+            args.interface,
+            args.ssids,
+            args.interval
+            )

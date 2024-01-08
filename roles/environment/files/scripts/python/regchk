@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
-# Date: August 03, 2023
-# Author: Casey Sparks
+# Name:         regchk
+# Date:         August 03, 2023
+# Author:       Casey Sparks
 # Description:
 '''CLI tool to quickly check regex expression against a string.'''
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler, WARNING, INFO, DEBUG, NOTSET
 from re import search
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
@@ -20,52 +20,20 @@ def get_arguments(
         :return:    argparse.Namespace instance of user arguments.
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
 
     parser.add_argument(                                                    # expression
         'expression',
         type=str,
-        help='The RegEx expression to test.')
+        help='The RegEx expression to test.'
+        )
     parser.add_argument(                                                    # strings
         'strings',
-        nargs="*",
+        nargs='*',
         type=str,
-        help='The string(s) to test. If zero strings are passed, regchk tests expression validity.')
-    parser.add_argument(                                                    # Specify logging verbosity.
-        '--verbose', '-v',
-        dest='log_level',
-        default=0,
-        action='count',
-        help='Specify logging verbosity. Default `WARNING`.')
+        help='The string(s) to test. If zero strings are passed, regchk tests expression validity.'
+        )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
-
-    return arguments
-
-
-def enable_log(
-    log_level: int = WARNING
-    ) -> RootLogger:
-    '''
-    Enable logging and handle outputs.
-        :param log_level:   User-specified log level. Default WARNING.
-        :return:            Instantiated logger.RootLogger instance.
-    '''
-    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
-
-    formatter = Formatter(                                                  # Log message header format.
-        '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{')
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
-
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
-
-    return log_root
+    return parser.parse_args()
 
 
 def run_regex(
@@ -85,8 +53,6 @@ def run_regex(
 
 if __name__ == '__main__':
     args = get_arguments()
-
-    enable_log(args.log_level)
     print((header:= f'Expression: "{args.expression}"'))
     print('=' * len(header))
 

@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+# Name:         utc
+# Author:       Casey Sparks
+# Date:         January 05, 2024
+# Description:
+'''Print UTC time or convert localtime to UTC.'''
+
+from datetime import datetime
+from locale import setlocale, LC_ALL
+from sys import argv
+from pytz import utc
+
+
+setlocale(LC_ALL, 'en_US.UTF-8')
+
+
+def get_utc(
+    input_time: str = None
+    ) -> str:
+    '''
+    Continuously display a text-based clock.
+        :param input_time:         Boolean indicating if clock should show UTC time.
+    '''
+    assert isinstance(input_time, (str, type(None))), ':param input_time: must be instance of str() or Nonetype.'
+    if input_time:
+        assert input_time.isdigit(), ':param input_time: must be time string or None.'
+        assert int(input_time[:2]) < 24 and int(input_time[2:4]) < 60, ':param input_time: invalid time.'
+
+    localtime = datetime.strptime(input_time, '%H%M') if input_time else datetime.now()
+
+    return localtime.astimezone(utc).strftime('%H%M')
+
+
+if __name__ == '__main__':
+    print(get_utc(argv[1] if len(argv) > 1 else None))

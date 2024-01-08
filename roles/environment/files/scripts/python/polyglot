@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         polyglot
 # Author:       Casey Sparks
 # Date:         August 09, 2022
 # Description:
@@ -10,7 +11,7 @@ from configparser import ConfigParser
 from io import TextIOWrapper
 from json import dumps as json_dumps, load as json_load
 from locale import setlocale, LC_ALL
-from logging import Formatter, RootLogger, StreamHandler, getLogger, WARNING, DEBUG, INFO, NOTSET
+from logging import getLogger, Formatter, RootLogger, StreamHandler
 from pathlib import Path
 from sys import exit as sys_exit, stdout
 from dict2xml import dict2xml
@@ -31,41 +32,46 @@ def get_arguments(
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
+    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
 
     parser.add_argument(                                                    # infile
         'infile',
         type=Path,
-        help='File to read from.')
+        help='File to read from.'
+        )
     parser.add_argument(                                                    # --output-format
         '--output-format', '-o',
         dest='format',
         choices=SUPPORTED_TYPES,
         default='yml',
         type=str,
-        help='Data format to output.')
+        help='Data format to output.'
+        )
     parser.add_argument(                                                    # --write
         '--write', '-w',
         dest='write',
         action='store_true',
-        help='Write file to disk instead of stdout.')
+        help='Write file to disk instead of stdout.'
+        )
     parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.')
+        help='Specify logging verbosity. Default `CRITICAL`.'
+        )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
+    arguments = parser.parse_args()
     arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+        min(arguments.log_level, len(log_levels) - 1)
+        ]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = WARNING
+    log_level: int = 30
     ) -> RootLogger:
     '''
     Enable logging and handle outputs.
@@ -76,7 +82,8 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{')
+        style='{'
+        )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -98,8 +105,10 @@ def ingest_data(
     '''
     assert isinstance(infile, Path), '`infile` must be instance of Path().'
 
-    with open((infile_suffix := infile.suffix.lower()), 'r', encoding='utf-8') as data:
-        log.debug(f'Reading from {infile_suffix} file: {infile.name}')
+    infile_suffix = infile.suffix.lower()
+
+    with open(infile, 'r', encoding='utf-8') as data:
+        log.debug(f'Reading from {str(infile_suffix).upper()} file: {infile.name}')
 
         match infile_suffix:
             case '.csv':                                                    # CSV.
@@ -112,10 +121,7 @@ def ingest_data(
                 payload = json_load(data)
 
             case '.ini':                                                    # INI.
-                config = ConfigParser()
-
-                config.read(infile)
-
+                (config := ConfigParser()).read(infile)
                 payload = config._sections
 
             case '.toml':                                                   # TOML
@@ -131,7 +137,8 @@ def ingest_data(
     log.debug(
         f'Input: {infile}\n',
         f'Input filetype: {infile.suffix.upper().replace(".", "")}\n',
-        f'Payload: {payload}\n\n')
+        f'Payload: {payload}\n\n'
+        )
 
     return payload
 
@@ -169,22 +176,23 @@ def output_data(
                 json_normalize(payload).to_csv(
                     outfile,
                     index=False,
-                    encoding='utf-8')
+                    encoding='utf-8'
+                    )
 
             case 'html' | 'xml':                                            # HTML/XML.
                 outfile.write(dict2xml(payload))
 
             case 'ini':                                                     # INI.
-                config = ConfigParser()                                     # Instantiate parser.
-                config._sections = payload                                  # Write to class.
+                (config := ConfigParser())._sections = payload              # Write to class.
 
                 for key in payload.keys():
                     if iter(key):                                           # Keys are nested.
                         log.warning(
                             'Warning! INI does not support nested values.\n'
-                            'Values will be flattened to strings.')
+                            'Values will be flattened to strings.'
+                            )
 
-                        if input('Proceed? [y/N] ').lower().startswith('n'):
+                        if input('Proceed? [Y/n] ').lower().startswith('n'):
                             log.critical('Exiting.')
                             sys_exit(1)
 
@@ -220,4 +228,5 @@ if __name__ == '__main__':
         payload=ingest_data(args.infile),
         infile=args.infile,
         out_format=args.format,
-        write=args.write)
+        write=args.write
+        )

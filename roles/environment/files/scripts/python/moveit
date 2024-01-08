@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding:utf-8 -*-
+# Name:         moveit
 # Author:       Casey Sparks
 # Date:         August 14, 2023
 # Description:
@@ -14,6 +15,23 @@ from pyautogui import moveTo, position
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
+def user_confirmation(
+    ) -> bool:
+    '''
+    Get user confirmation.
+        :return:    Boolean indicating manual user confirmation.
+    '''
+    try:
+        print('Center your cursor and hit <ENTER> to start.')
+
+        user_input = input('Press CTRL+C, or anything but <ENTER> to exit.\n')
+
+        return user_input == ''
+
+    except KeyboardInterrupt:
+        return False
+
+
 def move_cursor(
     ) -> None:
     '''Move the cursor in a 10px square.'''
@@ -25,15 +43,28 @@ def move_cursor(
     moveTo(start_vector[0], start_vector[1])
 
 
+def friendly_exit(
+    return_code: int = 1
+    ) -> None:
+    '''
+    Display an exit message and exit with :param return_code:.
+        :param return_code: The return code to exit with.
+    '''
+    print('\nExiting.')
+    sys_exit(return_code)
+
+
 if __name__ == '__main__':
-    input('Center your cursor and hit <Enter>.')
-    print('Move it, move it.')
+    if user_confirmation():
+        print('Move it, move it.')
 
-    while True:
-        try:
-            move_cursor()
-            sleep(5)
+        while True:
+            try:
+                move_cursor()
+                sleep(5)
 
-        except KeyboardInterrupt:
-            print('\nSIGTERM caught. Exiting.')
-            sys_exit(1)
+            except KeyboardInterrupt:
+                friendly_exit()
+
+    else:
+        friendly_exit()

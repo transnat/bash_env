@@ -6,16 +6,43 @@
 # Description:
 '''Print UTC time or convert localtime to UTC.'''
 
+from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from sys import argv
 from pytz import utc
 
 
 setlocale(LC_ALL, 'en_US.UTF-8')
 
 
-def get_utc(
+def get_arguments(
+    ) -> Namespace:
+    '''
+    Get cmdline arguments.
+        :return:    argparse.Namespace instance of user arguments.
+    '''
+    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+
+    parser.add_argument(                                                    # --logfile
+        '-t', '--time',
+        default=get_local_time(),
+        type=str,
+        help='Local time to convert in HHmm format, like 1830.'
+        )
+
+    return parser.parse_args()
+
+
+def get_local_time(
+    ) -> str:
+    '''
+    Get local system time.
+        :return:    Formatted time string, like '%H%m'.
+    '''
+    return datetime.now().strftime('%H%M')
+
+
+def get_utc_time(
     input_time: str = None
     ) -> str:
     '''
@@ -33,4 +60,6 @@ def get_utc(
 
 
 if __name__ == '__main__':
-    print(get_utc(argv[1] if len(argv) > 1 else None))
+    args = get_arguments()
+
+    print(get_utc_time(args.time))

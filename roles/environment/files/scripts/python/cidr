@@ -91,15 +91,7 @@ def get_network_table(
     assert isinstance(subnet, (IPv4Network, IPv6Network)), '`subnet` must be instance of ip_network().'
 
     host_bits = str(subnet).split('/', maxsplit=1)[0]                       # Get host bits.
-
-    if isinstance(subnet, IPv6Network):                                     # Increase div, padding for IPv6.
-        div = 58 * '='                                                      # Table divider.
-        netmask = 'Prefix'                                                  # IPv4/6 terminology.
-        r_pad = 40                                                          # Integer for right padding table.
-    else:
-        div = 34 * '='
-        netmask = 'Netmask'
-        r_pad = 16
+    div, netmask, r_pad = (58 * '=', 'Prefix', 40) if isinstance(subnet, IPv6Network) else (34 * '=', 'Netmask', 16)
 
     net_table = [
         [div, ''],
@@ -117,6 +109,7 @@ def get_network_table(
         ['First IP', f'{subnet[0]}'],
         ['Last IP', f'{subnet[-1]}'],
         [div.replace('=', '-'), ''],
+        ['Usable Addresses', f'{subnet.num_addresses - 3 if subnet.num_addresses >= 4 else 1:,}'],
         ['Total Addresses', f'{subnet.num_addresses:,}'],
         [div, '']
         ]

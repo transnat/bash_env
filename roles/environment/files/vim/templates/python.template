@@ -23,14 +23,14 @@ def get_arguments(
     log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET].
 
     parser.add_argument(                                                    # --logfile
-        '--logfile', '-l',
+        '-l', '--logfile',
         dest='log_file',
         default=None,
         type=Path,
         help='Absolute path to write the logfile to. Default `None`.'
         )
     parser.add_argument(                                                    # --verbose
-        '--verbose', '-v',
+        '-v', '--verbose',
         dest='log_level',
         action='count',
         default=0,

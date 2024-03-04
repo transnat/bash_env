@@ -1,0 +1,10 @@
+#!/usr/bin/env rsc
+# -*- coding:utf-8 -*-
+# Name:         default.rsc
+# Date:         DATE
+# Author:       Casey Sparks
+# Description:  x
+# Usage:        y
+# Notes:        z
+
+:delay 15s;

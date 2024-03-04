@@ -2,7 +2,7 @@
 #-*- coding:utf-8 -*-
 
 # Application defaults
-export BROWSER="$(which firefox)"
+export BROWSER="$(which google-chrome)"
 export EDITOR="vim"
 export TERM="xterm-256color"
 

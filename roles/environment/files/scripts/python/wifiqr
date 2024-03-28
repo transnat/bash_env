@@ -7,7 +7,7 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, Formatter, RootLogger, WARNING, INFO, DEBUG, NOTSET
+from logging import getLogger, StreamHandler, Formatter, RootLogger
 from pathlib import Path
 from sys import exit as sys_exit
 from qrcode import QRCode
@@ -23,50 +23,55 @@ def get_arguments(
     '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     mutex_group = parser.add_mutually_exclusive_group()
-    log_levels = [WARNING, INFO, DEBUG, NOTSET]
+    log_levels = [30, 20, 10, 0]                                            # [WARNING, INFO, DEBUG, NOTSET]
 
     parser.add_argument(                                                    # ssid
         'ssid',
         type=str,
-        help='SSID of the wifi network.')
+        help='SSID of the wifi network.'
+        )
     parser.add_argument(                                                    # passwd
         'passwd',
         type=str,
-        help='Password of the wifi network (pass an empty string for no password).')
+        help='Password of the wifi network (pass an empty string for no password).'
+        )
     parser.add_argument(                                                    # --encryption
         '--encryption', '-e',
         dest='encryption',
         type=str,
         default='WPA',
         choices=['WPA', 'WEP'],
-        help='Encryption used by the SSID (default WPA).')
+        help='Encryption used by the SSID (default WPA).'
+        )
     parser.add_argument(                                                    # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `WARNING`.')
+        help='Specify logging verbosity. Default `WARNING`.'
+        )
     mutex_group.add_argument(                                               # --string-only
         '--string-only',
         dest='string',
         action='store_true',
         default=False,
-        help='Output the QR wifi connection string and exit.')
+        help='Output the QR wifi connection string and exit.'
+        )
     mutex_group.add_argument(                                               # --output
         '--output', '-o',
         dest='output',
         type=Path,
-        help='Path to write the resultant PNG.')
+        help='Path to write the resultant PNG.'
+        )
 
-    arguments = parser.parse_args()                                         # Parse arguments.
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
+    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
         min(arguments.log_level, len(log_levels) - 1)]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = WARNING
+    log_level: int = 30,                                                    # WARNING.
     ) -> RootLogger:
     '''
     Enable logging and handle outputs.
@@ -78,7 +83,8 @@ def enable_log(
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{')
+        style='{'
+        )
     log_root = getLogger()                                                  # Root logger instance.
     log_console = StreamHandler()                                           # Log to screen.
 
@@ -99,6 +105,7 @@ def generate_qr(
         :param output:      Path to save the PNG to.
     '''
     assert isinstance(to_string, bool), ':param to_string: must be bool.'
+
     qr_code = QRCode()                                                      # Instantiate QR class.
     qr_str= f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'     # String to be encoded in the QR.
 
@@ -122,7 +129,6 @@ def generate_qr(
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get cmdline arguments.
-    log = enable_log(args.log_level)                                        # Enable logging.
+    log = enable_log((args := get_arguments()).log_level)                   # Enable logging.
 
     generate_qr(args.string, args.output)

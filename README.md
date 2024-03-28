@@ -52,12 +52,8 @@ as well as installing my own CA certificates, and removing Snap.
 ## Usage
 Run:
 ```sh
-ansible-playbook                                                                                        \
-    -K "$(git rev-parse --show-toplevel)/main.yml"                                                      \
-    -i localhost                                                                                        \
-    -c local                                                                                            \
-    -u ${USER}
+ansible-playbook -K main.yml
 ```
 
 You will be prompted for your local user password (Ansible calls this the "BECOME" password as it's needed to
-'become' root), after which the playbook will run.
+"become" root), after which the playbook will run.

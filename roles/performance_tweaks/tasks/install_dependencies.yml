@@ -17,14 +17,14 @@
 
             - name: 'Install APT packages'
               ansible.builtin.apt:
-                  name: '{{ packages_apt }}'
+                  name: '{{ performance_tweaks_apt_packages }}'
 
       - name: 'Install DNF packages'
         when: "ansible_os_family == 'RedHat'"
         tags:
             - 'dnf'
         ansible.builtin.dnf:
-            name: '{{ packages_dnf }}'
+            name: '{{ performance_tweaks_dnf_packages }}'
             state: 'present'
 
       - name: 'Install Pacman packages'
@@ -32,6 +32,6 @@
         tags:
             - 'pacman'
         community.general.pacman:
-            name: '{{ packages_pacman }}'
+            name: '{{ performance_tweaks_pacman_packages }}'
             state: 'present'
 ...

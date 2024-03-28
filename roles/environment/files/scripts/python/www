@@ -27,7 +27,8 @@ def get_arguments(
         dest='port',
         type=int,
         default=8000,
-        help='The port to run the webserver on. Default 8000')
+        help='The port to run the webserver on. Default 8000'
+        )
 
     return parser.parse_args()
 

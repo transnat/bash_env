@@ -15,10 +15,8 @@ load-plugins=
 jobs=0
 suggestion-mode=yes
 unsafe-load-any-extension=no
-py-version = 3.10.0
 limit-inference-results=100
 fail-under=10.0
-fail-on=
 
 [MESSAGES CONTROL]
 enable=
@@ -28,23 +26,16 @@ disable=
     isinstance-second-argument-not-valid-type,
     logging-fstring-interpolation,
     no-name-in-module,
-    protected-access
+    protected-access,
+    duplicate-code
 
 [REPORTS]
-output-format=text
 reports=no
 score=yes
 
 [MISCELLANEOUS]
 notes=TODO
 
-
-[SIMILARITIES]
-min-similarity-lines=5
-ignore-comments=yes
-ignore-docstrings=yes
-ignore-imports=yes
-ignore-signatures=yes
 
 [VARIABLES]
 init-import=yes
@@ -57,11 +48,10 @@ single-line-class-stmt=yes
 max-module-lines=1000
 indent-string='    '
 indent-after-paren=4
-expected-line-ending-format=
 
 [BASIC]
 good-names=i,j,k,ex,Run,_
-bad-names=foo,bar,baz,toto,tutu,tata
+bad-names=foo,bar,baz
 include-naming-hint=yes
 function-naming-style=snake_case
 variable-naming-style=snake_case

@@ -1,9 +1,9 @@
 ---
-version: "3"
+version: '3'
 services:
     NAME:
-        image: NAME:TAG
+        image: '${NAME:TAG}'
         build:
-            context: .
-            network: host
+            context: '.'
+            network: 'host'
 ...

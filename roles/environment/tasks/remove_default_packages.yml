@@ -5,7 +5,7 @@
       - 'uninstall'
   when: "ansible_os_family == 'Debian'"
   block:
-      - name: 'apt'
+      - name: 'APT'
         tags:
             - 'apt'
         loop: '{{ environment_remove_defaults.apt }}'
@@ -16,7 +16,7 @@
             purge: true
             clean: true
 
-      - name: 'dnf'
+      - name: 'DNF'
         tags:
             - 'dnf'
         loop: '{{ environment_remove_defaults.dnf }}'

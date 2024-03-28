@@ -29,21 +29,22 @@ def get_arguments(
         '-a', '--address',
         type=ip_network,
         dest='address',
-        help='Subnet to parse, like `192.168.0.1/16`, `10.0.0.1/255.0.0.0`, or `::1`.')
+        help='Subnet to parse, like `192.168.0.1/16`, `10.0.0.1/255.0.0.0`, or `::1`.'
+        )
     mutex_group.add_argument(                                               # --hosts
         '-n', '--hosts',
         type=int,
         dest='number_of_hosts',
-        help='Get the minimum netmask for a given number of hosts.')
+        help='Get the minimum netmask for a given number of hosts.'
+        )
     mutex_group.add_argument(                                               # --size
         '-s', '--size',
         type=str,
         dest='prefix',
-        help='Calculate the maximum number of hosts, given a prefix or subnet mask.')
+        help='Calculate the maximum number of hosts, given a prefix or subnet mask.'
+        )
 
-    arguments = parser.parse_args()
-
-    if set(arguments.__dict__.values()) == {None}:
+    if set((arguments := parser.parse_args()).__dict__.values()) == {None}:
         parser.print_help()
         sys_exit(1)
 
@@ -198,9 +199,7 @@ def get_max_hosts_table(
 
 
 if __name__ == '__main__':
-    args = get_arguments()
-
-    if args.address:
+    if (args := get_arguments()).address:
         table, padding = get_network_table(args.address)
 
     elif args.number_of_hosts:

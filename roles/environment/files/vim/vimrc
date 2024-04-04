@@ -2,6 +2,7 @@
 filetype indent on                      " Turn indent, filetype checking.
 syntax on                               " Turn on syntax highlighting.
 
+set colorcolumn=80,121                  " Set vertical columns marking line 80, line 121.
 set encoding=utf-8                      " Set encoding.
 set expandtab                           " Expand tabs to spaces.
 set fileformat=unix                     " Duh.

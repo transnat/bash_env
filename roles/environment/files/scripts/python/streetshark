@@ -20,13 +20,11 @@ from time import sleep
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    Argparse namespace.
     '''
-    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
     scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
 
@@ -66,9 +64,7 @@ def get_arguments(
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)
-        ]
+    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]      # Look up verbosity in list[log_levels].
 
     return arguments
 
@@ -107,8 +103,7 @@ def enable_log(
     return log_root
 
 
-def get_default_interface(
-    ) -> str:
+def get_default_interface() -> str:
     '''
     Gets the name of the current WAN-connected interface.
         :return:    Name of the default gateway interface.
@@ -123,8 +118,8 @@ def get_default_interface(
 
 
 def iwlist(
-    interface: str = 'wlan0'
-    ) -> list:
+    interface: str = 'wlan0',
+        ) -> list:
     '''
     Scans for advertised SSIDs.
         :param interface:   The network interface on which to run the scan.
@@ -151,8 +146,8 @@ def iwlist(
     with Popen(['iwlist', interface, 'scan'], stdout=PIPE, stderr=PIPE) as proc:
         lines = proc.stdout.read().decode('utf-8').split('\n')              # STDOUT.
 
-        log.error(proc.stderr.read().decode('utf-8'))                       # STDERR.
-        log.debug(lines)
+        log.error(f'STDERR: {proc.stderr.read().decode("utf-8")}')
+        log.debug(f'STDOUT: {lines}')
 
     for line in lines:                                                      # Iterate STDOUT and format to list.
         line = line.strip()
@@ -194,7 +189,7 @@ def display_ssids(
     interface: str,
     ssids: (list[str] | None),
     refresh_interval: int = 5
-    ) -> None:
+        ) -> None:
     '''
     Display a list of discovered SSIDS to STDOUT.
        :param interface:        The interface to scan on.
@@ -211,10 +206,10 @@ def display_ssids(
         assert isinstance(dictionary, dict), '`dictionary` must be instance of dict().'
 
         for key, value in dictionary.items():                               # Print ssids/timestamps.
-            print(f'{key} {value:>40}')
+            print(f'{key} {value:>60}')
 
     assert isinstance(interface, str), '`interface` must be instance of str().'
-    assert isinstance(ssids, (list, None)), '`ssids` must be instance of list() or None.'
+    assert isinstance(ssids, (list, type(None))), '`ssids` must be instance of list() or None.'
     assert refresh_interval >= 1, '`refresh_interval` must be instance of int() >= 1.'
 
     system('clear')                                                         # Clear terminal.

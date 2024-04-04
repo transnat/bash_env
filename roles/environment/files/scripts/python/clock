@@ -35,43 +35,39 @@ def get_arguments(
     parser.add_argument(                                                    # -12
         '-u', '--utc',
         dest='utc',
-        default=True,
         nargs='?',
         type=str,
-        help='Run clock in UTC, or pass a %H%M time string to convert to UTC and exit.'
+        help='Convert %H%m time string to UTC and exit. Default: [now].'
         )
 
-    return parser.parse_args()
+    arguments = parser.parse_args()
+    arguments.utc = datetime.now().strftime('%H%m') if arguments.utc is None else arguments.utc
+
+    return arguments
 
 
 def get_utc_time(
-    input_time: str = None
+    input_time: str = datetime.now().strftime('%H%m')
     ) -> str:
     '''
     Continuously display a text-based clock.
         :param input_time:         Boolean indicating if clock should show UTC time.
     '''
     assert isinstance(input_time, (str, type(None))), ':param input_time: must be instance of str() or Nonetype.'
-    if input_time:
-        assert input_time.isdigit(), ':param input_time: must be time string or None.'
-        assert int(input_time[:2]) < 24 and int(input_time[2:4]) < 60, ':param input_time: invalid time.'
+    assert input_time.isdigit(), ':param input_time: must be time string or None.'
+    assert 0 <= int(input_time[:2]) < 24 and 0 <= int(input_time[2:4]) < 60, ':param input_time: invalid time.'
 
-    localtime = datetime.strptime(input_time, '%H%M') if input_time else datetime.now()
-
-    return localtime.astimezone(utc).strftime('%H%M')
+    return datetime.strptime(input_time, '%H%M').astimezone(utc).strftime('%H%M')
 
 
 def run_clock(
     twelve_hour: bool = False,
-    utc_time: bool = False
-    ) -> None:
+        ) -> None:
     '''
     Continuously display a text-based clock.
         :param twelve_hour: Boolean indicating if clock should show twelve-hour time.
-        :param utc_time:    Boolean indicating if clock should show UTC time.
     '''
     assert isinstance(twelve_hour, bool), ':param twelve_hour: must be instance of bool().'
-    assert isinstance(utc_time, bool), ':param utc_time: must be instance of bool().'
 
     div = '=' * len((time_string := '%I:%M:%S %p' if twelve_hour else '%H:%M:%S'))
 
@@ -79,7 +75,7 @@ def run_clock(
         try:
             system('clear')                                                 # Clear screen.
 
-            time = datetime.utcnow() if utc_time else datetime.now()        # UTC or local time.
+            time = datetime.now()                                           # UTC or local time.
 
             print(f'{div}\n{time.strftime(time_string)}\n{div}')            # Print clock.
             sleep(1)                                                        # Sleep one second.
@@ -91,9 +87,8 @@ def run_clock(
 
 if __name__ == '__main__':
     args = get_arguments()
-    breakpoint()
 
-    if isinstance(args.utc, (bool, type(None))):                            # Run a clock in the shell.
-        run_clock(args.twelve, bool(args.utc))
-    elif isinstance(args.utc, str) and len(args.utc) == 4:                  # Run a UTC clock in the shell.
+    if args.utc:
         print(get_utc_time(args.utc))
+    else:
+        run_clock(args.twelve)

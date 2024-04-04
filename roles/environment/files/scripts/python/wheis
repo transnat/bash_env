@@ -43,7 +43,7 @@ def get_arguments(
 def dig(
     url: str,
     port: int = 80
-    ) -> list[str]:
+        ) -> list[str]:
     '''
     Resolve a URL to a list of IP addresses.
         :param url:     The URL to resolve.
@@ -54,13 +54,13 @@ def dig(
     assert isinstance(port, int), ':param port: must be instance of int().'
     assert 1 <= port <= 2 ** 16, ':param port: is invalid integer.'
 
-    return {t[4][0] for t in getaddrinfo(urlparse(url).netloc, port)}
+    return {t[4][0] for t in getaddrinfo(urlparse(url).netloc or url, port)}
 
 
 def get_location_table(
     api_key: str,
     ip_addr: str
-    ) -> list:
+        ) -> list:
     '''
     Gets location data from IPStack.com and returns it as a list of lists.
         :param api_key:     The IPStack API key for the request.

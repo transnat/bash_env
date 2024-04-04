@@ -15,43 +15,26 @@ from pyautogui import moveTo, position
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def user_confirmation(
-    ) -> bool:
+def user_confirmation() -> bool:
     '''
     Get user confirmation.
         :return:    Boolean indicating manual user confirmation.
     '''
     try:
-        print('Center your cursor and hit <ENTER> to start.')
-
-        user_input = input('Press CTRL+C, or anything but <ENTER> to exit.\n')
-
-        return user_input == ''
+        return input('Center your cursor and hit <ENTER> to start.\nPress any other key to abort.') == ''
 
     except KeyboardInterrupt:
         return False
 
 
-def move_cursor(
-    ) -> None:
+def move_cursor() -> None:
     '''Move the cursor in a 10px square.'''
-    random_x = random_y = randint(0, 100)                                   # Random (0-100px) X, Y scalars.
-    start_vector = position()
+    start = position()
+    x = y = randint(0, 100)                                                 # Random (0-100px) X, Y scalars.
 
-    moveTo(start_vector[0] + random_x, start_vector[1] + random_y)
+    moveTo(start[0] + x, start[1] + y)
     sleep(1)
-    moveTo(start_vector[0], start_vector[1])
-
-
-def friendly_exit(
-    return_code: int = 1
-    ) -> None:
-    '''
-    Display an exit message and exit with :param return_code:.
-        :param return_code: The return code to exit with.
-    '''
-    print('\nExiting.')
-    sys_exit(return_code)
+    moveTo(start[0], start[1])
 
 
 if __name__ == '__main__':
@@ -62,9 +45,9 @@ if __name__ == '__main__':
             try:
                 move_cursor()
                 sleep(5)
-
             except KeyboardInterrupt:
-                friendly_exit()
-
+                print('\nExiting.')
+                sys_exit(0)
     else:
-        friendly_exit()
+        print('\nExiting.')
+        sys_exit(0)

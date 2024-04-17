@@ -14,12 +14,16 @@ export SECRETS="${HOME}/.bash/secrets.asc"
 export WSECRETS="${HOME}/.bash/wsecrets.asc"
 export VARS="${HOME}/.bash/vars.sh"
 export GH="git@github.com"
+export DOMAIN="taumotors.com"
 
 ## Ansible
 export ANSIBLE_DUPLICATE_YAML_DICT_KEY=ignore
 
 ## Docker
 #export DOCKER_BUILDKIT=1
+
+## GAM
+export GOOGLE_CREDENTIALS_PATH="/home/caseysparkz/.local/bin/gam/client_secrets.json"
 
 ## PGP
 export GPG_TTY="$(tty)"

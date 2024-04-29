@@ -28,7 +28,8 @@ disable=
     isinstance-second-argument-not-valid-type,
     logging-fstring-interpolation,
     no-name-in-module,
-    protected-access
+    protected-access,
+    too-few-public-methods,
 
 [REPORTS]
 output-format=text

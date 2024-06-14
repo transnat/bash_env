@@ -14,8 +14,7 @@ from pyautogui import moveTo, position
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def move_cursor(
-    ) -> None:
+def move_cursor() -> None:
     '''Move the cursor in a 10px square.'''
     random_x = random_y = randint(0, 100)                                   # Random (0-100px) X, Y scalars.
     start_vector = position()

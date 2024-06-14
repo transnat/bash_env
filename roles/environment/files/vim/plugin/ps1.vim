@@ -4,4 +4,4 @@ autocmd BufNewFile *.ps1
     \ :2s/\<DATE\>/\=strftime("%B %d, %Y")/
 
 autocmd BufRead *.ps1
-    \ set colorcolumn=76,121
+    \ set colorcolumn=80,121

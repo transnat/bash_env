@@ -7,35 +7,35 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, StreamHandler, Formatter, RootLogger
+from logging import getLogger, StreamHandler, Formatter
 from pathlib import Path
 from sys import exit as sys_exit
 from qrcode import QRCode
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
+
+LOG = getLogger(__name__)
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
     mutex_group = parser.add_mutually_exclusive_group()
-    log_levels = [30, 20, 10, 0]                                            # [WARNING, INFO, DEBUG, NOTSET]
 
-    parser.add_argument(                                                    # ssid
+    parser.add_argument(                                                        # ssid
         'ssid',
         type=str,
         help='SSID of the wifi network.'
         )
-    parser.add_argument(                                                    # passwd
+    parser.add_argument(                                                        # passwd
         'passwd',
         type=str,
         help='Password of the wifi network (pass an empty string for no password).'
         )
-    parser.add_argument(                                                    # --encryption
+    parser.add_argument(                                                        # --encryption
         '--encryption', '-e',
         dest='encryption',
         type=str,
@@ -43,92 +43,93 @@ def get_arguments(
         choices=['WPA', 'WEP'],
         help='Encryption used by the SSID (default WPA).'
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
         help='Specify logging verbosity. Default `WARNING`.'
         )
-    mutex_group.add_argument(                                               # --string-only
+    mutex_group.add_argument(                                                   # --string-only
         '--string-only',
         dest='string',
         action='store_true',
         default=False,
         help='Output the QR wifi connection string and exit.'
         )
-    mutex_group.add_argument(                                               # --output
+    mutex_group.add_argument(                                                   # --output
         '--output', '-o',
         dest='output',
         type=Path,
         help='Path to write the resultant PNG.'
         )
 
-    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+    arguments = parser.parse_args()
+    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Magic.
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30,                                                    # WARNING.
-    ) -> RootLogger:
+    log_level: int = 30,
+        ) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
-        :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert 50 >= log_level >= 0, '`log_level` must be between 0 - 50.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
+        style='{',
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
-
-    return log_root
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    LOG.addHandler(log_console)                                                 # Log to screen.
+    LOG.setLevel(log_level)                                                     # User-specified log_level.
 
 
 def generate_qr(
+    ssid: str,
+    passwd: str,
+    encryption: str,
     to_string: bool = False,
-    output: (str, Path, None) = None
-    ) -> None:
+    output: Path = None
+        ) -> None:
     '''
     Generate a QR and print to stdout or a PNG.
+        :param encryption:  Encryption to apply to the wireles network.
+        :param ssid:        Name of the SSID.
+        :param passwd:      Password for the wireless network.
         :param to_string:   If True, export QR string and exit.
         :param output:      Path to save the PNG to.
     '''
     assert isinstance(to_string, bool), ':param to_string: must be bool.'
 
-    qr_code = QRCode()                                                      # Instantiate QR class.
-    qr_str= f'WIFI:T:{args.encryption};S:{args.ssid};P:{args.passwd};;'     # String to be encoded in the QR.
+    qr_code = QRCode()                                                          # Instantiate QR class.
+    qr_str = f'WIFI:T:{encryption};S:{ssid};P:{passwd};;'                       # Add data to the QR class.
 
-    if args.string:                                                         # Only print the string to stdout.
+    if to_string:                                                               # Only print the string to stdout.
         print(qr_str)
         sys_exit(0)
 
-    log.debug(f'Connection string: {qr_str}')
-    qr_code.add_data(qr_str)                                                # Add data to the QR class.
-    qr_code.make()                                                          # Generate the QR code.
-    log.debug('QR code created.')
+    qr_code.add_data(f'WIFI:T:{encryption};S:{ssid};P:{passwd};;')              # Add data to the QR class.
+    qr_code.make()                                                              # Generate the QR code.
+    LOG.debug('QR code created.')
 
     if output:
-        img = qr_code.make_image(fill_color='black', back_color='white')    # Create PNG.
+        img = qr_code.make_image(fill_color='black', back_color='white')        # Create PNG.
 
-        log.debug(qr_code.print_tty())
-        img.save(output)                                                    # Save PNG to disk.
+        img.save(output)                                                        # Save PNG to disk.
 
     else:
-        qr_code.print_tty()                                                 # Print to screen.
+        qr_code.print_tty()                                                     # Print to screen.
 
 
 if __name__ == '__main__':
-    log = enable_log((args := get_arguments()).log_level)                   # Enable logging.
+    args = get_arguments()
 
-    generate_qr(args.string, args.output)
+    enable_log(args.log_level)
+    generate_qr(args.ssid, args.passwd, args.encryption, args.string, args.output)

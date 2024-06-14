@@ -22,23 +22,26 @@ def get_arguments() -> Namespace:
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # -12
+    parser.add_argument(                                                        # -12
         '-12', '--twelve-hour',
         action='store_true',
         dest='twelve',
-        help='Set format to 12hr time.')
-    parser.add_argument(                                                    # --utc
+        help='Set format to 12hr time.',
+        )
+    parser.add_argument(                                                        # --utc
         '-u', '--utc',
         action='store_true',
         dest='utc',
-        help='Set clock to UTC. Takes time string like %H%m.')
-    parser.add_argument(                                                    # --utc
+        help='Set clock to UTC. Takes time string like %H%m.',
+        )
+    parser.add_argument(                                                        # --follow
         '-f', '--follow',
         action='store_true',
         dest='follow',
-        help='Run the clock until instructed to exit. Default is to print time and exit.')
+        help='Run the clock until instructed to exit. Default is to print time and exit.',
+        )
 
     return parser.parse_args()
 
@@ -47,17 +50,20 @@ def run_clock(
     twelve_hour: bool = False,
     utc: bool = False,
     run: bool = False,
-    ) -> None:
+        ) -> None:
     '''
     Continuously display a text-based clock.
         :param twelve_hour: Boolean indicating if clock should show twelve-hour time.
         :param utc:         Boolean indicating if clock should show UTC time.
         :param run:         Run a clock continuously in the shell until SIGEXIT.
     '''
+    assert isinstance(twelve_hour, bool), ':param twelve_hour: must be instance of bool().'
+    assert isinstance(utc, bool), ':param utc: must be instance of bool().'
+
     def _time_string(
         utc: bool = False,
         fstring: str = '%H:%M:%S',
-        ) -> str:
+            ) -> str:
         '''
         Format and return a time string
             :param utc:         Boolean indicating if clock should show UTC time.
@@ -66,24 +72,21 @@ def run_clock(
         '''
         return (datetime.utcnow() if utc else datetime.now()).strftime(fstring)
 
-    assert isinstance(twelve_hour, bool), ':param twelve_hour: must be instance of bool().'
-    assert isinstance(utc, bool), ':param utc: must be instance of bool().'
-
     div = '=' * len((fstring := '%I:%M:%S %p' if twelve_hour else '%H:%M:%S'))
 
     if run:
-        while True:                                                         # Run a clock in the shell.
+        while True:                                                             # Run a clock in the shell.
             try:
-                print(f'{div}\n{_time_string(utc, fstring)}\n{div}')        # Print clock.
-                sleep(1)                                                    # Sleep one second.
-                system('clear')                                             # Clear screen.
+                print(f'{div}\n{_time_string(utc, fstring)}\n{div}')            # Print clock.
+                sleep(1)                                                        # Sleep one second.
+                system('clear')                                                 # Clear screen.
 
             except KeyboardInterrupt:
-                system('clear')                                             # Clear screen.
-                sys_exit(1)                                                 # Exit.
+                system('clear')                                                 # Clear screen.
+                sys_exit(1)                                                     # Exit.
 
     else:
-        print(_time_string(utc, fstring))                                   # Print clock.
+        print(_time_string(utc, fstring))                                       # Print clock.
 
 
 if __name__ == '__main__':

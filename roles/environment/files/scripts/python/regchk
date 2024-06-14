@@ -14,7 +14,7 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 
 def get_arguments(
-    ) -> Namespace:
+        ) -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
@@ -51,7 +51,7 @@ def get_arguments(
 
 def enable_log(
     log_level: int = 30                                                     # WARNING.
-    ) -> RootLogger:
+        ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default WARNING.
@@ -76,7 +76,7 @@ def enable_log(
 def run_regex(
     expression: str,
     test_string: (str, None) = None
-    ) -> None:
+        ) -> None:
     '''
     Runs a regex expression against a string and prints if match.
         :param expression:  The regular expression to test.
@@ -91,7 +91,7 @@ def run_regex(
 if __name__ == '__main__':
     enable_log((args := get_arguments()).log_level)
 
-    print((header:= f'Expression: "{args.expression}"'))
+    print((header := f'Expression: "{args.expression}"'))
     print('=' * len(header))
 
     for string in args.strings:

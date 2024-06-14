@@ -7,32 +7,32 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import getLogger, FileHandler, Formatter, StreamHandler
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from PIL import ImageGrab
 from cv2 import QRCodeDetector, imread
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
+
+LOG = getLogger(__name__)
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    log_levels = [30, 20, 10, 0]                                            # [WARNING, INFO, DEBUG, NOTSET]
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # --logfile
+    parser.add_argument(                                                        # --logfile
         '--logfile', '-l',
         dest='log_file',
         type=Path,
         default=None,
         help='Absolute path to write the logfile to. Default `None`.'
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
@@ -40,64 +40,61 @@ def get_arguments(
         help='Specify logging verbosity. Default `CRITICAL`.'
         )
 
-    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+    arguments = parser.parse_args()
+    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Magic.
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30,                                                    # WARNING.
+    log_level: int = 30,                                                        # WARNING.
     log_file: (Path, None) = None
-    ) -> RootLogger:
+        ) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
         :param log_file:    User-specified path to write log file. Default None.
-        :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int), ':param log_level: must be instance of int().'
     assert log_level >= 0, ':param log_level: must be >=0.'
-    assert isinstance(log_file, (Path, type(None))), ':param log_file: must be instance of pathlib.Path() or None.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
         style='{'
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    LOG.addHandler(log_console)                                                 # Log to screen.
+    LOG.setLevel(log_level)                                                     # User-specified log_level.
 
-    if log_file:                                                            # Log to file.
-        log_file = FileHandler(log_file)                                    # Set log file.
+    if log_file:                                                                # Log to file.
+        assert isinstance(log_file, Path), ':param log_file: must be instance of pathlib.Path() or None.'
+        assert log_file.parent.exists(), ':param log_file: parent dir does not exist.'
 
-        log_file.setFormatter(formatter)                                    # Set log file format.
-        log_root.addHandler(log_file)                                       # Log to file.
+        log_file = FileHandler(log_file)                                        # Set log file.
 
-    return log_root
+        log_file.setFormatter(formatter)                                        # Set log file format.
+        LOG.addHandler(log_file)                                                # Log to file.
 
 
-def take_screenshot(
-    ) -> Path:
+def take_screenshot() -> Path:
     '''
     Save the entire screen to a temporary PNG file and return the path.
         :return:    Path of the temporary PNG file.
     '''
     with NamedTemporaryFile(mode='w+b', suffix='.png', dir=Path('/tmp'), delete=False) as temp_file:
-        screenshot = ImageGrab.grab()                                       # Take screenshot.
+        screenshot = ImageGrab.grab()                                           # Take screenshot.
 
-        screenshot.save(temp_file.name, 'PNG')                              # Save screenshot.
-        log.debug(f'Saved screenshot to {temp_file.name}')
+        screenshot.save(temp_file.name, 'PNG')                                  # Save screenshot.
+        LOG.debug(f'Saved screenshot to {temp_file.name}')
 
     return Path(temp_file.name)
 
 
 def read_qr_code_from_file(
     filename: (Path, str)
-    ) -> str:
+        ) -> str:
     '''
     Read a QR code from an image.
         :param filename:    Path to file.
@@ -106,17 +103,17 @@ def read_qr_code_from_file(
     assert isinstance(filename, (Path, str)), '`filename` must be instance of Path() or str().'
 
     try:
-        log.debug(f'Reading QR code from {filename}.')
+        LOG.debug(f'Reading QR code from {filename}.')
 
         value, _, _ = QRCodeDetector().detectAndDecode(imread(str(filename)))
 
         if value == '':
             value = 'No QR data found.'
 
-            log.warning(value)
+            LOG.warning(value)
 
         else:
-            log.debug(f'QR data found: {value}')
+            LOG.debug(f'QR data found: {value}')
 
     except BaseException as exc:
         raise exc
@@ -126,6 +123,7 @@ def read_qr_code_from_file(
 
 if __name__ == '__main__':
     args = get_arguments()
-    log = enable_log(args.log_level, args.log_file)
+
+    enable_log(args.log_level, args.log_file)
 
     print(read_qr_code_from_file(Path(take_screenshot())))

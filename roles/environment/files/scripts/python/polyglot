@@ -10,7 +10,7 @@ from configparser import ConfigParser
 from io import TextIOWrapper
 from json import dumps as json_dumps, load as json_load
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler
+from logging import getLogger, Formatter, StreamHandler
 from pathlib import Path
 from sys import exit as sys_exit, stdout
 from dict2xml import dict2xml
@@ -20,81 +20,76 @@ from xmltodict import parse
 from yaml import safe_load, dump as ydump
 
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
-SUPPORTED_TYPES = {'csv', 'ini', 'json', 'xml', 'yml'}                      # Supported outfile types.
+LOG = getLogger(__name__)
+SUPPORTED_TYPES = {'csv', 'ini', 'json', 'xml', 'yml'}                          # Supported outfile types.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    log_levels = [30, 20, 10, 0]                                            # [WARNING, INFO, DEBUG, NOTSET]
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # infile
+    parser.add_argument(                                                        # infile
         'infile',
         type=Path,
-        help='File to read from.'
+        help='File to read from.',
         )
-    parser.add_argument(                                                    # --output-format
+    parser.add_argument(                                                        # --output-format
         '--output-format', '-o',
         dest='format',
         choices=SUPPORTED_TYPES,
         default='yml',
         type=str,
-        help='Data format to output.'
+        help='Data format to output.',
         )
-    parser.add_argument(                                                    # --write
+    parser.add_argument(                                                        # --write
         '--write', '-w',
         dest='write',
         action='store_true',
-        help='Write file to disk instead of stdout.'
+        help='Write file to disk instead of stdout.',
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
+        help='Specify logging verbosity. Default `CRITICAL`.',
         )
 
-    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+    arguments = parser.parse_args()
+    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Magic.
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30                                                     # WARNING
-    ) -> RootLogger:
+    log_level: int = 30                                                         # WARNING
+        ) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default WARNING.
-        :return:            Instantiated logger.RootLogger instance.
     '''
     assert 50 >= log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
+        style='{',
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
-    log_root.debug(f'Log level set to {log_level}.')
-
-    return log_root
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    LOG.addHandler(log_console)                                                 # Log to screen.
+    LOG.setLevel(log_level)                                                     # User-specified log_level.
+    LOG.debug(f'Log level set to {log_level}.')
 
 
 def ingest_data(
     infile: Path
-    ) -> dict:
+        ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
         :param infile:  The file to ingest data from. Instance of Path().
@@ -102,40 +97,43 @@ def ingest_data(
     '''
     assert isinstance(infile, Path), '`infile` must be instance of Path().'
 
-    with open((infile_suffix := infile.suffix.lower()), 'r', encoding='utf-8') as data:
-        log.debug(f'Reading from {infile_suffix} file: {infile.name}')
+    with infile.open('r', encoding='utf-8') as data:
+        file_extension = infile.suffix.lower()
 
-        match infile_suffix:
-            case '.csv':                                                    # CSV.
+        LOG.debug(f'Reading from {file_extension.upper()} file: {infile.name}')
+
+        match file_extension:
+            case '.csv':                                                        # CSV.
                 payload = read_csv(data, skip_blank_lines=True, encoding='utf-8', index_col=False).to_dict()
 
-            case '.html' | '.xml':                                          # HTML/XML.
+            case '.html' | '.xml':                                              # HTML/XML.
                 payload = parse(data.read())
 
-            case '.json':                                                   # JSON.
+            case '.json':                                                       # JSON.
                 payload = json_load(data)
 
-            case '.ini':                                                    # INI.
+            case '.ini':                                                        # INI.
                 config = ConfigParser()
 
                 config.read(infile)
 
                 payload = config._sections
 
-            case '.toml':                                                   # TOML
+            case '.toml':                                                       # TOML
                 payload = toml_load(data)
 
-            case '.yaml' | '.yml':                                          # YAML [default].
+            case '.yaml' | '.yml':                                              # YAML [default].
                 payload = safe_load(data)
 
             case _:
                 print('Unsupported filetype. Please check the extension and try again.')
                 sys_exit(1)
 
-    log.debug(
+    LOG.debug(
         f'Input: {infile}\n',
         f'Input filetype: {infile.suffix.upper().replace(".", "")}\n',
-        f'Payload: {payload}\n\n')
+        f'Payload: {payload}\n\n',
+        )
 
     return payload
 
@@ -145,7 +143,7 @@ def output_data(
     infile: Path,
     out_format: str = 'yaml',
     write: bool = False
-    ) -> None:
+        ) -> None:
     '''
     Formats and outputs a data object as JSON or YAML to a file or STDOUT.
         :param payload:     The Python dict to format and output.
@@ -157,7 +155,7 @@ def output_data(
         payload: dict,
         out_format: str,
         outfile: TextIOWrapper = stdout
-        ) -> None:
+            ) -> None:
         '''
         Write data to a TextIOWrapper.
             :param payload:     The Python dict to format and output.
@@ -166,42 +164,42 @@ def output_data(
         '''
         assert isinstance(outfile, TextIOWrapper), '`outfile` must be instance of io.TextIOWrapper().'
 
-        log.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
+        LOG.debug(f'Writing {out_format.upper()} output to {outfile.name}.')
 
         match out_format.lower():
-            case 'csv':                                                     # CSV.
+            case 'csv':                                                         # CSV.
                 json_normalize(payload).to_csv(
                     outfile,
                     index=False,
-                    encoding='utf-8'
+                    encoding='utf-8',
                     )
 
-            case 'html' | 'xml':                                            # HTML/XML.
+            case 'html' | 'xml':                                                # HTML/XML.
                 outfile.write(dict2xml(payload))
 
-            case 'ini':                                                     # INI.
-                (config := ConfigParser())._sections = payload              # Write to class.
+            case 'ini':                                                         # INI.
+                (config := ConfigParser())._sections = payload                  # Write to class.
 
                 for key in payload.keys():
-                    if iter(key):                                           # Keys are nested.
-                        log.warning(
+                    if iter(key):                                               # Keys are nested.
+                        LOG.warning(
                             'Warning! INI does not support nested values.\n'
                             'Values will be flattened to strings.'
                             )
 
                         if input('Proceed? [y/N] ').lower().startswith('n'):
-                            log.critical('Exiting.')
+                            LOG.critical('Exiting.')
                             sys_exit(1)
 
                         config.write(outfile)
 
-            case 'json':                                                    # JSON.
+            case 'json':                                                        # JSON.
                 outfile.write(json_dumps(payload, indent=2))
 
-            case 'toml':
+            case 'toml':                                                        # TOML.
                 outfile.write(toml_dumps(payload))
 
-            case _:                                                         # YAML (default).
+            case _:                                                             # YAML [default].
                 outfile.write(ydump(payload))
 
     assert isinstance(payload, dict), '`payload` must be instance of dict().'
@@ -210,20 +208,20 @@ def output_data(
     assert isinstance(write, bool), '`write` must be instance of bool().'
     assert out_format in SUPPORTED_TYPES, f'`out_format must be one of {SUPPORTED_TYPES}'
 
-    if write:                                                               # Write to file.
-        with open(infile.with_suffix(f'.{out_format}'), 'w', encoding='utf-8') as outfile:
+    if write:                                                                   # Write to file.
+        with infile.with_suffix(f'.{out_format}').open('w', encoding='utf-8') as outfile:
             _write_out(payload, out_format, outfile)
-    else:                                                                   # Write to stdout.
+    else:                                                                       # Write to stdout.
         _write_out(payload, out_format, stdout)
 
 
 if __name__ == '__main__':
     args = get_arguments()
-    log = enable_log(args.log_level)
 
+    enable_log(args.log_level)
     output_data(
         payload=ingest_data(args.infile),
         infile=args.infile,
         out_format=args.format,
-        write=args.write
+        write=args.write,
         )

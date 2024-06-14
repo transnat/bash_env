@@ -8,7 +8,7 @@
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
 from locale import setlocale, LC_ALL
-from logging import getLogger, FileHandler, Formatter, RootLogger, StreamHandler
+from logging import getLogger, FileHandler, Formatter, StreamHandler
 from os import system
 from pathlib import Path
 from re import compile as re_compile
@@ -16,47 +16,50 @@ from subprocess import run, Popen, PIPE
 from time import sleep
 
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
+
+LOG = getLogger(__name__)                                                       # Instantiate logger.
+ADVERTISED = MATCHED = set()                                                    # Found SSIDs and matched SSIDs.
+TIMESTAMP = {'advertised': {}, 'matched': {}}                                   # SSIDs + first time seen.
 
 
-def get_arguments(
-    ) -> Namespace:
+
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    Argparse namespace.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
-    log_levels = [30, 20, 10, 0]                                            # [WARNING, INFO, DEBUG, NOTSET]
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
+    scan_type = parser.add_mutually_exclusive_group()                           # Specify passive or matched scan.
 
-    parser.add_argument(                                                    # --interface
+    parser.add_argument(                                                        # --interface
         '--interface', '-i',
         dest='interface',
         default=get_default_interface(),
         help='Set the wireless interface to scan from.'
         )
-    parser.add_argument(                                                    # --interval.
+    parser.add_argument(                                                        # --interval.
         '--interval', '-n',
         dest='interval',
         type=int,
         default=5,
         help='Set the scan interval (seconds).'
         )
-    scan_type.add_argument(                                                 # --match
+    scan_type.add_argument(                                                     # --match
         '--match', '-m',
         dest='ssids',
         type=str,
         nargs='*',
         help='Specify the SSIDs to catch. Pass no SSIDs to run passively.'
         )
-    parser.add_argument(                                                    # --logfile
+    parser.add_argument(                                                        # --logfile
         '--logfile', '-l',
         dest='log_file',
         type=Path,
         default=None,
         help='Absolute path to write the logfile to. Default `None`.'
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
@@ -64,48 +67,43 @@ def get_arguments(
         help='Specify logging verbosity. Default `WARNING`.'
         )
 
-    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+    arguments = parser.parse_args()
+    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Look up verbosity in list[log_levels].
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30,                                                    # WARNING.
+    log_level: int = 30,                                                        # WARNING.
     log_file: (Path, None) = None
-    ) -> RootLogger:
+        ) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
         :param log_file:    User-specified path to write log file. Default None.
-        :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
     assert isinstance(log_file, (Path, type(None))), '`log_file` must be Path or None.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
+        style='{',
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    LOG.addHandler(log_console)                                                 # Log to screen.
+    LOG.setLevel(log_level)                                                     # User-specified log_level.
 
-    if log_file:                                                            # Log to file.
-        log_file = FileHandler(log_file)                                    # Set log file.
+    if log_file:                                                                # Log to file.
+        log_file = FileHandler(log_file)                                        # Set log file.
 
-        log_file.setFormatter(formatter)                                    # Set log file format.
-        log_root.addHandler(log_file)                                       # Log to file.
-
-    return log_root
+        log_file.setFormatter(formatter)                                        # Set log file format.
+        LOG.addHandler(log_file)                                                # Log to file.
 
 
-def get_default_interface(
-    ) -> str:
+def get_default_interface() -> str:
     '''
     Gets the name of the current WAN-connected interface.
         :return:    Name of the default gateway interface.
@@ -113,15 +111,15 @@ def get_default_interface(
     interface = run(
         ['ip', 'route', 'show'],
         capture_output=True,
-        check=True
+        check=True,
         ).stdout.decode('utf-8').split()[4]
 
     return interface
 
 
 def iwlist(
-    interface: str = 'wlan0'
-    ) -> list:
+    interface: str,
+        ) -> list:
     '''
     Scans for advertised SSIDs.
         :param interface:   The network interface on which to run the scan.
@@ -129,7 +127,7 @@ def iwlist(
     '''
     assert isinstance(interface, str), '`interface` must be instance of str().'
 
-    cells = []                                                              # List of SSIDs.
+    cells = []                                                                  # List of SSIDs.
     cell_number_regex = re_compile(r"^Cell\s+(?P<cellnumber>.+)\s+-\s+Address:\s(?P<mac>.+)$")
     regexps = [
         re_compile(r"^ESSID:\"(?P<essid>.*)\"$"),
@@ -146,32 +144,32 @@ def iwlist(
     wpa2_regex = re_compile(r"IE:\ IEEE\ 802\.11i/WPA2\ Version\ 1$")
 
     with Popen(['iwlist', interface, 'scan'], stdout=PIPE, stderr=PIPE) as proc:
-        lines = proc.stdout.read().decode('utf-8').split('\n')              # STDOUT.
+        lines = proc.stdout.read().decode('utf-8').split('\n')                  # STDOUT.
 
-        log.error(proc.stderr.read().decode('utf-8'))                       # STDERR.
-        log.debug(lines)
+        LOG.error(proc.stderr.read().decode('utf-8'))                           # STDERR.
+        LOG.debug(lines)
 
-    for line in lines:                                                      # Iterate STDOUT and format to list.
+    for line in lines:                                                          # Iterate STDOUT and format to list.
         line = line.strip()
         cell_number = cell_number_regex.search(line)
         wpa = wpa_regex.search(line)
         wpa2 = wpa2_regex.search(line)
 
         if cell_number:
-            log.debug(f'Found cell: {cell_number}.')
+            LOG.debug(f'Found cell: {cell_number}.')
             cells.append(cell_number.groupdict())
 
         if wpa:
-            log.debug(f'Found WPA: {wpa}.')
+            LOG.debug(f'Found WPA: {wpa}.')
             cells[-1].update({'encryption': 'WPA'})
 
         if wpa2:
-            log.debug(f'Found WPA2: {wpa2}.')
+            LOG.debug(f'Found WPA2: {wpa2}.')
             cells[-1].update({'encryption': 'WPA2'})
 
         for expression in regexps:
             if (result := expression.search(line)):
-                log.debug(f'Found result: {result}.')
+                LOG.debug(f'Found result: {result}.')
 
                 if 'encryption' in result.groupdict():
                     if result.groupdict()['encryption'] == 'on':
@@ -182,7 +180,7 @@ def iwlist(
 
                 else:
                     cells[-1].update(result.groupdict())
-                    log.debug('Cells:\n{cells}')
+                    LOG.debug('Cells:\n{cells}')
 
     return cells
 
@@ -191,7 +189,7 @@ def display_ssids(
     interface: str,
     ssids: (list[str] | None),
     refresh_interval: int = 5
-    ) -> None:
+        ) -> None:
     '''
     Display a list of discovered SSIDS to STDOUT.
        :param interface:        The interface to scan on.
@@ -200,61 +198,60 @@ def display_ssids(
     '''
     def _print_dict(
         dictionary: dict
-        ) -> None:
+            ) -> None:
         '''
         Ingest and pretty-print a dictionary to STDOUT.
             :param dictionary:  The dictionary to print.
         '''
         assert isinstance(dictionary, dict), '`dictionary` must be instance of dict().'
 
-        for key, value in dictionary.items():                               # Print ssids/timestamps.
+        for key, value in dictionary.items():                                   # Print ssids/timestamps.
             print(f'{key} {value:>40}')
 
     assert isinstance(interface, str), '`interface` must be instance of str().'
     assert isinstance(ssids, (list, None)), '`ssids` must be instance of list() or None.'
     assert refresh_interval >= 1, '`refresh_interval` must be instance of int() >= 1.'
 
-    system('clear')                                                         # Clear terminal.
+    system('clear')                                                             # Clear terminal.
 
-    now = datetime.now().strftime('%H:%M:%S')                               # Set timestamp.
-    div = 51 * '-'                                                          # Div for pretty formatting.
+    now = datetime.now().strftime('%H:%M:%S')                                   # Set timestamp.
+    div = 51 * '-'                                                              # Div for pretty formatting.
 
-    for name in [ssid['essid'] for ssid in iwlist(interface)]:              # Grab SSIDs.
-        if name not in advertised:                                          # Add found SSID to set.
-            advertised.add(name)
-            timestamp['advertised'][name] = now
+    for name in [ssid['essid'] for ssid in iwlist(interface)]:                  # Grab SSIDs.
+        if name not in ADVERTISED:                                              # Add found SSID to set.
+            ADVERTISED.add(name)
+            TIMESTAMP['advertised'][name] = now
 
-        if ssids and name in ssids:                                         # Add matched SSID to set.
-            if name not in matched:
-                matched.add(name)
-                timestamp['matched'][name] = now
+        if ssids and name in ssids:                                             # Add matched SSID to set.
+            if name not in MATCHED:
+                MATCHED.add(name)
+                TIMESTAMP['matched'][name] = now
 
-    log.debug(f'Found: {advertised}')
-    log.debug(f'Matched: {matched}')
-    print(div.replace('-', '='), '\nStreetShark\n', print(div))             # Print header.
+    LOG.debug(f'Found: {ADVERTISED}')
+    LOG.debug(f'Matched: {MATCHED}')
+    print(div.replace('-', '='), '\nStreetShark\n', print(div))                 # Print header.
 
-    if ssids:                                                               # Print matched SSIDs.
-        if len(matched) == 0:
+    if ssids:                                                                   # Print matched SSIDs.
+        if len(MATCHED) == 0:
             print('No SSIDs matched yet.')
 
         else:
-            _print_dict(timestamp['matched'])
+            _print_dict(TIMESTAMP['matched'])
 
-    elif len(advertised) == 0:                                              # Print found SSIDs.
+    elif len(ADVERTISED) == 0:                                                  # Print found SSIDs.
         print('No SSIDs found yet.')
 
     else:
-        _print_dict(timestamp['advertised'])
+        _print_dict(TIMESTAMP['advertised'])
 
-    print(div)                                                              # Print footer.
+    print(div)                                                                  # Print footer.
     sleep(refresh_interval)
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get cmdline arguments.
-    log = enable_log(args.log_level, args.log_file)                         # Instantiate logger.
-    advertised = matched = set()                                            # Found SSIDs and matched SSIDs.
-    timestamp = {'advertised': {}, 'matched': {}}                           # SSIDs + first time seen.
+    args = get_arguments()                                                      # Get cmdline arguments.
+
+    enable_log(args.log_level, args.log_file)                                   # Instantiate logger.
 
     while True:
         display_ssids(args.interface, args.ssids, args.interval)

@@ -9,69 +9,64 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Iterator
 from fcntl import ioctl
 from locale import setlocale, LC_ALL
-from logging import getLogger, Formatter, RootLogger, StreamHandler
+from logging import getLogger, Formatter, StreamHandler
 from socket import inet_ntoa, socket, SOCK_DGRAM, AF_INET
 from struct import pack
 from requests import get
 
 setlocale(LC_ALL, 'en_US.UTF-8')
 
+LOG = getLogger(__name__)
 
-def get_arguments(
-    ) -> Namespace:
+
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    log_levels = [30, 20, 10, 0]                                            # [WARNING, INFO, DEBUG, NOTSET]
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # --interface
+    parser.add_argument(                                                        # --interface
         '-i', '--interface',
         dest='interface',
         type=str,
-        help='Specify the network interface (like "eth0").'
+        help='Specify the network interface (like "eth0").',
         )
-    parser.add_argument(                                                    # --verbose
-        '--verbose', '-v',
+    parser.add_argument(                                                        # --verbose
+        '-v', '--verbose',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
+        help='Specify logging verbosity. Default `CRITICAL`.',
         )
 
-    (arguments := parser.parse_args()).log_level = log_levels[              # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)]
+    arguments = parser.parse_args()
+    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Magic.
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30                                                     # WARNING.
-    ) -> RootLogger:
+    log_level: int = 30                                                         # WARNING.
+        ) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default WARNING.
-        :return:            Instantiated logger.RootLogger instance.
     '''
     assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
+        style='{',
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
-
-    return log_root
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    LOG.addHandler(log_console)                                                 # Log to screen.
+    LOG.setLevel(log_level)                                                     # User-specified log_level.
 
 
-def get_wan_interface(
-    ) -> str:
+def get_wan_interface() -> str:
     '''
     Read the default gateway directly from /proc.
         :return:    The name of the WAN interface.
@@ -83,43 +78,42 @@ def get_wan_interface(
         if route[1] == '00000000'
         ][0][0]
 
-    log.debug(f'Gateway interface: {gw_iface_name}')
+    LOG.debug(f'Gateway interface: {gw_iface_name}')
 
     return gw_iface_name
 
 
-def all_routes(
-    ) -> Iterator[list]:
+def all_routes() -> Iterator[list]:
     '''
     Iterator returning all routes read from '/proc/net/route'.
         :yield: All system network routes.
     '''
     with open('/proc/net/route', 'r', encoding='utf-8') as route_file:
-        for line in route_file.readlines():                                 # Each line is a route.
+        for line in route_file.readlines():                                     # Each line is a route.
             route = line.strip().split()
 
-            log.debug(f'Route: {route}')
+            LOG.debug(f'Route: {route}')
 
             yield route
 
 
 def public_ip(
     stun_server: str = 'https://ipinfo.io/ip'
-    ) -> str:
+        ) -> str:
     '''
     Get our public IP address.
         :return:    The public IP address of the device.
     '''
     public_ip_addr = get(stun_server, timeout=2).text
 
-    log.debug(f'Public IP: {public_ip_addr}')
+    LOG.debug(f'Public IP: {public_ip_addr}')
 
     return public_ip_addr
 
 
 def hex_to_octet(
     hex_data: str
-    ) -> str:
+        ) -> str:
     '''
     Convert hexadecimal data to usable octets.
         :param hex_data:    Hex data to convert to octet notation.
@@ -128,18 +122,18 @@ def hex_to_octet(
     assert isinstance(hex_data, str), '`hex_data` must be instance if str().'
     assert 0 <= int('hex_data', 16) <= 4294967295, '`int(hex_data) invalid.'
 
-    log.debug(f'Converting hex data ({hex_data}) to octet.')
+    LOG.debug(f'Converting hex data ({hex_data}) to octet.')
 
     octet = inet_ntoa(pack('<L', int(hex_data, 16)))
 
-    log.debug(f'Octet: {octet}')
+    LOG.debug(f'Octet: {octet}')
 
     return octet
 
 
 def interface_info(
     iface: str
-    ) -> tuple:
+        ) -> tuple:
     '''
     Get the default gateway.
         :param iface:           The network interface to query.
@@ -147,46 +141,46 @@ def interface_info(
     '''
     assert isinstance(iface, str), '`iface` must be instance of str().'
 
-    sock = socket(AF_INET, SOCK_DGRAM)                                      # Open a socket.
-    iface_ip = inet_ntoa(ioctl(                                             # IP address.
+    sock = socket(AF_INET, SOCK_DGRAM)                                          # Open a socket.
+    iface_ip = inet_ntoa(ioctl(                                                 # IP address.
         sock.fileno(),
         0x8915,
         pack('256s', bytes(iface[:15], 'utf-8'))
         )[20:24])
-    iface_gateway = hex_to_octet([                                          # Gateway.
+    iface_gateway = hex_to_octet([                                              # Gateway.
         route
         for route
         in all_routes()
         if route[0] == iface
         and route[1] == '00000000'
         ][0][2])
-    iface_netmask = hex_to_octet([                                          # Netmask.
+    iface_netmask = hex_to_octet([                                              # Netmask.
         route
         for route
         in all_routes()
-        if route[0] == iface                                                # Is spec'd iface.
-        and route[7] != '00000000'                                          # Is not WAN gateway iface.
+        if route[0] == iface                                                    # Is spec'd iface.
+        and route[7] != '00000000'                                              # Is not WAN gateway iface.
         ][0][7])
 
-    log.debug(f'Netmask: {iface_netmask}')
-    log.debug(f'Gateway: {iface_gateway}')
-    log.debug(f'IP: {iface_ip}')
+    LOG.debug(f'Netmask: {iface_netmask}')
+    LOG.debug(f'Gateway: {iface_gateway}')
+    LOG.debug(f'IP: {iface_ip}')
 
     return iface_ip, iface_gateway, iface_netmask
 
 
 def print_table(
     iface: str
-    ) -> None:
+        ) -> None:
     '''
     Create and print a table.
         :param iface: The network interface to tabulate.
     '''
     assert isinstance(iface, str), '`iface` must be instance of str().'
 
-    head_foot = 34 * '-'                                                    # For table formatting.
-    ip_address, gateway, netmask = interface_info(iface)                    # Important data.
-    table = [                                                               # Instantiate network info array.
+    head_foot = 34 * '-'                                                        # For table formatting.
+    ip_address, gateway, netmask = interface_info(iface)                        # Important data.
+    table = [                                                                   # Instantiate network info array.
         [head_foot, ''],
         [iface, ''],
         [head_foot, ''],
@@ -195,15 +189,18 @@ def print_table(
         ['Local IP', ip_address],
         ['Gateway', gateway],
         ['Netmask', netmask],
-        [head_foot, '']
+        [head_foot, ''],
         ]
 
-    for heading, data in table:                                             # Print and format table.
+    for heading, data in table:                                                 # Print and format table.
         print(f'{heading:<18}{data:>16}')
 
 
 if __name__ == '__main__':
-    log = enable_log((args := get_arguments()).log_level)
+    args = get_arguments()
+
+    enable_log(args.log_level)
+
     interface = args.interface or get_wan_interface()
 
     print_table(interface)

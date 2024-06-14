@@ -13,8 +13,7 @@ from math import log
 setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
@@ -44,4 +43,4 @@ def shannon(
 
 if __name__ == '__main__':
     for s in get_arguments().strings:
-        print(f'{s : <32}{shannon(s)}')
+        print(f'{s: <32}{shannon(s)}')

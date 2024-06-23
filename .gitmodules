@@ -8,7 +8,7 @@
 	branch = master
 [submodule "vim-ale"]
 	path = roles/environment/files/vim/pack/vim-ale/start/vim-ale
-	url = git@github.com:dense-analysis/ale.git
+	url = git@github.com:dense-analysis/ale
 	branch = master
 [submodule "vim-terraform"]
 	path = roles/environment/files/vim/pack/vim-terraform/start/vim-terraform

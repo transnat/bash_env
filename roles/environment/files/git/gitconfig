@@ -4,6 +4,10 @@
     signingKey = 0x2027DEDFECE6A3D5
 [core]
     editor = vim
+[alias]
+    amend = commit --amend --no-edit
+    con = rebase --continue
+    files = diff --name-only
 [init]
     defaultBranch = main
 [fetch]

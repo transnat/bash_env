@@ -1,0 +1,12 @@
+---
+- name: 'Restart/enable reflector.service'
+  become: true
+  tags:
+      - 'reflector'
+      - 'systemd'
+  ansible.builtin.systemd_service:
+      name: 'reflector.service'
+      state: 'started'
+      enabled: true
+      daemon_reload: true
+...

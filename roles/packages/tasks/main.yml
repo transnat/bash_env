@@ -1,12 +1,13 @@
 ---
-- name: 'Package tasks'
-  tags:
-      - 'packages'
-  loop:
-      - 'apt'
-      - 'dnf'
-      - 'pacman'
-      - 'system_services'
-      - 'usermod'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
+- name: '[packages]'
+  tags: ['packages']
+  block:
+      - name: '[packages.system_packages]'
+        ansible.builtin.import_tasks: 'system_packages.yml'
+
+      - name: '[packages.system_services]'
+        ansible.builtin.import_tasks: 'system_services.yml'
+
+      - name: '[packages.usermod]'
+        ansible.builtin.import_tasks: 'usermod.yml'
 ...

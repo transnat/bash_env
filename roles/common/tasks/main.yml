@@ -1,0 +1,59 @@
+---
+- name: '[common.security]'
+  tags:
+      - 'common'
+      - 'security'
+  block:
+      - name: '[common.install_dependencies]'
+        ansible.builtin.import_tasks: 'install_dependencies.yml'
+
+      - name: '[common.security.auditd]'
+        ansible.builtin.import_tasks: 'auditd.yml'
+
+      - name: '[common.security.disable_crash_reporters]'
+        ansible.builtin.import_tasks: 'disable_crash_reporters.yml'
+
+      - name: '[common.security.fail2ban]'
+        ansible.builtin.import_tasks: 'fail2ban.yml'
+
+      - name: '[common.security.faillock]'
+        ansible.builtin.import_tasks: 'faillock.yml'
+
+      - name: '[common.security.iptables]'
+        ansible.builtin.import_tasks: 'iptables.yml'
+
+      - name: '[common.security.kernel]'
+        ansible.builtin.import_tasks: 'kernel.yml'
+
+      - name: '[common.security.passwords]'
+        ansible.builtin.import_tasks: 'passwords.yml'
+
+      - name: '[common.security.priviledge_escalation]'
+        ansible.builtin.import_tasks: 'priviledge_escalation.yml'
+
+      - name: '[common.security.ssh]'
+        ansible.builtin.import_tasks: 'ssh.yml'
+
+      - name: '[common.security.ulimit]'
+        ansible.builtin.import_tasks: 'ulimit.yml'
+
+      - name: '[common.security.unattended_upgrades]'
+        ansible.builtin.import_tasks: 'unattended_upgrades.yml'
+
+- name: '[common.performance]'
+  tags:
+      - 'common'
+      - 'performance'
+  block:
+      - name: '[common.performance.io_sched]'
+        ansible.builtin.import_tasks: 'io_sched.yml'
+
+      - name: '[common.performance.reflector]'
+        ansible.builtin.import_tasks: 'reflector.yml'
+
+      - name: '[common.performance.timeshift]'
+        ansible.builtin.import_tasks: 'timeshift.yml'
+
+      - name: '[common.performance.filesystem]'
+        ansible.builtin.import_tasks: 'filesystem.yml'
+...

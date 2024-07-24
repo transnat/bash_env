@@ -1,9 +1,8 @@
 ---
-- name: 'SSH'
-  tags:
-      - 'ssh'
+- name: '[environment.ssh]'
+  tags: ['ssh']
   block:
-      - name: 'Create ~/.ssh{,keys} directories'
+      - name: '[environment.ssh] Create ~/.ssh{,keys} directories'
         loop:
             - '.ssh'
             - '.ssh/keys'
@@ -14,7 +13,7 @@
             group: '{{ ansible_effective_group_id }}'
             mode: '0700'
 
-      - name: 'Copy SSH config'
+      - name: '[environment.ssh] Copy SSH config'
         ansible.builtin.copy:
             src: 'files/ssh/config'
             dest: '{{ ansible_env.HOME }}/.ssh/config'
@@ -23,15 +22,15 @@
             mode: '0600'
             force: false
 
-      - name: 'Iterate role SSH pubkeys'
+      - name: '[environment.ssh] Iterate role SSH pubkeys'
         ansible.builtin.find:
-            paths: '{{ role_path }}/files/ssh/keys/'
+            paths: 'ssh/keys/'
             file_type: 'file'
             use_regex: true
             patterns: '^.*\.pub$'
         register: 'role_ssh_pubkeys'
 
-      - name: 'Copy SSH pubkeys'
+      - name: '[environment.ssh] Copy SSH pubkeys'
         loop: '{{ role_ssh_pubkeys.files }}'
         ansible.builtin.copy:
             src: '{{ item.path }}'
@@ -41,16 +40,16 @@
             mode: '0600'
             force: true
 
-      - name: 'Populate ~/.ssh/authorized_keys'
+      - name: '[environment.ssh] Populate ~/.ssh/authorized_keys'
         loop: '{{ role_ssh_pubkeys.files }}'
         ansible.builtin.assemble:
-            src: '{{ role_path }}/files/ssh/keys/'
+            src: 'ssh/keys/'
             dest: '{{ ansible_env.HOME }}/.ssh/authorized_keys'
             owner: '{{ ansible_effective_user_id }}'
             group: '{{ ansible_effective_group_id }}'
             mode: '0600'
 
-      - name: 'Iterate local SSH pubkeys'
+      - name: '[environment.ssh] Iterate local SSH pubkeys'
         ansible.builtin.find:
             paths: '{{ ansible_env.HOME }}/.ssh/keys/'
             file_type: 'file'
@@ -58,7 +57,7 @@
             patterns: '^.*\.pub$'
         register: 'local_ssh_pubkeys'
 
-      - name: 'Update SSH config'
+      - name: '[environment.ssh] Update SSH config'
         loop: '{{ local_ssh_pubkeys.files }}'
         ansible.builtin.lineinfile:
             path: '{{ ansible_env.HOME }}/.ssh/config'

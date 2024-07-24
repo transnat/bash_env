@@ -2,25 +2,22 @@
 name: 'Validate shell code'
 on:
     push:
-        branches:
-            - 'main'
-            - 'WIP**'
+        branches: ['main']
         paths: 'roles/environment/files/scripts/sh/**'
     pull_request:
-        branches:
-            - 'main'
+        branches: ['main']
         paths: 'roles/environment/files/scripts/sh/**'
-jobs:
-    shellcheck:
-        runs-on: 'ubuntu-latest'
-        steps:
-            - uses: 'actions/checkout@v3'
-            - name: 'Install dependencies'
-              run: >
-                  sudo apt update
-                  && sudo apt install -y shellcheck
+jobs.shellcheck:
+    runs-on: 'ubuntu-latest'
+    steps:
+        - uses: 'actions/checkout@v3'
 
-            - name: 'Lint shell scripts with Shellcheck'
-              run: 'shellcheck ./*'
-              working-directory: 'roles/environment/files/scripts/sh/'
+        - name: 'Install dependencies'
+          run: >
+              sudo apt update
+              && sudo apt install -y shellcheck
+
+        - name: 'Lint shell scripts with Shellcheck'
+          run: 'shellcheck ./*'
+          working-directory: 'roles/environment/files/scripts/sh/'
 ...

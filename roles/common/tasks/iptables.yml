@@ -1,0 +1,44 @@
+---
+- name: '[common.security.iptables]'
+  become: true
+  tags:
+      - 'iptables'
+      - 'firewall'
+  block:
+      - name: '[common.security.iptables] Install'
+        when: "ansible_os_family == 'Debian'"
+        tags: ['apt']
+        loop:
+            - 'iptables-persistent'
+            - 'netfilter-persistent'
+        ansible.builtin.apt:
+            name: '{{ item }}'
+            state: 'present'
+
+      - name: '[common.security.iptables] Install'
+        when: "ansible_os_family == 'RedHat'"
+        tags: ['dnf']
+        loop:
+            - 'iptables'
+            - 'nftables'
+        ansible.builtin.apt:
+            name: '{{ item }}'
+            state: 'present'
+
+      - name: '[common.security.iptables] Install'
+        when: "ansible_os_family == 'ArchLinux'"
+        tags: ['pacman']
+        loop:
+            - 'iptables'
+            - 'iptables-nft'
+        ansible.builtin.apt:
+            name: '{{ item }}'
+            state: 'present'
+
+      - name: '[common.security.iptables] Drop all incoming traffic'
+        ansible.builtin.iptables:
+            action: 'insert'
+            chain: 'INPUT'
+            policy: 'DROP'
+        notify: 'Restart iptables'
+...

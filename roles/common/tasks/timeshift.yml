@@ -1,0 +1,32 @@
+---
+- name: '[common.performance.timeshift]'
+  become: true
+  when: "ansible_os_family == 'ArchLinux'"
+  tags:
+      - 'systemd'
+      - 'timeshift'
+  block:
+      - name: '[common.performance.timeshift] Update/upgrade [pacman]'
+        community.general.pacman:
+            upgrade: true
+            update_cache: true
+
+      - name: '[common.performance.timeshift] Install timeshift'
+        community.general.pacman:
+            name: 'timeshift'
+            state: 'present'
+
+      - name: '[common.performance.timeshift] Enable timeshift-boot'
+        ansible.builtin.systemd:
+            name: 'timeshift-boot.timer'
+            state: 'started'
+            enabled: true
+            daemon_reload: true
+
+      - name: '[common.performance.timeshift] Enable timeshift-hourly'
+        ansible.builtin.systemd:
+            name: 'timeshift-hourly.timer'
+            state: 'started'
+            enabled: true
+            daemon_reload: true
+...

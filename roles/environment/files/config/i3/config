@@ -1,0 +1,318 @@
+set $mod Mod4
+default_border none
+default_floating_border none
+hide_edge_borders none
+font xft:URWGothic-Book 14
+floating_modifier $mod
+focus_follows_mouse no
+mouse_warping none
+for_window [class="^.*"] border pixel 0
+
+## Misc. keybindings.
+bindsym $mod+Return exec urxvt
+bindsym $mod+Escape kill
+bindsym $mod+d exec --no-startup-id dmenu_recency
+#bindsym $mod+Ctrl+m exec terminal -e 'alsamixer'
+
+## Function Keys
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle; exec notify-send "Volume [mute]"
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%; exec notify-send "Volume [-5%]"
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%; exec notify-send "Volume [+5%]"
+bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle; exec notify-send "Toggle Mic Mute"
+bindsym F5 exec --no-startup-id brightnessctl set 5%-; exec notify-send "Brightness -5%"
+bindsym F6 exec --no-startup-id brightnessctl set +5%; exec notify-send "Brightness +5%"
+#bindsym F7 exec
+bindsym F8 exec --no-startup-id wifi toggle; exec notify-send "Toggle Wifi"
+#bindsym F9 exec
+bindsym F10 exec --no-startup-id sudo bluetooth toggle; exec notify-send "Toggle Bluetooth"
+#bindsym F11 exec
+#bindsym F12 exec
+
+bindsym $mod+t exec --no-startup-id picom -bcCGF -i 0.9 -e 0.755555 --no-fading-openclose --sw-opti
+bindsym $mod+Shift+t exec --no-startup-id pkill picom
+bindsym $mod+Shift+d --release exec "killall dunst; exec notify-send 'restart dunst'"
+bindsym Print --release exec --no-startup-id scrot ${HOME}/Pictures/screenshots/%Y-%m-%d_%H.%M%.%S.png
+bindsym Ctrl+Print --release exec --no-startup-id scrot ${HOME}/Pictures/screenshots/%Y-%m-%d_%H.%M.%S.png -f -s
+bindsym $mod+Ctrl+x --release exec --no-startup-id xkill
+
+## Change Focus
+bindsym $mod+h focus left
+bindsym $mod+j focus down
+bindsym $mod+k focus up
+bindsym $mod+l focus right
+
+## Move Focused Window
+bindsym $mod+Shift+h move left
+bindsym $mod+Shift+j move down
+bindsym $mod+Shift+k move up
+bindsym $mod+Shift+l move right
+
+## Workspace Back and Forth
+workspace_auto_back_and_forth no
+
+## Split Orientation
+bindsym $mod+w split h;exec notify-send 'Tile horizontally'
+bindsym $mod+v split v;exec notify-send 'Tile vertically'
+
+# Toggle fullscreen mode for the focused container
+bindsym $mod+f fullscreen toggle
+
+# Toggle tiling/floating
+bindsym $mod+Shift+space floating toggle
+
+# Change focus between tiling / floating windows
+bindsym $mod+space focus mode_toggle
+
+# Toggle sticky
+bindsym $mod+Shift+s sticky toggle
+
+# focus the parent container
+bindsym $mod+a focus parent
+
+# move the currently focused window to the scratchpad
+bindsym $mod+Shift+minus move scratchpad
+
+# Show the next scratchpad window or hide the focused scratchpad window.
+bindsym $mod+minus scratchpad show
+
+# Workspace names.
+set $ws1 1
+set $ws2 2
+set $ws3 3
+set $ws4 4
+set $ws5 5
+set $ws6 6
+set $ws7 7
+set $ws8 8
+set $ws9 9
+
+# Workspace monitor assignments.
+workspace 1 output eDP-1
+workspace 2 output eDP-1
+workspace 3 output DP-2-1
+workspace 4 output DP-2-1
+workspace 5 output DP-2-1
+workspace 6 output DP-2-2
+workspace 7 output DP-2-2
+workspace 8 output DP-2-2
+
+# switch to workspace
+bindsym $mod+1 workspace $ws1
+bindsym $mod+2 workspace $ws2
+bindsym $mod+3 workspace $ws3
+bindsym $mod+4 workspace $ws4
+bindsym $mod+5 workspace $ws5
+bindsym $mod+6 workspace $ws6
+bindsym $mod+7 workspace $ws7
+bindsym $mod+8 workspace $ws8
+
+# Move focused container to workspace
+bindsym $mod+Ctrl+1 move container to workspace $ws1
+bindsym $mod+Ctrl+2 move container to workspace $ws2
+bindsym $mod+Ctrl+3 move container to workspace $ws3
+bindsym $mod+Ctrl+4 move container to workspace $ws4
+bindsym $mod+Ctrl+5 move container to workspace $ws5
+bindsym $mod+Ctrl+6 move container to workspace $ws6
+bindsym $mod+Ctrl+7 move container to workspace $ws7
+bindsym $mod+Ctrl+8 move container to workspace $ws8
+
+# Move to workspace with focused container.
+bindsym $mod+Shift+1 move container to workspace $ws1; workspace $ws1
+bindsym $mod+Shift+2 move container to workspace $ws2; workspace $ws2
+bindsym $mod+Shift+3 move container to workspace $ws3; workspace $ws3
+bindsym $mod+Shift+4 move container to workspace $ws4; workspace $ws4
+bindsym $mod+Shift+5 move container to workspace $ws5; workspace $ws5
+bindsym $mod+Shift+6 move container to workspace $ws6; workspace $ws6
+bindsym $mod+Shift+7 move container to workspace $ws7; workspace $ws7
+bindsym $mod+Shift+8 move container to workspace $ws8; workspace $ws8
+
+# Open applications on specific workspaces.
+assign [class="Slack"] $ws1
+assign [class="Signal"] $ws1
+assign [class="discord"] $ws1
+assign [class="Spotify"] $ws2
+assign [class="Google-chrome"] $ws3
+#assign [class="firefox"] $ws4
+assign [class="1Password"] $ws5
+assign [class="Bitwarden"] $ws5
+assign [class="Authenticator"] $ws5
+
+# Open specific applications in floating mode
+for_window [class="Nitrogen"] floating enable sticky enable border normal
+for_window [class="KeeWeb"] floating enable sticky enable border normal
+for_window [class="yubioath-desktop"] floating enable sticky enable border normal
+
+# Switch to workspace with urgent window automatically.
+#for_window [urgent=latest] focus
+
+# Reload/restart i3.
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+
+# Exit i3.
+bindsym $mod+Shift+e exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+# Set shut down, restart and locking features.
+bindsym $mod+9 exec --no-startup-id betterlockscreen --lock
+bindsym $mod+0 mode "$mode_system"
+
+set $mode_system [l]ock, [e]xit, [L]ogout [s]uspend, [h]ibernate, [r]eboot, [S]hutdown
+mode "$mode_system" {
+    bindsym l       exec --no-startup-id betterlockscreen --lock, mode "default"
+    bindsym e       exec --no-startup-id i3exit logout, mode "default"
+    bindsym Shift+l exec --no-startup-id i3exit switch_user, mode "default"
+    bindsym s       exec --no-startup-id i3exit suspend, mode "default"
+    bindsym h       exec --no-startup-id i3exit hibernate, mode "default"
+    bindsym r       exec --no-startup-id i3exit reboot, mode "default"
+    bindsym Shift+s exec --no-startup-id i3exit shutdown, mode "default"
+
+    # Exit system mode.
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+# Resize window (you can also use the mouse for that)
+bindsym $mod+r mode "resize"
+mode "resize" {
+    bindsym h resize shrink width 5 px or 5 ppt
+    bindsym j resize grow height 5 px or 5 ppt
+    bindsym k resize shrink height 5 px or 5 ppt
+    bindsym l resize grow width 5 px or 5 ppt
+
+    # exit resize mode: Enter or Escape
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+# Lock screen.
+
+# Autostart applications
+## Background apps
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec --no-startup-id nitrogen --restore
+exec --no-startup-id nm-applet --sm-disable
+exec --no-startup-id volumeicon
+exec --no-startup-id xfce4-power-manager
+exec --no-startup-id start_conky
+exec --no-startup-id xautolock -time 5 -locker 'betterlockscreen --lock' -notify 1
+exec --no-startup-id dunst
+exec_always --no-startup-id ff-theme-util
+exec_always --no-startup-id fix_xcursor
+
+## User apps
+exec --no-startup-id slack
+exec --no-startup-id signal-desktop
+exec --no-startup-id spotify
+exec --no-startup-id chrome
+
+# Color palette used for the terminal ( ~/.Xresources file )
+# Colors are gathered based on the documentation:
+# https://i3wm.org/docs/userguide.html#xresources
+# Change the variable name at the place you want to match the color
+# of your terminal like this:
+# [example]
+# If you want your bar to have the same background color as your 
+# terminal background change the line 362 from:
+# background #14191D
+# to:
+# background $background
+# Same logic applied to everything else.
+set_from_resource $background background
+set_from_resource $foreground foreground
+set_from_resource $color0     color0
+set_from_resource $color1     color1
+set_from_resource $color2     color2
+set_from_resource $color3     color3
+set_from_resource $color4     color4
+set_from_resource $color5     color5
+set_from_resource $color6     color6
+set_from_resource $color7     color7
+set_from_resource $color8     color8
+set_from_resource $color9     color9
+set_from_resource $color10    color10
+set_from_resource $color11    color11
+set_from_resource $color12    color12
+set_from_resource $color13    color13
+set_from_resource $color14    color14
+set_from_resource $color15    color15
+
+# Start i3bar to display a workspace bar (plus the system information i3status if available)
+bar {
+    i3bar_command i3bar
+	status_command i3status -c ~/.config/i3/i3status.conf
+	position top
+	mode hide
+	hidden_state hide
+	bindsym button4 nop
+	bindsym button5 nop
+	strip_workspace_numbers yes
+
+    colors {
+        background          $background
+        statusline          $color3
+        separator           $color1
+
+        #                   border    backgr.       text
+        focused_workspace   $color3   $foreground   $background
+        active_workspace    $color1   $background   $color1
+        inactive_workspace  $color10  $background   $color10
+        binding_mode        $color5   $background   $color7
+        urgent_workspace    $color7   $background   $color15
+    }
+}
+
+# Theme colors
+# client                border    backgr.   text      indic.    child_border
+client.focused          $color3   #556064   #80FFF9   #FDF6E3
+client.focused_inactive #2F3D44   #2F3D44   #1ABC9C   #454948
+client.unfocused        #2F3D44   #2F3D44   #1ABC9C   #454948
+client.urgent           #CB4B16   #FDF6E3   #1ABC9C   #268BD2
+client.placeholder      #000000   #0c0c0c   #ffffff   #000000 
+client.background       #2B2C2B
+
+#############################
+### settings for i3-gaps: ###
+#############################
+gaps inner 14
+gaps outer -2
+smart_gaps on
+smart_borders on
+
+set $mode_gaps Gaps: (o) outer, (i) inner
+set $mode_gaps_outer Outer Gaps: +|-|0 (local), Shift + +|-|0 (global)
+set $mode_gaps_inner Inner Gaps: +|-|0 (local), Shift + +|-|0 (global)
+bindsym $mod+Shift+g mode "$mode_gaps"
+bindsym $mod+Shift+b bar mode toggle
+
+mode "$mode_gaps" {
+    bindsym o      mode "$mode_gaps_outer"
+    bindsym i      mode "$mode_gaps_inner"
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+mode "$mode_gaps_inner" {
+    bindsym plus  gaps inner current plus       5
+    bindsym minus gaps inner current minus      5
+    bindsym 0     gaps inner current set        0
+
+    bindsym Shift+plus  gaps inner all plus     5
+    bindsym Shift+minus gaps inner all minus    5
+    bindsym Shift+0     gaps inner all set      0
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+mode "$mode_gaps_outer" {
+    bindsym plus  gaps outer current plus       5
+    bindsym minus gaps outer current minus      5
+    bindsym 0     gaps outer current set        0
+
+    bindsym Shift+plus  gaps outer all plus     5
+    bindsym Shift+minus gaps outer all minus    5
+    bindsym Shift+0     gaps outer all set      0
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}

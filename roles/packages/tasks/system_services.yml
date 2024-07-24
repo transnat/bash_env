@@ -1,39 +1,38 @@
 ---
-- name: 'Enable systemd services and timers'
+- name: '[packages.systemd]'
   become: true
-  tags:
-      - 'systemd'
+  tags: ['systemd']
   block:
-      - name: 'Copy systemd service files'
+      - name: '[packages.systemd] Copy service files'
         loop:
             - 'docker.service'
             - 'docker.socket'
         ansible.builtin.copy:
-            src: '{{ role_path }}/files/etc/systemd/system/{{ item }}'
+            src: 'etc/systemd/system/{{ item }}'
             dest: '/etc/systemd/system/{{ item }}'
             owner: 'root'
             group: 'root'
             mode: '0644'
 
-      - name: 'Start systemd services'
+      - name: '[packages.systemd] Reload daemon'
+        ansible.builtin.systemd:
+            daemon_reload: true
+
+      - name: '[packages.systemd] Start services'
         loop: '{{ packages_systemd.services }}'
         ansible.builtin.systemd:
             name: '{{ item }}.service'
             enabled: true
 
-      - name: 'Start systemd sockets'
+      - name: '[packages.systemd] Start sockets'
         loop: '{{ packages_systemd.sockets }}'
         ansible.builtin.systemd:
             name: '{{ item }}.socket'
             enabled: true
 
-      - name: 'Start systemd timers'
+      - name: '[packages.systemd] Start timers'
         loop: '{{ packages_systemd.timers }}'
         ansible.builtin.systemd:
             name: '{{ item }}.timer'
             enabled: true
-
-      - name: 'Reload systemd daemon'
-        ansible.builtin.systemd:
-            daemon_reload: true
 ...

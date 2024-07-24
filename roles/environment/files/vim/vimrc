@@ -22,3 +22,13 @@ set shell=bash                          " Set external shell to bash.
 
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle
+
+let g:ale_linters={
+\   'python': [
+\       'pylint --rcfile ~/.config/pylint.pylintrc',
+\       'flake8 --max-line-length=120',
+\       ],
+\   'yaml': [
+\       'yamllint -d ~/.config/yamllint.yml',
+\       ]
+\   }

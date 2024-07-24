@@ -1,0 +1,33 @@
+---
+- name: '[packages.system_packages]'
+  become: true
+  tags: ['system_packages']
+  block:
+      - name: '[packages.system_packages] Install (apt)'
+        when: "ansible_os_family == 'Debian'"
+        loop: '{{ packages_apt }}'
+        tags: ['apt']
+        ansible.builtin.apt:
+            name: '{{ item.name }}'
+            state: 'present'
+            update_cache: true
+            cache_valid_time: 3600
+
+      - name: '[packages.system_packages] Install (dnf)'                        # TODO
+        when: "ansible_os_family == 'RedHat'"
+        loop: '{{ packages_dnf }}'
+        tags: ['dnf']
+        ansible.builtin.dnf:
+            name: '{{ item.name }}'
+            state: 'present'
+            update_cache: true
+
+      - name: '[packages.system_packages] Install (pacman)'                     # TODO
+        when: "ansible_os_family == 'ArchLinux'"
+        loop: '{{ packages_pacman }}'
+        tags: ['apt']
+        community.general.pacman:
+            name: '{{ item.name }}'
+            state: 'present'
+            update_cache: true
+...

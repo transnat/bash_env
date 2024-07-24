@@ -1,9 +1,8 @@
 ---
-- name: 'Symlink ~/.screenrc'
-  tags:
-      - 'screen'
+- name: '[environment.screen] Symlink ~/.screenrc'
+  tags: ['screen']
   ansible.builtin.file:
-      src: '{{ role_path }}/files/screen/screenrc'
+      src: 'screen/screenrc'
       dest: '{{ ansible_env.HOME }}/.screenrc'
       force: true
       state: 'link'

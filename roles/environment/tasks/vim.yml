@@ -1,18 +1,17 @@
 ---
-- name: 'Vim'
-  tags:
-      - 'vim'
+- name: '[environment.vim]'
+  tags: ['vim']
   block:
-      - name: 'Replace ~/.vimrc'
+      - name: '[environment.vim] Replace ~/.vimrc'
         ansible.builtin.file:
-            src: '{{ role_path }}/files/vim/vimrc'
+            src: 'vim/vimrc'
             dest: '{{ ansible_env.HOME }}/.vimrc'
             force: true
             state: 'link'
 
-      - name: 'Symlink ~/.vim'
+      - name: '[environment.vim] Symlink ~/.vim'
         ansible.builtin.file:
-            src: '{{ role_path }}/files/vim'
+            src: 'vim'
             dest: '{{ ansible_env.HOME }}/.vim'
             force: true
             state: 'link'

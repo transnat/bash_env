@@ -1,0 +1,12 @@
+---
+- name: '[common]'
+  gather_facts: true                                                            # Gather facts.
+  ignore_errors: false
+  hosts: 'all'
+  roles: ['common']                                                             # [security, performance]
+
+- name: '[packages, environment]'
+  ignore_errors: false
+  hosts: 'localhost'
+  roles: ['packages', 'environment']
+...

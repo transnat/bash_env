@@ -1,0 +1,21 @@
+---
+- name: '[performance.reflector]'
+  when: "ansible_os_family == 'ArchLinux'"
+  become: true
+  tags:
+      - 'systemd'
+      - 'reflector'
+  block:
+      - name: '[performance.reflector] Update/upgrade [pacman]'
+        community.general.pacman:
+            upgrade: true
+            update_cache: true
+
+      - name: '[performance.reflector] Install reflector [pacman]'
+        community.general.pacman:
+            name: 'reflector'
+            state: 'present'
+        notify:
+            - 'Reload systemd daemon'
+            - 'Enable reflector system service'
+...

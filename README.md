@@ -1,17 +1,17 @@
 # Preferred Environment
 **This README contains important information; please it in its entirety before running the playbook.**
 
-This ansible playbook aims to:
-* Harden Linux.
-* Optimize system performance.
-* Installing some useful packages.
-* Set up an environment that I like.
+These Ansible roles aim to:
+* [security]    Harden Linux.
+* [performance] Optimize system performance.
+* [packages]    Installing some useful packages.
+* [environment] Set up an environment that I like.
 
 Its scripts, functions, aliases and packages are ones that I find useful and enjoy having on any machine I
 regularly use.
 
 While the repository is *intended* to be portable across Linux distributions, this should not be assumed.
-Distros I use with regularity include Debian/Ubuntu, Fedora, and Arch and are supported by this repository.
+Distros I use with regularity include Debian/Ubuntu, Fedora, and Arch; and are supported by this repository.
 
 
 ## Requirements
@@ -23,7 +23,7 @@ Distros I use with regularity include Debian/Ubuntu, Fedora, and Arch and are su
 This playbook consists of four roles:
 * [packages](./roles/packages/README.md)
 * [security](./roles/security/README.md)
-* [performance_tweaks](./roles/performance_tweaks/README.md)
+* [performance](./roles/performance/README.md)
 * [environment](./roles/environment/README.md)
 
 Further information on each roles' tasks can be found in the corresponding directory's README.md.
@@ -52,7 +52,7 @@ as well as installing my own CA certificates, and removing Snap.
 ## Usage
 Run:
 ```sh
-ansible-playbook -K main.yml
+ansible-playbook -K playbooks/main.yml
 ```
 
 You will be prompted for your local user password (Ansible calls this the "BECOME" password as it's needed to

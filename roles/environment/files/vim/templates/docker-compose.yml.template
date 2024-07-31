@@ -1,9 +1,59 @@
+#-*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         DATE
+# Description:  x
 ---
-version: "3"
+version: '3.3'
 services:
-    NAME:
-        image: NAME:TAG
+    flux:
+        image: 'base:0.0.1'
         build:
-            context: .
-            network: host
+            context: '.'
+            platforms: ['linux/amd64']
+            network: 'host'
+            args:
+                APP_USER: 'app'
+                DEBCONF_NOWARNINGS: 'yes'
+                DEBIAN_FRONTEND: 'noninteractive'
+                TZ: 'America/Los_Angeles'
+            dockerfile_inline: |
+                FROM debian:12
+
+                ARG APP_USER
+                ARG DEBCONF_NOWARNINGS
+                ARG DEBIAN_FRONTEND
+                ARG TZ
+
+                ENV APP_USER "$${APP_USER}"
+                ENV TZ "$${TZ}"
+
+                RUN echo "$${TZ}" > /etc/timezone                           \
+                    && apt-get update                                       \
+                    && apt-get install -y --no-install-recommends           \
+                        locales=2.36-9+deb12u7                              \
+                    && localedef                                            \
+                        -i en_US                                            \
+                        -c                                                  \
+                        -f UTF-8                                            \
+                        -A /usr/share/locale/locale.alias                   \
+                        en_US.UTF-8                                         \
+                    && rm -rf /var/lib/apt/lists/*                          \
+                    && useradd                                              \
+                        --home-dir "/home/$${APP_USER}"                     \
+                        --create-home                                       \
+                        --shell /usr/bin/bash                               \
+                        --system                                            \
+                        "$${APP_USER}"
+
+                WORKDIR "/home/$${APP_USER}"
+
+                USER "$${APP_USER}"
+            labels:
+                kz.caseyspar.docker.image.os.name: 'Debian'
+                kz.caseyspar.docker.image.os.version: '12'
+                kz.caseyspar.docker.image.description: 'Base Debian 12 image.'
+                kz.caseyspar.docker.maintainer.author.name: 'Casey Sparks'
+                kz.caseyspar.docker.maintainer.author.email: 'docker@caseyspar.kz'
+                kz.caseyspar.docker.app.name: ''
+                kz.caseyspar.docker.app.version: ''
 ...

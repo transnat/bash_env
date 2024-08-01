@@ -1,23 +1,18 @@
 ---
 environment_dotfiles:
     subdirectories:
-        - path: '{{ ansible_env.HOME }}/.config/Yubico'
+        - '{{ ansible_env.HOME }}/.config/Yubico'
+    symlinks:
+        - src: 'config/pylint.pylintrc'
+          dest: '{{ ansible_env.HOME }}/.config/pylint.pylintrc'
           owner: '{{ ansible_effective_user_id }}'
           group: '{{ ansible_effective_group_id }}'
-          mode: '0700'
-    symlinks:
-        - src: '{{ role_path }}/files/config/pylint.pylintrc'
-          dest: '{{ ansible_env.HOME }}/.config/pylint.pylintrc'
-          mode: '0600'
-        - src: '{{ role_path }}/files/config/Yubico/u2f_keys'
+        - src: 'config/Yubico/u2f_keys'
           dest: '{{ ansible_env.HOME }}/.config/Yubico/u2f_keys'
-          mode: '0600'
-        - src: '{{ role_path }}/files/config/yamllint.yml'
+        - src: 'config/yamllint.yml'
           dest: '{{ ansible_env.HOME }}/.config/yamllint.yml'
-          mode: '0600'
-        - src: '{{ role_path }}/files/screen/screenrc'
+        - src: 'screen/screenrc'
           dest: '{{ ansible_env.HOME }}/.screenrc'
-          mode: '0600'
 environment_requirements:
     python:
         - 'dict2xml>=1.7,<2.0'

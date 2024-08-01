@@ -1,36 +1,27 @@
 ---
-- name: 'Fail2ban'
+- name: '[fail2ban]'
   become: true
-  tags:
-      - 'fail2ban'
+  tags: ['fail2ban']
   block:
-      - name: 'Install fail2ban [APT]'
+      - name: '[fail2ban] Install fail2ban'
         when: "ansible_os_family == 'Debian'"
-        tags:
-            - 'apt'
-        block:
-            - name: 'Update APT cache'
-              ansible.builtin.apt:
-                  update_cache: true
-                  cache_valid_time: 3600
+        tags: ['apt']
+        ansible.builtin.apt:
+            name: 'fail2ban'
+            state: 'present'
+            update_cache: true
+            cache_valid_time: 3600
 
-            - name: 'Install fail2ban [APT]'
-              ansible.builtin.apt:
-                  name: 'fail2ban'
-                  state: 'present'
-
-      - name: 'Install fail2ban [DNF]'
+      - name: '[fail2ban] Install fail2ban'
         when: "ansible_os_family == 'RedHat'"
-        tags:
-            - 'dnf'
+        tags: ['dnf']
         ansible.builtin.dnf:
             name: 'fail2ban'
             state: 'present'
 
-      - name: 'Install fail2ban [Pacman]'
+      - name: '[fail2ban] Install fail2ban'
         when: "ansible_os_family == 'ArchLinux'"
-        tags:
-            - 'pacman'
+        tags: ['pacman']
         community.general.pacman:
             name: 'fail2ban'
             state: 'present'
@@ -57,7 +48,7 @@
             regexp: '^backend = .*$'
             replace: 'backend = systemd'
 
-      - name: 'Enable service jails'                                        # Default configs.
+      - name: 'Enable service jails'                                            # Default configs.
         loop: '{{ security_fail2ban_services }}'
         ansible.builtin.lineinfile:
             path: '/etc/fail2ban/jail.local'

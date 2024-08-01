@@ -1,19 +1,40 @@
 ---
-- name: 'Security tasks'
-  tags:
-      - 'security'
-  loop:
-      - 'faillock'
-      - 'kernel'
-      - 'auditd'
-      - 'disable_crash_reporters'
-      - 'fail2ban'
-      - 'iptables'
-      - 'passwords'
-      - 'priviledge_escalation'
-      - 'ssh'
-      - 'ulimit'
-      - 'unattended_upgrades'
-      - 'filesystem'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
+- name: '[security]'
+  tags: ['security']
+  block:
+      - name: '[security] faillock'
+        ansible.builtin.import_tasks: 'faillock.yml'
+
+      - name: '[security] kernel'
+        ansible.builtin.import_tasks: 'kernel.yml'
+
+      - name: '[security] auditd'
+        ansible.builtin.import_tasks: 'auditd.yml'
+
+      - name: '[security] disable_crash_reporters'
+        ansible.builtin.import_tasks: 'disable_crash_reporters.yml'
+
+      - name: '[security] fail2ban'
+        ansible.builtin.import_tasks: 'fail2ban.yml'
+
+      - name: '[security] iptables'
+        ansible.builtin.import_tasks: 'iptables.yml'
+
+      - name: '[security] passwords'
+        ansible.builtin.import_tasks: 'passwords.yml'
+
+      - name: '[security] priviledge_escalation'
+        ansible.builtin.import_tasks: 'priviledge_escalation.yml'
+
+      - name: '[security] ssh'
+        ansible.builtin.import_tasks: 'ssh.yml'
+
+      - name: '[security] ulimit'
+        ansible.builtin.import_tasks: 'ulimit.yml'
+
+      - name: '[security] unattended_upgrades'
+        ansible.builtin.import_tasks: 'unattended_upgrades.yml'
+
+      - name: '[security] filesystem'
+        ansible.builtin.import_tasks: 'filesystem.yml'
 ...

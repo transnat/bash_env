@@ -1,12 +1,11 @@
 ---
-- name: 'Copy in ~/.gitconfig'
-  tags:
-      - 'git'
+- name: '[git] Copy in ~/.gitconfig'
+  tags: ['git']
   ansible.builtin.file:
-      src: '{{ role_path }}/files/git/gitconfig'
+      src: 'git/gitconfig'
       dest: '{{ ansible_env.HOME }}/.gitconfig'
       owner: '{{ ansible_effective_user_id }}'
-      group: '{{ ansible_effective_user_id }}'
+      group: '{{ ansible_effective_group_id }}'
       mode: '0600'
       force: true
 ...

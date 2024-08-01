@@ -1,7 +1,6 @@
 ---
-- name: 'Install PIP packages'
-  tags:
-      - 'pip'
+- name: '[pip] Install PIP packages'
+  tags: ['pip']
   ansible.builtin.pip:
       name: '{{ environment_requirements.python }}'
 ...

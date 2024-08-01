@@ -3,11 +3,19 @@
   tags:
       - 'performance_tweaks'
       - 'optional'
-  loop:
-      - 'install_dependencies'
-      - 'timeshift'
-      - 'io_sched'
-      - 'filesystem'
-      - 'reflector'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
+  block:
+      - name: '[install_dependencies]'
+        ansible.builtin.import_tasks: 'install_dependencies.yml'
+
+      - name: '[timeshift]'
+        ansible.builtin.import_tasks: 'timeshift.yml'
+
+      - name: '[io_sched]'
+        ansible.builtin.import_tasks: 'io_sched.yml'
+
+      - name: '[filesystem]'
+        ansible.builtin.import_tasks: 'filesystem.yml'
+
+      - name: '[reflector]'
+        ansible.builtin.import_tasks: 'reflector.yml'
 ...

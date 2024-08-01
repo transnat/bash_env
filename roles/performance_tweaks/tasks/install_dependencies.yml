@@ -1,13 +1,11 @@
 ---
-- name: 'Install dependencies'
+- name: '[install_dependencies]'
   become: true
-  tags:
-      - 'always'
+  tags: ['always']
   block:
-      - name: 'Install APT packages'
+      - name: '[install_dependencies] APT packages'
         when: "ansible_os_family == 'Debian'"
-        tags:
-            - 'apt'
+        tags: ['apt']
         block:
             - name: 'Update APT cache'
               ansible.builtin.apt:
@@ -19,18 +17,16 @@
               ansible.builtin.apt:
                   name: '{{ performance_tweaks_apt_packages }}'
 
-      - name: 'Install DNF packages'
+      - name: '[install_dependencies] DNF packages'
         when: "ansible_os_family == 'RedHat'"
-        tags:
-            - 'dnf'
+        tags: ['dnf']
         ansible.builtin.dnf:
             name: '{{ performance_tweaks_dnf_packages }}'
             state: 'present'
 
-      - name: 'Install Pacman packages'
+      - name: '[install_dependencies] Pacman packages'
         when: "ansible_os_family == 'Archlinux'"
-        tags:
-            - 'pacman'
+        tags: ['pacman']
         community.general.pacman:
             name: '{{ performance_tweaks_pacman_packages }}'
             state: 'present'

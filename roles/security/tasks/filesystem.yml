@@ -1,8 +1,7 @@
 ---
-- name: 'Harden filesystem'
+- name: '[filesystem]'
   become: true
-  tags:
-      - 'filesystem'
+  tags: ['filesystem']
   vars:
       drives:
           - '/boot'
@@ -14,7 +13,7 @@
           - '/var/log'
           - '/proc'
   block:
-      - name: 'Disable coredump storage'
+      - name: '[filesystem] Disable coredump storage'
         ansible.builtin.blockinfile:
             path: '/etc/systemd/coredump.conf.d/coredump_hardening.conf'
             create: true
@@ -23,12 +22,12 @@
                 [Coredump]
                 Storage=none
 
-      - name: 'Get mounts from /etc/mtab'
+      - name: '[filesystem] Get mounts from /etc/mtab'
         ansible.builtin.command: 'cat /etc/mtab'
         changed_when: false
         register: 'security_mount_options'
 
-      - name: 'Ensure fstab uses nodev'
+      - name: '[filesystem] Ensure fstab uses nodev'
         loop: '{{ security_mount_options.stdout_lines }}'
         ansible.posix.mount:
             path: '{{ item.split(" ")[1] }}'
@@ -38,12 +37,12 @@
             opts: '{{ item.split(" ")[3].split(",") | union(["nodev"]) | unique | join(",") }}'
         when: "item.split(' ')[1] in drives"
 
-      - name: 'Get mounts from /etc/mtab'
+      - name: '[filesystem] Get mounts from /etc/mtab'
         ansible.builtin.command: 'cat /etc/mtab'
         changed_when: false
         register: 'security_mount_options'
 
-      - name: 'Ensure fstab uses noexec'
+      - name: '[filesystem] Ensure fstab uses noexec'
         loop: '{{ security_mount_options.stdout_lines }}'
         ansible.posix.mount:
             path: '{{ item.split(" ")[1] }}'
@@ -53,12 +52,12 @@
             opts: '{{ item.split(" ")[3].split(",") | union(["noexec"]) | unique | join(",") }}'
         when: "item.split(' ')[1] in drives"
 
-      - name: 'Get mounts from /etc/mtab'
+      - name: '[filesystem] Get mounts from /etc/mtab'
         ansible.builtin.command: 'cat /etc/mtab'
         changed_when: false
         register: 'security_mount_options'
 
-      - name: 'Ensure fstab uses nosuid'
+      - name: '[filesystem] Ensure fstab uses nosuid'
         loop: '{{ security_mount_options.stdout_lines }}'
         ansible.posix.mount:
             path: '{{ item.split(" ")[1] }}'
@@ -68,7 +67,7 @@
             opts: '{{ item.split(" ")[3].split(",") | union(["nosuid"]) | unique | join(",") }}'
         when: "item.split(' ')[1] in drives"
 
-      - name: 'Fix directory permissions'
+      - name: '[filesystem] Fix directory permissions'
         loop:
             - '/boot'
             - '/root'
@@ -81,7 +80,7 @@
             state: 'directory'
             mode: '0700'
 
-      - name: 'Find unauthorized world-writable files'
+      - name: '[filesystem] Find unauthorized world-writable files'
         loop:
             - '/bin'
             - '/usr/bin'
@@ -90,7 +89,7 @@
         changed_when: false
         failed_when: false
 
-      - name: 'Change /etc/ files ownership and mode to restrict access'
+      - name: '[filesystem] Change /etc/ files ownership and mode to restrict access'
         loop: '{{ security_file_modes }}'
         ansible.builtin.file:
             path: '{{ item.path }}'
@@ -98,7 +97,7 @@
             group: 'root'
             mode: '{{ item.mode }}'
 
-      - name: 'Update /etc/profiles with personal variables'
+      - name: '[filesystem] Update /etc/profiles with personal variables'
         loop:
             - 'umask 027'
             - 'ulimit -S -c 0'
@@ -109,7 +108,7 @@
             regexp: '{{ item }}'
             state: 'present'
 
-      - name: 'Set umask'
+      - name: '[filesystem] Set umask'
         loop:
             - '/etc/login.defs'
             - '/etc/bash.bashrc'
@@ -122,7 +121,7 @@
             backup: true
         failed_when: false
 
-      - name: 'Remove group/others from user directory'
+      - name: '[filesystem] Remove group/others from user directory'
         ansible.builtin.command: 'find {{ ansible_env.HOME }} -type d -exec chmod go-rwx {} \;'
         changed_when: false
 ...

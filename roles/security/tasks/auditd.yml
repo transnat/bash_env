@@ -1,10 +1,9 @@
 ---
-- name: 'Auditd'
+- name: '[auditd]'
   become: true
-  tags:
-      - 'auditd'
+  tags: ['auditd']
   block:
-      - name: 'Create /etc/audit/rules.d/'
+      - name: '[auditd] Create /etc/audit/rules.d/'
         ansible.builtin.file:
             path: '/etc/audit/rules.d/'
             state: 'directory'
@@ -12,7 +11,7 @@
             owner: 'root'
             group: 'root'
 
-      - name: 'Replace auditd rules'
+      - name: '[auditd] Replace auditd rules'
         ansible.builtin.copy:
             src: 'audit.rules'
             dest: '/etc/audit/rules.d/audit.rules'

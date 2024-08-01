@@ -1,14 +1,13 @@
 ---
-- name: 'Iptables'
+- name: '[iptables]'
   become: true
   tags:
       - 'firewall'
       - 'iptables'
   block:
-      - name: 'Install iptables packages [APT]'
+      - name: '[iptables] Install iptables packages'
         when: "ansible_os_family == 'Debian'"
-        tags:
-            - 'apt'
+        tags: ['apt']
         loop:
             - 'iptables-persistent'
             - 'netfilter-persistent'
@@ -16,7 +15,27 @@
             name: '{{ item }}'
             state: 'present'
 
-      - name: 'Drop all incoming traffic'
+      - name: '[iptables] Install iptables packages'
+        when: "ansible_os_family == 'RedHat'"
+        tags: ['dnf']
+        loop:
+            - 'iptables'
+            - 'nftables'
+        ansible.builtin.dnf:
+            name: '{{ item }}'
+            state: 'present'
+
+      - name: '[fail2ban] Install iptables packages'
+        when: "ansible_os_family == 'ArchLinux'"
+        tags: ['pacman']
+        loop:
+            - 'iptables'
+            - 'iptables-nft'
+        community.general.pacman:
+            name: '{{ item }}'
+            state: 'present'
+
+      - name: '[iptables] Drop all incoming traffic'
         ansible.builtin.iptables:
             action: 'insert'
             chain: 'INPUT'

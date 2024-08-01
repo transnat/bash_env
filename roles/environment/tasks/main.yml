@@ -1,21 +1,48 @@
 ---
-- name: 'Build preferred user environment'
-  tags:
-      - 'environment'
-  loop:
-      - 'bash'
-      - 'ca_certificates'
-      - 'cron'
-      - 'dotfiles'
-      - 'filesystem'
-      - 'git'
-      - 'gnupg'
-      - 'python_requirements'
-      - 'remove_default_packages'
-      - 'remove_snap'
-      - 'screen'
-      - 'script_dir'
-      - 'ssh'
-      - 'vim'
-  ansible.builtin.include_tasks: '{{ item }}.yml'
+- name: 'Collect system services facts'
+  ansible.builtin.service_facts:
+  register: 'services_state'
+
+- name: 'Collect package facts.'
+  ansible.builtin.package_facts:
+  register: 'packages_state'
+
+- name: '[bash]'
+  ansible.builtin.import_tasks: 'bash.yml'
+
+- name: '[ca_certificates]'
+  ansible.builtin.import_tasks: 'ca_certificates.yml'
+
+- name: '[cron]'
+  ansible.builtin.import_tasks: 'cron.yml'
+
+- name: '[dotfiles]'
+  ansible.builtin.import_tasks: 'dotfiles.yml'
+
+- name: '[filesystem]'
+  ansible.builtin.import_tasks: 'filesystem.yml'
+
+- name: '[git]'
+  ansible.builtin.import_tasks: 'git.yml'
+
+- name: '[gnupg]'
+  ansible.builtin.import_tasks: 'gnupg.yml'
+
+- name: '[python_requirements]'
+  ansible.builtin.import_tasks: 'python_requirements.yml'
+
+- name: '[remove_default_packages]'
+  ansible.builtin.import_tasks: 'remove_default_packages.yml'
+
+- name: '[screen]'
+  ansible.builtin.import_tasks: 'screen.yml'
+
+- name: '[script_dir]'
+  ansible.builtin.import_tasks: 'filesystem.yml'
+
+- name: '[ssh]'
+  ansible.builtin.import_tasks: 'git.yml'
+
+- name: '[vim]'
+  ansible.builtin.import_tasks: 'vim.yml'
 ...

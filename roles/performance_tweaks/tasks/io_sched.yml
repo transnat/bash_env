@@ -1,8 +1,7 @@
 ---
-- name: 'Load IO Schedulers at boot'
+- name: '[io_schedulers] Load at boot'
   become: true
-  tags:
-      - 'io_scheduler'
+  tags: ['io_scheduler']
   ansible.builtin.blockinfile:
       path: '/etc/modules-load.d/iosched.conf'
       create: true

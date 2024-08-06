@@ -10,23 +10,22 @@ from argparse import ArgumentParser, Namespace
 from locale import setlocale, LC_ALL
 from re import search
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # expression
+    parser.add_argument(                                                        # expression
         'expression',
         type=str,
         help='The RegEx expression to test.'
         )
-    parser.add_argument(                                                    # strings
+    parser.add_argument(                                                        # strings
         'strings',
         nargs='*',
         type=str,
@@ -38,8 +37,8 @@ def get_arguments(
 
 def run_regex(
     expression: str,
-    test_string: (str, None) = None
-    ) -> None:
+    test_string: (str, None) = None,
+        ) -> None:
     '''
     Runs a regex expression against a string and prints if match.
         :param expression:  The regular expression to test.
@@ -53,7 +52,7 @@ def run_regex(
 
 if __name__ == '__main__':
     args = get_arguments()
-    print((header:= f'Expression: "{args.expression}"'))
+    print((header := f'Expression: "{args.expression}"'))
     print('=' * len(header))
 
     for string in args.strings:

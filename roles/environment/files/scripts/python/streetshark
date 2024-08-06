@@ -17,7 +17,7 @@ from subprocess import run, Popen, PIPE
 from time import sleep
 
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 
 def get_arguments() -> Namespace:
@@ -25,54 +25,54 @@ def get_arguments() -> Namespace:
     Get cmdline arguments.
         :return:    Argparse namespace.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
-    scan_type = parser.add_mutually_exclusive_group()                       # Specify passive or matched scan.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
+    scan_type = parser.add_mutually_exclusive_group()                           # Specify passive or matched scan.
 
-    parser.add_argument(                                                    # --interface
+    parser.add_argument(                                                        # --interface
         '--interface', '-i',
         dest='interface',
         default=get_default_interface(),
-        help='Set the wireless interface to scan from.'
+        help='Set the wireless interface to scan from.',
         )
-    parser.add_argument(                                                    # --interval.
+    parser.add_argument(                                                        # --interval.
         '--interval', '-n',
         dest='interval',
         type=int,
         default=5,
-        help='Set the scan interval (seconds).'
+        help='Set the scan interval (seconds).',
         )
-    scan_type.add_argument(                                                 # --match
+    scan_type.add_argument(                                                     # --match
         '--match', '-m',
         dest='ssids',
         type=str,
         nargs='*',
-        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.'
+        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.',
         )
-    parser.add_argument(                                                    # --logfile
+    parser.add_argument(                                                        # --logfile
         '--logfile', '-l',
         dest='log_file',
         type=Path,
         default=None,
-        help='Absolute path to write the logfile to. Default `None`.'
+        help='Absolute path to write the logfile to. Default `None`.',
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `WARNING`.'
+        help='Specify logging verbosity. Default `WARNING`.',
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]      # Look up verbosity in list[log_levels].
+    arguments.log_level = range(30, -1, -10)[min(arguments.log_level, 3)]
 
     return arguments
 
 
 def enable_log(
     log_level: int = 30,
-    log_file: (Path, None) = None
-    ) -> RootLogger:
+    log_file: (Path, None) = None,
+        ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
@@ -81,7 +81,6 @@ def enable_log(
     '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
-    assert isinstance(log_file, (Path, type(None))), '`log_file` must be Path or None.'
 
     formatter = Formatter(                                                  # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
@@ -95,6 +94,8 @@ def enable_log(
     log_root.setLevel(log_level)                                            # User-specified log_level.
 
     if log_file:                                                            # Log to file.
+        assert isinstance(log_file, Path), '`log_file` must be Path or None.'
+
         log_file = FileHandler(log_file)                                    # Set log file.
 
         log_file.setFormatter(formatter)                                    # Set log file format.
@@ -188,7 +189,7 @@ def iwlist(
 def display_ssids(
     interface: str,
     ssids: (list[str] | None),
-    refresh_interval: int = 5
+    refresh_interval: int = 5,
         ) -> None:
     '''
     Display a list of discovered SSIDS to STDOUT.
@@ -197,8 +198,8 @@ def display_ssids(
        :param refresh_interval: The interval to refresh the screen on.
     '''
     def _print_dict(
-        dictionary: dict
-        ) -> None:
+        dictionary: dict,
+            ) -> None:
         '''
         Ingest and pretty-print a dictionary to STDOUT.
             :param dictionary:  The dictionary to print.
@@ -249,10 +250,10 @@ def display_ssids(
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get cmdline arguments.
-    log = enable_log(args.log_level, args.log_file)                         # Instantiate logger.
-    advertised = matched = set()                                            # Found SSIDs and matched SSIDs.
-    timestamp = {'advertised': {}, 'matched': {}}                           # SSIDs + first time seen.
+    args = get_arguments()
+    log = enable_log(args.log_level, args.log_file)
+    advertised = matched = set()
+    timestamp = {'advertised': {}, 'matched': {}}
 
     while True:
         display_ssids(

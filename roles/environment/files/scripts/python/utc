@@ -15,26 +15,24 @@ from pytz import utc
 setlocale(LC_ALL, 'en_US.UTF-8')
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # --logfile
+    parser.add_argument(                                                        # --logfile
         '-t', '--time',
         default=get_local_time(),
         type=str,
-        help='Local time to convert in HHmm format, like 1830.'
+        help='Local time to convert in HHmm format, like 1830.',
         )
 
     return parser.parse_args()
 
 
-def get_local_time(
-    ) -> str:
+def get_local_time() -> str:
     '''
     Get local system time.
         :return:    Formatted time string, like '%H%m'.
@@ -43,13 +41,14 @@ def get_local_time(
 
 
 def get_utc_time(
-    input_time: str = None
-    ) -> str:
+    input_time: str = None,
+        ) -> str:
     '''
     Continuously display a text-based clock.
         :param input_time:         Boolean indicating if clock should show UTC time.
     '''
     assert isinstance(input_time, (str, type(None))), ':param input_time: must be instance of str() or Nonetype.'
+
     if input_time:
         assert input_time.isdigit(), ':param input_time: must be time string or None.'
         assert int(input_time[:2]) < 24 and int(input_time[2:4]) < 60, ':param input_time: invalid time.'

@@ -18,21 +18,20 @@ from pytz import utc
 setlocale(LC_ALL, 'en_US.UTF-8')
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # -12
+    parser.add_argument(                                                        # -12
         '-12',
         action='store_true',
         dest='twelve',
         help='Set format to 12hr time.'
         )
-    parser.add_argument(                                                    # -12
+    parser.add_argument(                                                        # -12
         '-u', '--utc',
         dest='utc',
         nargs='?',
@@ -48,10 +47,11 @@ def get_arguments(
 
 def get_utc_time(
     input_time: str = datetime.now().strftime('%H%m')
-    ) -> str:
+        ) -> str:
     '''
     Continuously display a text-based clock.
-        :param input_time:         Boolean indicating if clock should show UTC time.
+        :param input_time:  Current time string (%H%M).
+        :return:            UTC time string (%H%M).
     '''
     assert isinstance(input_time, (str, type(None))), ':param input_time: must be instance of str() or Nonetype.'
     assert input_time.isdigit(), ':param input_time: must be time string or None.'
@@ -73,14 +73,11 @@ def run_clock(
 
     while True:
         try:
-            system('clear')                                                 # Clear screen.
+            system('clear')                                                     # Clear screen.
+            print(f'{div}\n{datetime.now().strftime(time_string)}\n{div}')      # Print clock.
+            sleep(1)                                                            # Sleep one second.
 
-            time = datetime.now()                                           # UTC or local time.
-
-            print(f'{div}\n{time.strftime(time_string)}\n{div}')            # Print clock.
-            sleep(1)                                                        # Sleep one second.
-
-        except KeyboardInterrupt:                                           # Exit without stack trace.
+        except KeyboardInterrupt:                                               # Exit without stack trace.
             print()
             sys_exit(1)
 

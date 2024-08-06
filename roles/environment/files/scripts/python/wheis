@@ -19,18 +19,17 @@ from urllib.parse import urlparse
 from requests import get
 from tabulate import tabulate
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # ip_addresses
+    parser.add_argument(                                                        # ip_addresses
         'hosts',
         type=str,
         nargs='+',
@@ -42,7 +41,7 @@ def get_arguments(
 
 def dig(
     url: str,
-    port: int = 80
+    port: int = 80,
         ) -> list[str]:
     '''
     Resolve a URL to a list of IP addresses.
@@ -59,7 +58,7 @@ def dig(
 
 def get_location_table(
     api_key: str,
-    ip_addr: str
+    ip_addr: str,
         ) -> list:
     '''
     Gets location data from IPStack.com and returns it as a list of lists.
@@ -88,19 +87,19 @@ def get_location_table(
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get CLI arguments.
+    args = get_arguments()
     ip_addresses = set()
 
     for host in args.hosts:
-        try:                                                                # Check if IP is valid.
+        try:
             ip_address(host)
             ip_addresses.add(host)
 
-        except ValueError:                                                  # Resolve FQDN to IP.
+        except ValueError:
             ip_addresses = ip_addresses.union(dig(host))
 
     for ip in ip_addresses:
-        print(tabulate(get_location_table(                                  # Print IP location data.
+        print(tabulate(get_location_table(
             getenv('IPSTACK_API_KEY'),
             ip
             )))

@@ -1,0 +1,20 @@
+#!/usr/bin/env sh
+#-*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         August 02, 2024
+# Description:  Log into an Azure ACR registry with 'docker login'.
+
+if [ "${ACR}" = "" ]; then
+    echo "Please provide ACR name."
+    read -r ACR
+fi
+
+az acr login                                                                \
+        --name "${ACR}"                                                     \
+        --expose-token                                                      \
+        --output tsv                                                        \
+        --query accessToken                                                 \
+    2> /dev/null                                                            \
+| docker login "${ACR}"                                                     \
+    --username 00000000-0000-0000-0000-000000000000                         \
+    --password-stdin

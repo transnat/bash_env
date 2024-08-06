@@ -23,74 +23,71 @@ from pathlib import Path
 from gnupg import GPG
 from psutil import process_iter, AccessDenied, ZombieProcess
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
-    parser = ArgumentParser(description=__doc__)                            # Instantiate parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate parser.
 
-    parser.add_argument(                                                    # file
+    parser.add_argument(                                                        # file
         'file',
         type=Path,
         nargs='+',
-        help='Specify files to encrypt.'
+        help='Specify files to encrypt.',
         )
-    parser.add_argument(                                                    # --recipients
+    parser.add_argument(                                                        # --recipients
         '--recipients', '-r',
         dest='recipients',
         nargs='+',
         default=[],
-        help='Specify who can decrypt the file.'
+        help='Specify who can decrypt the file.',
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
+        help='Specify logging verbosity. Default `CRITICAL`.',
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)
-        ]
+    arguments.log_level = range(40, -1, -10)[min(arguments.log_level, 3)]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30
-    ) -> RootLogger:
+    log_level: int = 30,
+        ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
+    assert isinstance(log_level, int), '`log_level` must be instance of int().'
+    assert log_level >= 0, '`log_level` must be >= 0.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
-        style='{'
+        style='{',
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_root = getLogger()                                                      # Root logger instance.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    log_root.addHandler(log_console)                                            # Log to screen.
+    log_root.setLevel(log_level)                                                # User-specified log_level.
 
     return log_root
 
 
 def prechecks_pass(
-    arguments: Namespace
-    ) -> bool:
+    arguments: Namespace,
+        ) -> bool:
     '''
     Check that inputs and processes are as expected.
         :param arguments:   User-specified cmdline arguments.
@@ -98,12 +95,12 @@ def prechecks_pass(
     '''
     assert isinstance(arguments, Namespace), '`arguments` must be instance of Namespace().'
 
-    for gpg_proc in ('gpg-agent', 'gpgconf'):                               # Check that a GPG agent is running.
+    for gpg_proc in ('gpg-agent', 'gpgconf'):                                   # Check that a GPG agent is running.
         for proc in process_iter():
             try:
                 if gpg_proc in proc.name():
                     log.debug(f'Found process {gpg_proc}.')
-                    break                                                   # Only process needs to be found.
+                    break                                                       # Only process needs to be found.
 
             except (AccessDenied, ZombieProcess) as err:
                 log.exception(f'{gpg_proc} not running on host.')
@@ -114,7 +111,7 @@ def prechecks_pass(
 
         break
 
-    for file in arguments.file:                                             # Check that the input files exist.
+    for file in arguments.file:                                                 # Check that the input files exist.
         try:
             file.resolve(strict=True)
             log.debug(f'Found file {file}.')
@@ -129,8 +126,8 @@ def prechecks_pass(
 
 def encrypt(
     file: Path,
-    recipients: list
-    ) -> Path:
+    recipients: list,
+        ) -> Path:
     '''
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
@@ -141,17 +138,17 @@ def encrypt(
     assert isinstance(recipients, list), '`recipients` must be instance of list().'
     assert {type(item) for item in recipients} == {str}, '`recipeints` must be list of strings.'
 
-    gpg = GPG(gpgbinary='/usr/bin/gpg2', use_agent=True, verbose=False)     # Instantiate GPG agent class.
-    outfile = file.with_suffix('')                                          # Strip suffix, if one exists.
+    gpg = GPG(gpgbinary='/usr/bin/gpg2', use_agent=True, verbose=False)         # Instantiate GPG agent class.
+    outfile = file.with_suffix('')                                              # Strip suffix, if one exists.
 
     log.debug(f'Encrypting file {file.name} to {outfile.name}')
 
     try:
         with open(file, 'rb') as infile:
-            gpg.encrypt_file(                                               # Encrypt the file.
+            gpg.encrypt_file(                                                   # Encrypt the file.
                 infile,
                 recipients=recipients,
-                armor=True,                                                 # Output as ASCII text.
+                armor=True,                                                     # Output as ASCII text.
                 always_trust=True,
                 output=outfile
                 )
@@ -165,15 +162,15 @@ def encrypt(
 
 
 def munge_cipherfile(
-    cipherfile: Path
-    ) -> None:
+    cipherfile: Path,
+        ) -> None:
     '''
     Headers and footers to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.
     '''
     assert isinstance(cipherfile, Path), '`cipherfile` must be instance of Path().'
 
-    newlines = [                                                            # GSHscript cleartext header.
+    newlines = [                                                                # GSHscript cleartext header.
         '#!/usr/bin/env bash\n',
         '# -*- coding:utf-8 -*-\n',
         '# Author:       Casey Sparks\n',
@@ -184,18 +181,18 @@ def munge_cipherfile(
         ]
 
     with open(cipherfile, 'r', encoding='utf-8') as prefile:
-        newlines.extend(prefile.readlines())                                # Ciphertext.
-        newlines.extend('\nEOF\n')                                          # Heredoc delimiter.
+        newlines.extend(prefile.readlines())                                    # Ciphertext.
+        newlines.extend('\nEOF\n')                                              # Heredoc delimiter.
 
     with open(cipherfile, 'w', encoding='utf-8') as postfile:
-        postfile.writelines(newlines)                                       # Write header/ciphertext/footer.
+        postfile.writelines(newlines)                                           # Write header/ciphertext/footer.
 
-    cipherfile.chmod(0o755)                                                 # Make cipherfile executable.
+    cipherfile.chmod(0o755)                                                     # Make cipherfile executable.
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get CLI arguments.
-    log = enable_log(args.log_level)                                        # Instantiate logger.
+    args = get_arguments()
+    log = enable_log(args.log_level)
 
     if prechecks_pass(args):
         for clearfile in args.file:

@@ -16,73 +16,69 @@ from socket import gethostname
 from requests import get
 
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # --debug
+    parser.add_argument(                                                        # --debug
         '--dry-run',
         dest='debug',
         action='store_true',
-        help='Run application in debug mode without performing any action.'
+        help='Run application in debug mode without performing any action.',
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
+        help='Specify logging verbosity. Default `CRITICAL`.',
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)
-        ]
+    arguments.log_level = range(40, -1, -10)[min(arguments.log_level, 3)]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30
-    ) -> RootLogger:
+    log_level: int = 30,
+        ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default WARNING.
         :return:            Instantiated logger.RootLogger instance.
     '''
-    assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
+    assert isinstance(log_level, int), '`log_level` must be instance of int().'
+    assert log_level >= 0, '`log_level` must be >= 0.'
 
-    formatter = Formatter(                                                  # Log message header format.
+    formatter = Formatter(                                                      # Log message header format.
         '{asctime} {threadName:12} {levelname:8}: "{message}"',
         style='{'
         )
-    log_root = getLogger()                                                  # Root logger instance.
-    log_console = StreamHandler()                                           # Log to screen.
+    log_root = getLogger()                                                      # Root logger instance.
+    log_console = StreamHandler()                                               # Log to screen.
 
-    log_console.setFormatter(formatter)                                     # Set log stream format.
-    log_root.addHandler(log_console)                                        # Log to screen.
-    log_root.setLevel(log_level)                                            # User-specified log_level.
+    log_console.setFormatter(formatter)                                         # Set log stream format.
+    log_root.addHandler(log_console)                                            # Log to screen.
+    log_root.setLevel(log_level)                                                # User-specified log_level.
 
     return log_root
 
 
-def remote_flag(
-    ) -> bool:
+def remote_flag() -> bool:
     '''
     Checks remote for hostname match and returns true if true.
         :return:    Boolean for the existence of the remote flag.
     '''
     log.info('Checking for remote flag.')
 
-    status_code = get(                                                      # Check if flag exists.
+    status_code = get(                                                          # Check if flag exists.
         f'https://raw.githubusercontent.com/caseysparkz/haltandcatchfire/main/{gethostname()}',
         timeout=5
         ).status_code
@@ -102,27 +98,27 @@ def remote_flag(
 
 
 def destroy_user_data(
-    debug: bool = True
-    ) -> None:
+    debug: bool = True,
+        ) -> None:
     '''
     Wipe sensitive user data from disk.
         :param debug:   Run steps without taking any action.
     '''
     assert isinstance(debug, bool), '`debug` must be instance of bool().'
 
-    dir_list = [                                                            # List of directories to erase.
-        Path.home(),                                                        # Home directory.
-        Path(f'/var/spool/cron/{getlogin()}')                               # User cronjobs.
+    dir_list = [                                                                # List of directories to erase.
+        Path.home(),                                                            # Home directory.
+        Path(f'/var/spool/cron/{getlogin()}')                                   # User cronjobs.
         ]
 
     log.debug(f'Directory list: {dir_list}')
 
     for directory in dir_list:
-        if debug:                                                           # Log removal ONLY.
+        if debug:                                                               # Log removal ONLY.
             log.debug(f'Debug mode. Not removing {directory}')
 
         else:
-            try:                                                            # Remove data.
+            try:                                                                # Remove data.
                 rmtree(directory)
                 log.info(f'Removed {directory}.')
 
@@ -133,8 +129,8 @@ def destroy_user_data(
 
 
 if __name__ == '__main__':
-    args = get_arguments()                                                  # Get CLI arguments.
-    log = enable_log(args.log_level)                                        # Instantiate logger.
+    args = get_arguments()
+    log = enable_log(args.log_level)
 
-    if any([args.debug, remote_flag()]):                                    # Get remote flag or debug mode.
+    if any([args.debug, remote_flag()]):
         destroy_user_data(args.debug)

@@ -7,6 +7,8 @@ version: '3.3'
 services:
     flux:
         image: 'base:0.0.1'
+        environment: []
+        entrypoint: '/usr/bin/bash'
         build:
             context: '.'
             platforms: ['linux/amd64']
@@ -16,6 +18,14 @@ services:
                 DEBCONF_NOWARNINGS: 'yes'
                 DEBIAN_FRONTEND: 'noninteractive'
                 TZ: 'America/Los_Angeles'
+            labels:
+                kz.caseyspar.docker.image.os.name: 'Debian'
+                kz.caseyspar.docker.image.os.version: '12'
+                kz.caseyspar.docker.image.description: 'Base Debian 12 image.'
+                kz.caseyspar.docker.maintainer.author.name: 'Casey Sparks'
+                kz.caseyspar.docker.maintainer.author.email: 'docker@caseyspar.kz'
+                kz.caseyspar.docker.app.name: ''
+                kz.caseyspar.docker.app.version: ''
             dockerfile_inline: |
                 FROM debian:12
 
@@ -24,18 +34,19 @@ services:
                 ARG DEBIAN_FRONTEND
                 ARG TZ
 
-                ENV APP_USER "$${APP_USER}"
                 ENV TZ "$${TZ}"
 
                 RUN echo "$${TZ}" > /etc/timezone                           \
                     && apt-get update                                       \
-                    && apt-get install -y --no-install-recommends           \
+                    && apt-get install                                      \
+                        --assume-yes                                        \
+                        --no-install-recommends                             \
                         locales=2.36-9+deb12u7                              \
                     && localedef                                            \
-                        -i en_US                                            \
-                        -c                                                  \
-                        -f UTF-8                                            \
-                        -A /usr/share/locale/locale.alias                   \
+                        --inputfile en_US                                   \
+                        --charmap UTF-8                                     \
+                        --alias-file /usr/share/locale/locale.alias         \
+                        --force                                             \
                         en_US.UTF-8                                         \
                     && rm -rf /var/lib/apt/lists/*                          \
                     && useradd                                              \
@@ -48,12 +59,4 @@ services:
                 WORKDIR "/home/$${APP_USER}"
 
                 USER "$${APP_USER}"
-            labels:
-                kz.caseyspar.docker.image.os.name: 'Debian'
-                kz.caseyspar.docker.image.os.version: '12'
-                kz.caseyspar.docker.image.description: 'Base Debian 12 image.'
-                kz.caseyspar.docker.maintainer.author.name: 'Casey Sparks'
-                kz.caseyspar.docker.maintainer.author.email: 'docker@caseyspar.kz'
-                kz.caseyspar.docker.app.name: ''
-                kz.caseyspar.docker.app.version: ''
 ...

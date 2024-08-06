@@ -16,11 +16,11 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 def create_sprint_name(
     wordfile: (str, Path) = Path('/usr/share/dict/words'),
-    count: int = 2
-    ) -> str:
+    count: int = 2,
+        ) -> str:
     '''
     Generate a sprint name from two random words.
-        :param wordfile:    Path() object of the word file to use. Defaults to /usr/share/dict/words, installed by 
+        :param wordfile:    Path() object of the word file to use. Defaults to /usr/share/dict/words, installed by
                             'words' package.
         :param count:       The number of words to choose.
         :return:            Error message, or sprint name.

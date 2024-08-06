@@ -21,58 +21,54 @@ from xmltodict import parse
 from yaml import safe_load, dump as ydump
 
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
-SUPPORTED_TYPES = {'csv', 'ini', 'json', 'xml', 'yml'}                      # Supported outfile types.
+SUPPORTED_TYPES = {'csv', 'ini', 'json', 'xml', 'yml'}                          # Supported outfile types.
 
 
-def get_arguments(
-    ) -> Namespace:
+def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
     '''
-    log_levels = [30, 20, 10, 0]                                            # [WARN, INFO, DEBUG, NOTSET]
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # infile
+    parser.add_argument(                                                        # infile
         'infile',
         type=Path,
-        help='File to read from.'
+        help='File to read from.',
         )
-    parser.add_argument(                                                    # --output-format
+    parser.add_argument(                                                        # --output-format
         '--output-format', '-o',
         dest='format',
         choices=SUPPORTED_TYPES,
         default='yml',
         type=str,
-        help='Data format to output.'
+        help='Data format to output.',
         )
-    parser.add_argument(                                                    # --write
+    parser.add_argument(                                                        # --write
         '--write', '-w',
         dest='write',
         action='store_true',
-        help='Write file to disk instead of stdout.'
+        help='Write file to disk instead of stdout.',
         )
-    parser.add_argument(                                                    # --verbose
+    parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `CRITICAL`.'
+        help='Specify logging verbosity. Default `CRITICAL`.',
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = log_levels[                                       # Look up verbosity in list[log_levels].
-        min(arguments.log_level, len(log_levels) - 1)
-        ]
+    arguments.log_level = range(40, -1, -10)[min(arguments.log_level, 3)]
 
     return arguments
 
 
 def enable_log(
-    log_level: int = 30
-    ) -> RootLogger:
+    log_level: int = 30,
+        ) -> RootLogger:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default WARNING.
@@ -96,8 +92,8 @@ def enable_log(
 
 
 def ingest_data(
-    infile: Path
-    ) -> dict:
+    infile: Path,
+        ) -> dict:
     '''
     Ingests a YAML or JSON object from a file or STDIN.
         :param infile:  The file to ingest data from. Instance of Path().
@@ -147,8 +143,8 @@ def output_data(
     payload: dict,
     infile: Path,
     out_format: str = 'yaml',
-    write: bool = False
-    ) -> None:
+    write: bool = False,
+        ) -> None:
     '''
     Formats and outputs a data object as JSON or YAML to a file or STDOUT.
         :param payload:     The Python dict to format and output.
@@ -159,8 +155,8 @@ def output_data(
     def _write_out(
         payload: dict,
         out_format: str,
-        outfile: TextIOWrapper = stdout
-        ) -> None:
+        outfile: TextIOWrapper = stdout,
+            ) -> None:
         '''
         Write data to a TextIOWrapper.
             :param payload:     The Python dict to format and output.
@@ -213,10 +209,10 @@ def output_data(
     assert isinstance(write, bool), '`write` must be instance of bool().'
     assert out_format in SUPPORTED_TYPES, f'`out_format must be one of {SUPPORTED_TYPES}'
 
-    if write:                                                               # Write to file.
+    if write:                                                                   # Write to file.
         with open(infile.with_suffix(f'.{out_format}'), 'w', encoding='utf-8') as outfile:
             _write_out(payload, out_format, outfile)
-    else:                                                                   # Write to stdout.
+    else:                                                                       # Write to stdout.
         _write_out(payload, out_format, stdout)
 
 

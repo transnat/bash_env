@@ -7,19 +7,22 @@
 
 from argparse import ArgumentParser, Namespace
 from locale import LC_ALL, setlocale
-from logging import FileHandler, Formatter, Logger, RootLogger, StreamHandler, getLogger
+from logging import FileHandler, Formatter, StreamHandler, getLogger
 from pathlib import Path
 
 setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
-LOG = getLogger()                                                               # Root logger.
+
+LOG = getLogger()                                                               # Root logger instance.
 
 
 def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
-    '''
-    (parser := ArgumentParser(description=__doc__)).add_argument(               # --logfile
+        '''
+    parser = ArgumentParser(description=__doc__)                                # Argument parser.
+
+    parser.add_argument(                                                        # --logfile
         '-l', '--logfile',
         dest='log_file',
         default=None,
@@ -35,9 +38,8 @@ def get_arguments() -> Namespace:
         )
 
     arguments = parser.parse_args()                                             # Parse arguments.
-
-    arguments.log_file = arguments.log_file.absolute()                          # Cast log file path to absolute.
-    arguments.log_level = range(0, 40, 10)[min(arguments.log_level, 3)]         # Set log verbosity.
+    arguments.log_file = arguments.log_file.absolute()                          # Cast log file path to absolute path.
+    arguments.log_level = range(30, -1, -10)[min(arguments.log_level, 3)]       # Set log verbosity.
 
     assert arguments.log_file.parent.exists(), f':--log-file {arguments.log_file.parent}: parent dir does not exist.'
 
@@ -45,39 +47,37 @@ def get_arguments() -> Namespace:
 
 
 def configure_log(
-    root_logger: Logger = getLogger(__name__),
     log_level: int = 30,
-    log_file: (Path, str, None) = None
-        ) -> RootLogger:
+    log_file: (Path, str) = None
+        ) -> None:
     '''
     Configure logger and log handles.
-        :param root_logger: Instatiated logging.Logger() instance.
         :param log_level:   User-specified log level. Default WARNING (30).
         :param log_file:    User-specified path to write log file. Default None.
-        :return:            Instantiated logger.RootLogger() instance.
-    '''
-    assert isinstance(root_logger, Logger), ':param root_logger: must be instance of Logger().'
+        '''
     assert 0 <= log_level <= 50, ':param log_level: must be instance of int() between 0 and 50 (incl.).'
-    assert isinstance(log_file, Path), ':param log_file: must be instance of Path() or None.' if log_file else None
-    assert log_file.parent.exists(), f':param log_file ({log_file}): parent dir does not exist.'
 
     handle_stream = StreamHandler()                                             # Log stream handler.
-    formatter = Formatter('{asctime} {threadName:12} {levelname:8}: {message}', style='{')
+    formatter = Formatter(
+        '{asctime} {threadName:12} {levelname:8}: {message}',
+        style='{',
+        )
 
     handle_stream.setFormatter(formatter)                                       # Set log stream format.
-    root_logger.setLevel(log_level)                                             # Set log level.
-    root_logger.addHandler(handle_stream)                                       # Log to screen.
+    LOG.setLevel(log_level)                                                     # Set log level.
+    LOG.addHandler(handle_stream)                                               # Log to screen.
 
     if log_file:
+        assert isinstance(log_file, Path), ':param log_file: must be pathlib.Path() or str().'
+        assert log_file.parent.exists(), f':param log_file ({log_file}): parent dir does not exist.'
+
         handle_file = FileHandler(log_file)                                     # Log file handler.
 
         handle_file.setFormatter(formatter)                                     # Set log file format.
-        root_logger.addHandler(handle_file)                                     # Log to file.
-
-    return root_logger
+        LOG.addHandler(handle_file)                                             # Log to file.
 
 
 if __name__ == '__main__':
     args = get_arguments()
 
-    configure_log(LOG, args.log_level, args.log_file)
+    configure_log(args.log_level, args.log_file)

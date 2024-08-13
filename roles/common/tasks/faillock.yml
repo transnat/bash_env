@@ -17,7 +17,7 @@
         string: 'local_users_only'
       - regex: 'deny = '                                                        # Max. consecutive attemps before lock.
         string: 'deny = 3'
-      - regex: 'fail_interval'                                                  # Length of interval during lock attempts.
+      - regex: 'fail_interval'                                                  # Length of interval.
         string: 'fail_interval = 900'
       - regex: ' unlock_time = '                                                # Re-enablement interval.
         string: 'unlock_time = 180'

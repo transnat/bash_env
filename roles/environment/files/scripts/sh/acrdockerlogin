@@ -5,7 +5,7 @@
 # Description:  Log into an Azure ACR registry with 'docker login'.
 
 if [ "${ACR}" = "" ]; then
-    echo "Please provide ACR name."
+    echo "Please provide ACR URL."
     read -r ACR
 fi
 

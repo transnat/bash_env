@@ -2,6 +2,7 @@
 filetype indent on                      " Turn indent, filetype checking.
 syntax on                               " Turn on syntax highlighting.
 
+set title                               " Show the title.
 set colorcolumn=80,121                  " Set vertical columns marking line 80, line 121.
 set encoding=utf-8                      " Set encoding.
 set expandtab                           " Expand tabs to spaces.
@@ -17,6 +18,7 @@ set showmatch                           " Match brackets.
 set spelllang=en_us                     " Set spellcheck language.
 set tabstop=4                           " The width of a TAB is set to 4.
 set softtabstop=4                       " Sets the number of columns for a TAB.
+set ruler                               " Enable the ruler.
 set shiftwidth=0                        " Indents will match tabstop.
 set shell=bash                          " Set external shell to bash.
 

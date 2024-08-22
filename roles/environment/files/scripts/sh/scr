@@ -5,10 +5,12 @@
 # Description:  A simple wrapper for xrandr scripts.
 
 HOSTNAME="$(cat /etc/hostname)"
+
 "${HOME}/.screenlayout/${HOSTNAME}/${1}"                                \
         > /dev/null 2>&1                                                \
     && exec betterlockscreen                                            \
-        -u "${HOME}"/Pictures/backgrounds/"${HOSTNAME}".*               \
+        --update                                                        \
+        "${HOME}"/Pictures/backgrounds/"${HOSTNAME}".*                  \
         >/dev/null 2>&1 &
 
-command . "$HOME"/.bashrc
+command . "${HOME}/.bashrc"

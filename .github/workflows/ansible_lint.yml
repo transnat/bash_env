@@ -1,15 +1,18 @@
 ---
 name: 'Validate Ansible code'
 on:
-    push.branches: ['main']
-    pull_request.branches: ['main']
-jobs.ansible_lint:
+  push:
+    branches: 'main'
+  pull_request:
+    branches: 'main'
+jobs:
+  ansible_lint:
     name: 'Ansible Lint'
     runs-on: 'ubuntu-latest'
     steps:
-        - uses: 'actions/checkout@v3'
-          with.fetch-depth: 0
+      - uses: 'actions/checkout@v3'
+        with.fetch-depth: 0
 
-        - name: 'Run ansible-lint'
-          uses: 'ansible/ansible-lint-action@main'
+      - name: 'Run ansible-lint'
+        uses: 'ansible/ansible-lint-action@main'
 ...

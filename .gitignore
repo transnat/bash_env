@@ -86,3 +86,6 @@
 **/.pyre/
 **/.pytype/
 **/cython_debug/
+
+# Vim
+roles/environment/files/vim/spell*

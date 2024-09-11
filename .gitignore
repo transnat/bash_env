@@ -1,3 +1,6 @@
+# Git submodules
+roles/environment/files/vim/pack/*/start/*
+
 # Misc. Linux.
 **/vim/.netrwhist
 **/vim/spell/

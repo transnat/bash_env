@@ -28,6 +28,9 @@
 - name: '[gnupg]'
   ansible.builtin.import_tasks: 'gnupg.yml'
 
+- name: '[input]'
+  ansible.builtin.import_tasks: 'input.yml'
+
 - name: '[python_requirements]'
   ansible.builtin.import_tasks: 'python_requirements.yml'
 

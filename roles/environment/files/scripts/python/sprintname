@@ -15,7 +15,7 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                            # Se
 
 def create_sprint_name(
     wordfile: (str, Path) = Path('/usr/share/dict/words'),
-    count: int = 2
+    count: int = 2,
         ) -> str:
     '''
     Generate a sprint name from two random words.
@@ -23,7 +23,7 @@ def create_sprint_name(
                             'words' package.
         :param count:       The number of words to choose.
         :return:            Error message, or sprint name.
-    '''
+        '''
     assert isinstance(wordfile, (str, Path)), ':param wordfile: must be instance of str() or Path().'
     assert Path(wordfile).exists(), ':param wordfile: does not exist. Install "words" package.'
     assert isinstance(count, int), ':param count: must be instance of int().'

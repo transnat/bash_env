@@ -40,12 +40,12 @@
 - name: '[screen]'
   ansible.builtin.import_tasks: 'screen.yml'
 
-- name: '[script_dir]'
-  ansible.builtin.import_tasks: 'filesystem.yml'
-
-- name: '[ssh]'
-  ansible.builtin.import_tasks: 'git.yml'
-
 - name: '[vim]'
   ansible.builtin.import_tasks: 'vim.yml'
+
+- name: '[script_dir]'
+  ansible.builtin.import_tasks: 'script_dir.yml'
+
+- name: '[ssh]'
+  ansible.builtin.import_tasks: 'ssh.yml'
 ...

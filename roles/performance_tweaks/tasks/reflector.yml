@@ -1,13 +1,13 @@
 ---
-- name: 'Enable reflector'
+- name: '[reflector] Enable reflector'
   when: "ansible_os_family == 'ArchLinux'"
   become: true
   tags:
-      - 'systemd'
-      - 'reflector'
+    - 'systemd'
+    - 'reflector'
   ansible.builtin.systemd:
-      name: 'reflector.service'
-      state: 'started'
-      enabled: true
-      daemon_reload: true
+    name: 'reflector.service'
+    state: 'started'
+    enabled: true
+    daemon_reload: true
 ...

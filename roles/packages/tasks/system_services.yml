@@ -1,39 +1,38 @@
 ---
-- name: 'Enable systemd services and timers'
+- name: '[system_services] Enable systemd services and timers'
   become: true
-  tags:
-      - 'systemd'
+  tags: ['systemd']
   block:
-      - name: 'Copy systemd service files'
-        loop:
-            - 'docker.service'
-            - 'docker.socket'
-        ansible.builtin.copy:
-            src: '{{ role_path }}/files/etc/systemd/system/{{ item }}'
-            dest: '/etc/systemd/system/{{ item }}'
-            owner: 'root'
-            group: 'root'
-            mode: '0644'
+    - name: '[system_services.docker] Copy systemd service files'
+      loop:
+        - 'docker.service'
+        - 'docker.socket'
+      ansible.builtin.copy:
+        src: '{{ role_path }}/files/etc/systemd/system/{{ item }}'
+        dest: '/etc/systemd/system/{{ item }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0644'
 
-      - name: 'Start systemd services'
-        loop: '{{ packages_systemd.services }}'
-        ansible.builtin.systemd:
-            name: '{{ item }}.service'
-            enabled: true
+    - name: '[system_services.start_services] Start systemd services'
+      loop: '{{ packages_systemd.services }}'
+      ansible.builtin.systemd:
+        name: '{{ item }}.service'
+        enabled: true
 
-      - name: 'Start systemd sockets'
-        loop: '{{ packages_systemd.sockets }}'
-        ansible.builtin.systemd:
-            name: '{{ item }}.socket'
-            enabled: true
+    - name: '[system_services.start_sockets] Start systemd sockets'
+      loop: '{{ packages_systemd.sockets }}'
+      ansible.builtin.systemd:
+        name: '{{ item }}.socket'
+        enabled: true
 
-      - name: 'Start systemd timers'
-        loop: '{{ packages_systemd.timers }}'
-        ansible.builtin.systemd:
-            name: '{{ item }}.timer'
-            enabled: true
+    - name: '[system_services.start_timers] Start systemd timers'
+      loop: '{{ packages_systemd.timers }}'
+      ansible.builtin.systemd:
+        name: '{{ item }}.timer'
+        enabled: true
 
-      - name: 'Reload systemd daemon'
-        ansible.builtin.systemd:
-            daemon_reload: true
+    - name: '[system_services.reload_daemon] Reload systemd daemon'
+      ansible.builtin.systemd:
+        daemon_reload: true
 ...

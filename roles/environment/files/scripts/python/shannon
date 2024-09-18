@@ -17,7 +17,7 @@ def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
-    '''
+        '''
     parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
 
     parser.add_argument(                                                    # Strings.
@@ -30,14 +30,12 @@ def get_arguments() -> Namespace:
     return parser.parse_args()                                              # Parse arguments.
 
 
-def shannon(
-    string: str
-        ) -> float:
+def shannon(string: str) -> float:
     '''
     Calculate the Shannon entropy of a string.
         :param string:  The string to calculate entropy for.
         :return:        Shannon entropy of 'string'.
-    '''
+        '''
     return - sum(f * log(f, 2) for f in [i / len(string) for i in Counter(string).values()])
 
 

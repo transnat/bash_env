@@ -1,14 +1,14 @@
 ---
-- name: 'Update grub'
+- name: '[handler] Update grub'
   become: true
   block:
-      - name: 'Check bootloader'
-        ansible.builtin.stat:
-            path: '/sys/firmware/efi/efivars/'
-        register: 'efi_boot'
+    - name: '[grub.bootloader] Check bootloader'
+      ansible.builtin.stat:
+        path: '/sys/firmware/efi/efivars/'
+      register: 'efi_boot'
 
-      - name: 'Rebuild kernel'
-        when: "not efi_boot.exists"
-        ansible.builtin.command: 'grub2-mkconfig'
-        changed_when: false
+    - name: '[grub.mkconfig] Rebuild kernel'
+      when: "not efi_boot.exists"
+      ansible.builtin.command: 'grub2-mkconfig'
+      changed_when: false
 ...

@@ -1,5 +1,5 @@
 ---
-- name: 'Update initramfs'
+- name: '[handler] Update initramfs'
   become: true
   ansible.builtin.command: 'dracut --force --regenerate-all -v'
   changed_when: false

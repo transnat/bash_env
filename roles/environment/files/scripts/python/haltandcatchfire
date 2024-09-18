@@ -47,13 +47,11 @@ def get_arguments() -> Namespace:
     return arguments
 
 
-def enable_log(
-    log_level: int = 30                                                         # WARNING.
-        ) -> None:
+def enable_log(log_level: int = 30) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default WARNING.
-    '''
+        '''
     assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                      # Log message header format.
@@ -71,7 +69,7 @@ def remote_flag() -> bool:
     '''
     Checks remote for hostname match and returns true if true.
         :return:    Boolean for the existence of the remote flag.
-    '''
+        '''
     LOG.info('Checking for remote flag.')
 
     status_code = get(                                                          # Check if flag exists.
@@ -93,13 +91,11 @@ def remote_flag() -> bool:
     return flag
 
 
-def destroy_user_data(
-    debug: bool = True
-        ) -> None:
+def destroy_user_data(debug: bool = True) -> None:
     '''
     Wipe sensitive user data from disk.
         :param debug:   Run steps without taking any action.
-    '''
+        '''
     assert isinstance(debug, bool), '`debug` must be instance of bool().'
 
     dir_list = [                                                                # List of directories to erase.

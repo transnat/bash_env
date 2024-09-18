@@ -2,44 +2,44 @@
 - name: '[gnupg]'
   tags: ['gnupg']
   block:
-      - name: '[gnupg] Create ~/.gnupg/'
-        ansible.builtin.file:
-            path: '{{ ansible_env.HOME }}/.gnupg/'
-            state: 'directory'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0700'
-            force: true
+    - name: '[gnupg.dir] Create ~/.gnupg/'
+      ansible.builtin.file:
+        path: '{{ ansible_env.HOME }}/.gnupg/'
+        state: 'directory'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0700'
+        force: true
 
-      - name: '[gnupg] Replace ~/.gnupg/gpg-agent.conf'
-        ansible.builtin.copy:
-            src: 'gnupg/gpg-agent.conf'
-            dest: '{{ ansible_env.HOME }}/.gnupg/gpg-agent.conf'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
-            force: true
+    - name: '[gnupg.conf] Replace ~/.gnupg/gpg.conf'
+      ansible.builtin.copy:
+        src: 'gnupg/gpg.conf'
+        dest: '{{ ansible_env.HOME }}/.gnupg/gpg.conf'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0600'
+        force: true
 
-      - name: '[gnupg] Replace ~/.gnupg/gpg.conf'
-        ansible.builtin.copy:
-            src: 'gnupg/gpg.conf'
-            dest: '{{ ansible_env.HOME }}/.gnupg/gpg.conf'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
-            force: true
+    - name: '[gnupg.agent_conf] Replace ~/.gnupg/gpg-agent.conf'
+      ansible.builtin.copy:
+        src: 'gnupg/gpg-agent.conf'
+        dest: '{{ ansible_env.HOME }}/.gnupg/gpg-agent.conf'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0600'
+        force: true
 
-      - name: '[gnupg] Enumerate local PGP pubkeys'
-        ansible.builtin.find:
-            paths: '{{ role_path }}/files/gnupg'
-            patterns: '*.asc'
-            recurse: false
-            file_type: 'file'
-        register: 'pgp_pubkeys'
+    - name: '[gnupg.enumerate] Enumerate local PGP pubkeys'
+      ansible.builtin.find:
+        paths: '{{ role_path }}/files/gnupg'
+        patterns: '*.asc'
+        recurse: false
+        file_type: 'file'
+      register: 'pgp_pubkeys'
 
-      - name: '[gnupg] Import PGP keys to user keyring'
-        loop: '{{ pgp_pubkeys.files }}'
-        ansible.builtin.command:
-            cmd: 'gpg --import {{ item.path }}'
-        changed_when: false
+    - name: '[gnupg.import] Import PGP keys to user keyring'
+      loop: '{{ pgp_pubkeys.files }}'
+      ansible.builtin.command:
+        cmd: 'gpg --import {{ item.path }}'
+      changed_when: false
 ...

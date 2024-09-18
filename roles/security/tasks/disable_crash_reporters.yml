@@ -2,15 +2,15 @@
 - name: '[disable_crash_reporters] Uninstall crash_reporters'
   become: true
   tags:
-      - 'apport'
-      - 'crash_reporters'
-      - 'whoopsie'
+    - 'apport'
+    - 'crash_reporters'
+    - 'whoopsie'
   loop:
-      - 'apport'
-      - 'whoopsie'
-      - 'whoopsie-preferences'
+    - 'apport'
+    - 'whoopsie'
+    - 'whoopsie-preferences'
   ansible.builtin.apt:
-      name: '{{ item }}'
-      state: 'absent'
-      purge: true
+    name: '{{ item }}'
+    state: 'absent'
+    purge: true
 ...

@@ -23,12 +23,11 @@ ADVERTISED = MATCHED = set()                                                    
 TIMESTAMP = {'advertised': {}, 'matched': {}}                                   # SSIDs + first time seen.
 
 
-
 def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    Argparse namespace.
-    '''
+        '''
     parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
     scan_type = parser.add_mutually_exclusive_group()                           # Specify passive or matched scan.
 
@@ -36,52 +35,52 @@ def get_arguments() -> Namespace:
         '--interface', '-i',
         dest='interface',
         default=get_default_interface(),
-        help='Set the wireless interface to scan from.'
+        help='Set the wireless interface to scan from.',
         )
     parser.add_argument(                                                        # --interval.
         '--interval', '-n',
         dest='interval',
         type=int,
         default=5,
-        help='Set the scan interval (seconds).'
+        help='Set the scan interval (seconds).',
         )
     scan_type.add_argument(                                                     # --match
         '--match', '-m',
         dest='ssids',
         type=str,
         nargs='*',
-        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.'
+        help='Specify the SSIDs to catch. Pass no SSIDs to run passively.',
         )
     parser.add_argument(                                                        # --logfile
         '--logfile', '-l',
         dest='log_file',
         type=Path,
         default=None,
-        help='Absolute path to write the logfile to. Default `None`.'
+        help='Absolute path to write the logfile to. Default `None`.',
         )
     parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `WARNING`.'
+        help='Specify logging verbosity. Default `WARNING`.',
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Look up verbosity in list[log_levels].
+    arguments.log_level = range(30, -1, -10)[min(arguments.log_level, 3)]       # Look up verbosity in list[log_levels].
 
     return arguments
 
 
 def enable_log(
     log_level: int = 30,                                                        # WARNING.
-    log_file: (Path, None) = None
+    log_file: (Path, None) = None,
         ) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
         :param log_file:    User-specified path to write log file. Default None.
-    '''
+        '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert log_level >= 0, '`log_level` must be >=0.'
     assert isinstance(log_file, (Path, type(None))), '`log_file` must be Path or None.'
@@ -107,14 +106,8 @@ def get_default_interface() -> str:
     '''
     Gets the name of the current WAN-connected interface.
         :return:    Name of the default gateway interface.
-    '''
-    interface = run(
-        ['ip', 'route', 'show'],
-        capture_output=True,
-        check=True,
-        ).stdout.decode('utf-8').split()[4]
-
-    return interface
+        '''
+    return run(['ip', 'route', 'show'], capture_output=True, check=True).stdout.decode('utf-8').split()[4]
 
 
 def iwlist(
@@ -124,7 +117,7 @@ def iwlist(
     Scans for advertised SSIDs.
         :param interface:   The network interface on which to run the scan.
         :return:            All advertised SSIDs found by `interface`.
-    '''
+        '''
     assert isinstance(interface, str), '`interface` must be instance of str().'
 
     cells = []                                                                  # List of SSIDs.
@@ -192,17 +185,15 @@ def display_ssids(
         ) -> None:
     '''
     Display a list of discovered SSIDS to STDOUT.
-       :param interface:        The interface to scan on.
-       :param ssids:            SSIDS to look for.
-       :param refresh_interval: The interval to refresh the screen on.
-    '''
-    def _print_dict(
-        dictionary: dict
-            ) -> None:
+        :param interface:           The interface to scan on.
+        :param ssids:               SSIDS to look for.
+        :param refresh_interval:    The interval to refresh the screen on.
+        '''
+    def _print_dict(dictionary: dict) -> None:
         '''
         Ingest and pretty-print a dictionary to STDOUT.
             :param dictionary:  The dictionary to print.
-        '''
+            '''
         assert isinstance(dictionary, dict), '`dictionary` must be instance of dict().'
 
         for key, value in dictionary.items():                                   # Print ssids/timestamps.
@@ -220,11 +211,13 @@ def display_ssids(
     for name in [ssid['essid'] for ssid in iwlist(interface)]:                  # Grab SSIDs.
         if name not in ADVERTISED:                                              # Add found SSID to set.
             ADVERTISED.add(name)
+
             TIMESTAMP['advertised'][name] = now
 
         if ssids and name in ssids:                                             # Add matched SSID to set.
             if name not in MATCHED:
                 MATCHED.add(name)
+
                 TIMESTAMP['matched'][name] = now
 
     LOG.debug(f'Found: {ADVERTISED}')

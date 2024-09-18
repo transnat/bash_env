@@ -21,7 +21,7 @@ def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
-    '''
+        '''
     parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
     parser.add_argument(                                                        # -12
@@ -56,7 +56,7 @@ def run_clock(
         :param twelve_hour: Boolean indicating if clock should show twelve-hour time.
         :param utc:         Boolean indicating if clock should show UTC time.
         :param run:         Run a clock continuously in the shell until SIGEXIT.
-    '''
+        '''
     assert isinstance(twelve_hour, bool), ':param twelve_hour: must be instance of bool().'
     assert isinstance(utc, bool), ':param utc: must be instance of bool().'
 
@@ -69,7 +69,7 @@ def run_clock(
             :param utc:         Boolean indicating if clock should show UTC time.
             :param fstring:     The f-string to pass to time.strftime().
             :return:            A formatted time string.
-        '''
+            '''
         return (datetime.utcnow() if utc else datetime.now()).strftime(fstring)
 
     div = '=' * len((fstring := '%I:%M:%S %p' if twelve_hour else '%H:%M:%S'))

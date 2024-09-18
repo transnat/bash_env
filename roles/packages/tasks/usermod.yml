@@ -3,19 +3,17 @@
   become: true
   tags: ['usermod']
   block:
-      - name: '[usermod] Create system groups'
-        loop:
-            - 'docker'
-        ansible.builtin.group:
-            name: '{{ item }}'
-            state: 'present'
-            system: true
+    - name: '[usermod.groups] Create system groups'
+      loop: ['docker']
+      ansible.builtin.group:
+        name: '{{ item }}'
+        state: 'present'
+        system: true
 
-      - name: '[usermod] Add ansible_user to groups'
-        loop:
-            - 'docker'
-        ansible.builtin.user:
-            name: '{{ ansible_user_id }}'
-            groups: '{{ item }}'
-            append: true
+    - name: '[usermod.user] Add ansible_user to groups'
+      loop: ['docker']
+      ansible.builtin.user:
+        name: '{{ ansible_user_id }}'
+        groups: '{{ item }}'
+        append: true
 ...

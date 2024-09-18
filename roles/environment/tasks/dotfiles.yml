@@ -2,22 +2,22 @@
 - name: '[dotfiles]'
   tags: ['dotfiles']
   block:
-      - name: '[dotfiles] Create ~/.config/ subdirectories'
-        loop: '{{ environment_dotfiles.subdirectories }}'
-        ansible.builtin.file:
-            path: '{{ item }}'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0700'
-            state: 'directory'
+    - name: '[dotfiles.dir] Create ~/.config/ subdirectories'
+      loop: '{{ environment_dotfiles.subdirectories }}'
+      ansible.builtin.file:
+        path: '{{ item }}'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0700'
+        state: 'directory'
 
-      - name: '[dotfiles] Symlink configuration files'
-        loop: '{{ environment_dotfiles.symlinks }}'
-        ansible.builtin.file:
-            src: '{{ item.src }}'
-            dest: '{{ item.dest }}'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            state: 'link'
-            force: true
+    - name: '[dotfiles.configs] Symlink configuration files'
+      loop: '{{ environment_dotfiles.symlinks }}'
+      ansible.builtin.file:
+        src: '{{ item.src }}'
+        dest: '{{ item.dest }}'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        state: 'link'
+        force: true
 ...

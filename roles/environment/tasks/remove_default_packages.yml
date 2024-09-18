@@ -1,104 +1,104 @@
 ---
-- name: '[remove_default_packages] Remove some annoying default packages'
+- name: '[remove_default_packages.system] Remove some annoying default packages'
   become: true
   tags: ['uninstall']
   when: "ansible_os_family == 'Debian'"
   block:
-      - name: '[remove_default_packages] APT'
-        tags: ['apt']
-        loop: '{{ environment_remove_defaults.apt }}'
-        ansible.builtin.apt:
-            name: '{{ item }}'
-            state: 'absent'
-            autoremove: true
-            purge: true
-            clean: true
+    - name: '[remove_default_packages.system.uninstall] APT'
+      tags: ['apt']
+      loop: '{{ environment_remove_defaults.apt }}'
+      ansible.builtin.apt:
+        name: '{{ item }}'
+        state: 'absent'
+        autoremove: true
+        purge: true
+        clean: true
 
-      - name: '[remove_default_packages] DNF'
-        tags: ['dnf']
-        loop: '{{ environment_remove_defaults.dnf }}'
-        ansible.builtin.dnf:
-            name: '{{ item }}'
-            state: 'absent'
-            autoremove: true
+    - name: '[remove_default_packages.system.uninstall] DNF'
+      tags: ['dnf']
+      loop: '{{ environment_remove_defaults.dnf }}'
+      ansible.builtin.dnf:
+        name: '{{ item }}'
+        state: 'absent'
+        autoremove: true
 
-- name: '[remove_default_packages] Purge Snap'
+- name: '[remove_default_packages.snap] Purge Snap'
   when: "ansible_distribution == 'Ubuntu'"
   become: true
   tags:
-      - 'snap'
-      - 'ubuntu'
-      - 'uninstall'
+    - 'snap'
+    - 'ubuntu'
+    - 'uninstall'
   block:
-      - name: 'Uninstall snap'
-        when: '"snapd" in packages_state.packages'
-        block:
-            - name: 'Stop, disable, and mask snapd system service'
-              when: '"snapd.service" in services_state.ansible_facts.services'
-              ansible.builtin.systemd_service:
-                  name: 'snapd.service'
-                  state: 'stopped'
-                  enabled: false
-                  masked: true
+    - name: '[remove_default_packages.snap.uninstall] Uninstall snap'
+      when: '"snapd" in packages_state.packages'
+      block:
+        - name: '[remove_default_packages.snap.snapd] Stop, disable, and mask snapd system service'
+          when: '"snapd.service" in services_state.ansible_facts.services'
+          ansible.builtin.systemd_service:
+            name: 'snapd.service'
+            state: 'stopped'
+            enabled: false
+            masked: true
 
-            - name: 'Uninstall snapd package'
-              ansible.builtin.apt:
-                  name: 'snapd'
-                  state: 'absent'
-                  purge: true
-                  autoclean: true
-                  autoremove: true
-                  force: true
-
-            - name: 'Hold snapd package in apt'
-              ansible.builtin.dpkg_selections:
-                  name: 'snapd'
-                  selection: 'hold'
-
-            - name: 'Prevent Snap installation via apt'
-              ansible.builtin.copy:
-                  dest: '/etc/apt/preferences.d/nosnap.pref'
-                  force: true
-                  owner: 'root'
-                  group: 'root'
-                  mode: '0644'
-                  content: |
-                      Package: snapd
-                      Pin: release a=*
-                      Pin-Priority: -10
-
-            - name: 'Remove snap system directories'
-              loop:
-                  - '/snap/'
-                  - '/var/lib/snapd/'
-                  - '/var/snap/'
-                  - '/root/snapd/'
-              ansible.builtin.file:
-                  name: '{{ item }}'
-                  state: 'absent'
-
-            - name: 'Update Apt cache'
-              ansible.builtin.apt:
-                  update_cache: true
-
-      - name: 'Find snap directories in user homes'
-        ansible.builtin.find:
-            paths: '/home'
-            depth: 2
-            file_type: 'directory'
-            recurse: true
-            patterns: 'snap'
-        register: 'user_snap_dirs'
-
-      - name: 'Debug snap dirs'
-        ansible.builtin.debug:
-            var: '{{ user_snap_dirs }}'
-            verbosity: 3
-
-      - name: 'Remove all ~/snap directories'
-        when: "user_snap_dirs.files | length > 0"
-        loop: '{{ user_snap_dirs.files }}'
-        ansible.builtin.file:
-            path: '{{ item.path }}'
+        - name: '[remove_default_packages.snap.uninstall] Uninstall snapd package'
+          ansible.builtin.apt:
+            name: 'snapd'
             state: 'absent'
+            purge: true
+            autoclean: true
+            autoremove: true
+            force: true
+
+        - name: '[remove_default_packages.snap.apt_hold] Hold snapd package in apt'
+          ansible.builtin.dpkg_selections:
+            name: 'snapd'
+            selection: 'hold'
+
+        - name: '[remove_default_packages.snap.apt_pref] Prevent Snap installation via apt'
+          ansible.builtin.copy:
+            dest: '/etc/apt/preferences.d/nosnap.pref'
+            force: true
+            owner: 'root'
+            group: 'root'
+            mode: '0644'
+            content: |
+              Package: snapd
+              Pin: release a=*
+              Pin-Priority: -10
+
+        - name: '[remove_default_packages.snap.dirs] Remove snap system directories'
+          loop:
+            - '/snap/'
+            - '/var/lib/snapd/'
+            - '/var/snap/'
+            - '/root/snapd/'
+          ansible.builtin.file:
+            name: '{{ item }}'
+            state: 'absent'
+
+        - name: '[remove_default_packages.snap.apt_update] Update Apt cache'
+          ansible.builtin.apt:
+            update_cache: true
+
+    - name: '[remove_default_packages.snap.user_home.register] Find snap directories in user homes'
+      ansible.builtin.find:
+        paths: '/home'
+        depth: 2
+        file_type: 'directory'
+        recurse: true
+        patterns: 'snap'
+      register: 'user_snap_dirs'
+
+    - name: '[remove_default_packages.snap.user_home.debug] Debug snap dirs'
+      ansible.builtin.debug:
+        var: '{{ user_snap_dirs }}'
+        verbosity: 3
+
+    - name: '[remove_default_packages.snap.user_home.rm] Remove all ~/snap directories'
+      when: "user_snap_dirs.files | length > 0"
+      loop: '{{ user_snap_dirs.files }}'
+      ansible.builtin.file:
+        path: '{{ item.path }}'
+        state: 'absent'
 ...

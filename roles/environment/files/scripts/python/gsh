@@ -31,28 +31,28 @@ def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace() instance of user arguments.
-    '''
+        '''
     parser = ArgumentParser(description=__doc__)                                # Instantiate parser.
 
     parser.add_argument(                                                        # file
         'file',
         type=Path,
         nargs='+',
-        help='Specify files to encrypt.'
+        help='Specify files to encrypt.',
         )
     parser.add_argument(                                                        # --recipients
         '--recipients', '-r',
         dest='recipients',
         nargs='+',
         default=[],
-        help='Specify who can decrypt the file.'
+        help='Specify who can decrypt the file.',
         )
     parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `WARNING`.'
+        help='Specify logging verbosity. Default `WARNING`.',
         )
 
     arguments = parser.parse_args()
@@ -61,13 +61,11 @@ def get_arguments() -> Namespace:
     return arguments
 
 
-def enable_log(
-    log_level: int = 30                                                         # WARNING.
-        ) -> None:
+def enable_log(log_level: int = 30) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
-    '''
+        '''
     assert isinstance(log_level, int) and log_level >= 0, '`log_level` must be instance of int() >= 0.'
 
     formatter = Formatter(                                                      # Log message header format.
@@ -81,14 +79,12 @@ def enable_log(
     LOG.setLevel(log_level)                                                     # User-specified log_level.
 
 
-def prechecks_pass(
-    arguments: Namespace
-        ) -> bool:
+def prechecks_pass(arguments: Namespace) -> bool:
     '''
     Check that inputs and processes are as expected.
         :param arguments:   User-specified cmdline arguments.
         :return:            Boolean indicating if prechecks have passed.
-    '''
+        '''
     assert isinstance(arguments, Namespace), '`arguments` must be instance of Namespace().'
 
     for gpg_proc in ('gpg-agent', 'gpgconf'):                                   # Check that a GPG agent is running.
@@ -122,14 +118,14 @@ def prechecks_pass(
 
 def encrypt(
     file: Path,
-    recipients: list
+    recipients: list[str],
         ) -> Path:
     '''
     Decrypt seed phrase and return its value.
         :param file:        The path of the file to be encrypted.
         :param recipients:  The recipient emails of the cipherfile.
         :return:            Path of the resultant cipherfile.
-    '''
+        '''
     assert isinstance(file, Path), '`file` must be instance of Path().'
     assert isinstance(recipients, list), '`recipients` must be instance of list().'
     assert {type(item) for item in recipients} == {str}, '`recipeints` must be list of strings.'
@@ -157,13 +153,11 @@ def encrypt(
     return outfile
 
 
-def munge_cipherfile(
-    cipherfile: Path
-        ) -> None:
+def munge_cipherfile(cipherfile: Path) -> None:
     '''
     Headers and footers to cipherfile needed for shell interpretation.
         :param cipherfile: The path of the file to be encrypted.
-    '''
+        '''
     assert isinstance(cipherfile, Path), '`cipherfile` must be instance of Path().'
 
     newlines = [                                                                # GSHscript cleartext header.

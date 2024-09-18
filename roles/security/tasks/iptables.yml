@@ -2,43 +2,43 @@
 - name: '[iptables]'
   become: true
   tags:
-      - 'firewall'
-      - 'iptables'
+    - 'firewall'
+    - 'iptables'
   block:
-      - name: '[iptables] Install iptables packages'
-        when: "ansible_os_family == 'Debian'"
-        tags: ['apt']
-        loop:
-            - 'iptables-persistent'
-            - 'netfilter-persistent'
-        ansible.builtin.apt:
-            name: '{{ item }}'
-            state: 'present'
+    - name: '[iptables.install] Install iptables packages'
+      when: "ansible_os_family == 'Debian'"
+      tags: ['apt']
+      loop:
+        - 'iptables-persistent'
+        - 'netfilter-persistent'
+      ansible.builtin.apt:
+        name: '{{ item }}'
+        state: 'present'
 
-      - name: '[iptables] Install iptables packages'
-        when: "ansible_os_family == 'RedHat'"
-        tags: ['dnf']
-        loop:
-            - 'iptables'
-            - 'nftables'
-        ansible.builtin.dnf:
-            name: '{{ item }}'
-            state: 'present'
+    - name: '[iptables.install] Install iptables packages'
+      when: "ansible_os_family == 'RedHat'"
+      tags: ['dnf']
+      loop:
+        - 'iptables'
+        - 'nftables'
+      ansible.builtin.dnf:
+        name: '{{ item }}'
+        state: 'present'
 
-      - name: '[fail2ban] Install iptables packages'
-        when: "ansible_os_family == 'ArchLinux'"
-        tags: ['pacman']
-        loop:
-            - 'iptables'
-            - 'iptables-nft'
-        community.general.pacman:
-            name: '{{ item }}'
-            state: 'present'
+    - name: '[fail2ban.install] Install iptables packages'
+      when: "ansible_os_family == 'ArchLinux'"
+      tags: ['pacman']
+      loop:
+        - 'iptables'
+        - 'iptables-nft'
+      community.general.pacman:
+        name: '{{ item }}'
+        state: 'present'
 
-      - name: '[iptables] Drop all incoming traffic'
-        ansible.builtin.iptables:
-            action: 'insert'
-            chain: 'INPUT'
-            policy: 'DROP'
-        notify: 'Restart iptables'
+    - name: '[iptables.drop_inbound] Drop all incoming traffic'
+      ansible.builtin.iptables:
+        action: 'insert'
+        chain: 'INPUT'
+        policy: 'DROP'
+      notify: '[handler] Restart iptables'
 ...

@@ -1,11 +1,8 @@
 ---
-- name: '[cron]'
-  tags: ['cron']
-  block:
-      - name: '[cron] Delete screenshots daily'
-        ansible.builtin.cron:
-            name: 'Delete screenshots.'
-            minute: 0
-            hour: 10
-            job: 'rm ${HOME}/Pictures/screenshots/*'
+- name: '[cron.screenshots] Delete screenshots daily'
+  ansible.builtin.cron:
+      name: 'Delete screenshots.'
+      minute: 0
+      hour: 10
+      job: 'rm ${HOME}/Pictures/screenshots/*'
 ...

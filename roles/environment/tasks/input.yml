@@ -1,13 +1,11 @@
 ---
-- name: '[input]'
+- name: '[inputrc] Symlink ~/.inputrc'
   tags: ['input']
-  block:
-      - name: '[input] Symlink ~/.inputrc'
-        ansible.builtin.file:
-            src: 'input/inputrc'
-            dest: '{{ ansible_env.HOME }}/.inputrc'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            force: true
-            state: 'link'
+  ansible.builtin.file:
+    src: 'input/inputrc'
+    dest: '{{ ansible_env.HOME }}/.inputrc'
+    owner: '{{ ansible_effective_user_id }}'
+    group: '{{ ansible_effective_group_id }}'
+    force: true
+    state: 'link'
 ...

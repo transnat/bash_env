@@ -3,31 +3,31 @@
   become: true
   tags: ['always']
   block:
-      - name: '[install_dependencies] APT packages'
-        when: "ansible_os_family == 'Debian'"
-        tags: ['apt']
-        block:
-            - name: 'Update APT cache'
-              ansible.builtin.apt:
-                  update_cache: true
-                  cache_valid_time: 3600
-                  name: '*'
+    - name: '[install_dependencies] APT packages'
+      when: "ansible_os_family == 'Debian'"
+      tags: ['apt']
+      block:
+        - name: 'Update APT cache'
+          ansible.builtin.apt:
+            update_cache: true
+            cache_valid_time: 3600
+            name: '*'
 
-            - name: 'Install APT packages'
-              ansible.builtin.apt:
-                  name: '{{ performance_tweaks_apt_packages }}'
+        - name: 'Install APT packages'
+          ansible.builtin.apt:
+            name: '{{ performance_tweaks_apt_packages }}'
 
-      - name: '[install_dependencies] DNF packages'
-        when: "ansible_os_family == 'RedHat'"
-        tags: ['dnf']
-        ansible.builtin.dnf:
-            name: '{{ performance_tweaks_dnf_packages }}'
-            state: 'present'
+    - name: '[install_dependencies] DNF packages'
+      when: "ansible_os_family == 'RedHat'"
+      tags: ['dnf']
+      ansible.builtin.dnf:
+        name: '{{ performance_tweaks_dnf_packages }}'
+        state: 'present'
 
-      - name: '[install_dependencies] Pacman packages'
-        when: "ansible_os_family == 'Archlinux'"
-        tags: ['pacman']
-        community.general.pacman:
-            name: '{{ performance_tweaks_pacman_packages }}'
-            state: 'present'
+    - name: '[install_dependencies] Pacman packages'
+      when: "ansible_os_family == 'Archlinux'"
+      tags: ['pacman']
+      community.general.pacman:
+        name: '{{ performance_tweaks_pacman_packages }}'
+        state: 'present'
 ...

@@ -2,68 +2,68 @@
 - name: '[ssh]'
   tags: ['ssh']
   block:
-      - name: '[ssh] Create ~/.ssh{,keys} directories'
-        ansible.builtin.file:
-            path: '{{ ansible_env.HOME }}/.ssh/keys'
-            state: 'directory'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            force: true
-            mode: '0700'
+    - name: '[ssh.dir] Create ~/.ssh{,keys} directories'
+      ansible.builtin.file:
+        path: '{{ ansible_env.HOME }}/.ssh/keys'
+        state: 'directory'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        force: true
+        mode: '0700'
 
-      - name: '[ssh] Copy SSH config'
-        ansible.builtin.copy:
-            src: 'files/ssh/config'
-            dest: '{{ ansible_env.HOME }}/.ssh/config'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
-            force: false
+    - name: '[ssh.config] Copy SSH config'
+      ansible.builtin.copy:
+        src: 'files/ssh/config'
+        dest: '{{ ansible_env.HOME }}/.ssh/config'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0600'
+        force: false
 
-      - name: '[ssh] Iterate role SSH pubkeys'
-        ansible.builtin.find:
-            paths: '{{ role_path }}/files/ssh/keys/'
-            file_type: 'file'
-            use_regex: true
-            patterns: '^.*\.pub$'
-        register: 'role_ssh_pubkeys'
+    - name: '[ssh.keys.enumerate] Iterate role SSH pubkeys'
+      ansible.builtin.find:
+        paths: '{{ role_path }}/files/ssh/keys/'
+        file_type: 'file'
+        use_regex: true
+        patterns: '^.*\.pub$'
+      register: 'role_ssh_pubkeys'
 
-      - name: '[ssh] Copy SSH pubkeys'
-        loop: '{{ role_ssh_pubkeys.files }}'
-        ansible.builtin.copy:
-            src: '{{ item.path }}'
-            dest: '{{ ansible_env.HOME }}/.ssh/keys/'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
-            force: true
+    - name: '[ssh.keys.install] Copy SSH pubkeys'
+      loop: '{{ role_ssh_pubkeys.files }}'
+      ansible.builtin.copy:
+        src: '{{ item.path }}'
+        dest: '{{ ansible_env.HOME }}/.ssh/keys/'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0600'
+        force: true
 
-      - name: '[ssh] Populate ~/.ssh/authorized_keys'
-        loop: '{{ role_ssh_pubkeys.files }}'
-        ansible.builtin.assemble:
-            src: '{{ role_path }}/files/ssh/keys/'
-            dest: '{{ ansible_env.HOME }}/.ssh/authorized_keys'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
+    - name: '[ssh.authorized_keys] Populate ~/.ssh/authorized_keys'
+      loop: '{{ role_ssh_pubkeys.files }}'
+      ansible.builtin.assemble:
+        src: '{{ role_path }}/files/ssh/keys/'
+        dest: '{{ ansible_env.HOME }}/.ssh/authorized_keys'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0600'
 
-      - name: '[ssh] Iterate local pubkeys'
-        ansible.builtin.find:
-            paths: '{{ ansible_env.HOME }}/.ssh/keys/'
-            file_type: 'file'
-            use_regex: true
-            patterns: '^.*\.pub$'
-        register: 'local_ssh_pubkeys'
+    - name: '[ssh.local_keys] Iterate local pubkeys'
+      ansible.builtin.find:
+        paths: '{{ ansible_env.HOME }}/.ssh/keys/'
+        file_type: 'file'
+        use_regex: true
+        patterns: '^.*\.pub$'
+      register: 'local_ssh_pubkeys'
 
-      - name: '[ssh] Update config'
-        loop: '{{ local_ssh_pubkeys.files }}'
-        ansible.builtin.lineinfile:
-            path: '{{ ansible_env.HOME }}/.ssh/config'
-            line: '    IdentityFile            {{ item.path }}'
-            insertafter: 'Host\s\*'
-            firstmatch: true
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0600'
-            state: 'present'
+    - name: '[ssh.update_config] Update config'
+      loop: '{{ local_ssh_pubkeys.files }}'
+      ansible.builtin.lineinfile:
+        path: '{{ ansible_env.HOME }}/.ssh/config'
+        line: '    IdentityFile            {{ item.path }}'
+        insertafter: 'Host\s\*'
+        firstmatch: true
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0600'
+        state: 'present'
 ...

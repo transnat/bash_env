@@ -3,11 +3,11 @@
   become: true
   tags: ['io_scheduler']
   ansible.builtin.blockinfile:
-      path: '/etc/modules-load.d/iosched.conf'
-      create: true
-      mode: '0644'
-      block: |
-          bfq
-          mq-deadline
-          kyber-iosched
+    path: '/etc/modules-load.d/iosched.conf'
+    create: true
+    mode: '0644'
+    block: |
+      bfq
+      mq-deadline
+      kyber-iosched
 ...

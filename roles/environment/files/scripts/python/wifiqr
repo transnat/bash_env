@@ -21,19 +21,19 @@ def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
-    '''
+        '''
     parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
     mutex_group = parser.add_mutually_exclusive_group()
 
     parser.add_argument(                                                        # ssid
         'ssid',
         type=str,
-        help='SSID of the wifi network.'
+        help='SSID of the wifi network.',
         )
     parser.add_argument(                                                        # passwd
         'passwd',
         type=str,
-        help='Password of the wifi network (pass an empty string for no password).'
+        help='Password of the wifi network (pass an empty string for no password).',
         )
     parser.add_argument(                                                        # --encryption
         '--encryption', '-e',
@@ -41,42 +41,40 @@ def get_arguments() -> Namespace:
         type=str,
         default='WPA',
         choices=['WPA', 'WEP'],
-        help='Encryption used by the SSID (default WPA).'
+        help='Encryption used by the SSID (default WPA).',
         )
     parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',
         default=0,
         action='count',
-        help='Specify logging verbosity. Default `WARNING`.'
+        help='Specify logging verbosity. Default `WARNING`.',
         )
     mutex_group.add_argument(                                                   # --string-only
         '--string-only',
         dest='string',
         action='store_true',
         default=False,
-        help='Output the QR wifi connection string and exit.'
+        help='Output the QR wifi connection string and exit.',
         )
     mutex_group.add_argument(                                                   # --output
         '--output', '-o',
         dest='output',
         type=Path,
-        help='Path to write the resultant PNG.'
+        help='Path to write the resultant PNG.',
         )
 
     arguments = parser.parse_args()
-    arguments.log_level = [30, 20, 10, 0][min(arguments.log_level, 3)]          # Magic.
+    arguments.log_level = range(30, -1, -10)[min(arguments.log_level, 3)]       # Magic.
 
     return arguments
 
 
-def enable_log(
-    log_level: int = 30,
-        ) -> None:
+def enable_log(log_level: int = 30) -> None:
     '''
     Enable logging and handle outputs.
         :param log_level:   User-specified log level. Default NOTSET.
-    '''
+        '''
     assert isinstance(log_level, int), '`log_level` must be int.'
     assert 50 >= log_level >= 0, '`log_level` must be between 0 - 50.'
 
@@ -96,7 +94,7 @@ def generate_qr(
     passwd: str,
     encryption: str,
     to_string: bool = False,
-    output: Path = None
+    output: Path = None,
         ) -> None:
     '''
     Generate a QR and print to stdout or a PNG.
@@ -105,7 +103,7 @@ def generate_qr(
         :param passwd:      Password for the wireless network.
         :param to_string:   If True, export QR string and exit.
         :param output:      Path to save the PNG to.
-    '''
+        '''
     assert isinstance(to_string, bool), ':param to_string: must be bool.'
 
     qr_code = QRCode()                                                          # Instantiate QR class.

@@ -3,43 +3,43 @@
   become: true
   tags: ['priviledge_escalation']
   block:
-      - name: '[priviledge_escalation] Disable securetty'
-        ansible.builtin.copy:
-            dest: '/etc/securetty'
-            owner: 'root'
-            group: 'root'
-            mode: '0400'
-            content: ''
-            force: false
+    - name: '[priviledge_escalation.securetty] Disable securetty'
+      ansible.builtin.copy:
+        dest: '/etc/securetty'
+        owner: 'root'
+        group: 'root'
+        mode: '0400'
+        content: ''
+        force: false
 
-      - name: '[priviledge_escalation] Set sudo timeout to 1'
-        ansible.builtin.lineinfile:
-            backup: false
-            line: 'Defaults timestamp_timeout=1'
-            path: '/etc/sudoers'
-            state: 'present'
+    - name: '[priviledge_escalation.sudo_timeout] Set sudo timeout to 1'
+      ansible.builtin.lineinfile:
+        backup: false
+        line: 'Defaults timestamp_timeout=1'
+        path: '/etc/sudoers'
+        state: 'present'
 
-      - name: '[priviledge_escalation] Disable su binary for non-sudo users'
-        ansible.builtin.file:
-            dest: '/bin/su'
-            owner: 'root'
-            group: 'root'
-            mode: '0700'
+    - name: '[priviledge_escalation.disable_su] Disable su binary for non-sudo users'
+      ansible.builtin.file:
+        dest: '/bin/su'
+        owner: 'root'
+        group: 'root'
+        mode: '0700'
 
-      - name: '[priviledge_escalation] Find pkexec binary'
-        ansible.builtin.find:
-            paths:
-                - '/bin'
-                - '/usr/bin'
-            patterns: '^pkexec$'
-        register: 'security_pkexec'
+    - name: '[priviledge_escalation.pkexec.find] Find pkexec binary'
+      ansible.builtin.find:
+        paths:
+          - '/bin'
+          - '/usr/bin'
+        patterns: '^pkexec$'
+      register: 'security_pkexec'
 
-      - name: '[priviledge_escalation] Disable pkexec binary for non-sudo users'
-        when: "security_pkexec.examined | length != 0"
-        loop: '{{ security_pkexec.files }}'
-        ansible.builtin.file:
-            dest: '{{ item }}'
-            owner: 'root'
-            group: 'root'
-            mode: '0700'
+    - name: '[priviledge_escalation.pkexec.disable] Disable pkexec binary for non-sudo users'
+      when: "security_pkexec.examined | length != 0"
+      loop: '{{ security_pkexec.files }}'
+      ansible.builtin.file:
+        dest: '{{ item }}'
+        owner: 'root'
+        group: 'root'
+        mode: '0700'
 ...

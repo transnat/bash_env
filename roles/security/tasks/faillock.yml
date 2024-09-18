@@ -3,40 +3,40 @@
   become: true
   tags: ['faillock']
   vars:
-      faillock_path: '/etc/security/faillock.conf'
+    faillock_path: '/etc/security/faillock.conf'
   block:
-      - name: '[faillock] Set reasonable faillock values'
-        loop:
-            - regex: 'dir = '                                                   # Faillock directory for user files.
-              string: 'dir = /var/run/faillock'
-            - regex: 'audit'                                                    # Log user to syslog if user not found.
-              string: 'audit'
-            - regex: 'silent'                                                   # Don't print messages.
-              string: '# silent'
-            - regex: 'no_log_info'                                              # Don't log info to syslog.
-              string: '# no_log_info'
-            - regex: 'local_users_only'                                         # Only track failed for local users.
-              string: 'local_users_only'
-            - regex: 'deny = '                                                  # Max. consecutive attemps before lock.
-              string: 'deny = 3'
-            - regex: 'fail_interval'                                            # Length of interval during lock attempts.
-              string: 'fail_interval = 900'
-            - regex: ' unlock_time = '                                          # Re-enablement interval.
-              string: 'unlock_time = 180'
-            - regex: 'even_deny_root'                                           # Enable faillock for root user.
-              string: 'even_deny_root'
-            - regex: 'root_unlock_time = '                                      # Re-enablement interval for root.
-              string: 'root_unlock_time = 30'
-            - regex: 'admin_group'                                              # Treat group users as root.
-              string: 'admin_group = sudo'
-        ansible.builtin.lineinfile:
-            path: '{{ faillock_path }}'
-            regexp: '{{ item.regex }}'
-            line: '{{ item.string }}'
+    - name: '[faillock.config] Set reasonable faillock values'
+      loop:
+        - regex: 'dir = '                                                       # Faillock directory for user files.
+          string: 'dir = /var/run/faillock'
+        - regex: 'audit'                                                        # Log user to syslog if user not found.
+          string: 'audit'
+        - regex: 'silent'                                                       # Don't print messages.
+          string: '# silent'
+        - regex: 'no_log_info'                                                  # Don't log info to syslog.
+          string: '# no_log_info'
+        - regex: 'local_users_only'                                             # Only track failed for local users.
+          string: 'local_users_only'
+        - regex: 'deny = '                                                      # Max. consecutive attemps before lock.
+          string: 'deny = 3'
+        - regex: 'fail_interval'                                                # Length of interval during lock attempts.
+          string: 'fail_interval = 900'
+        - regex: ' unlock_time = '                                              # Re-enablement interval.
+          string: 'unlock_time = 180'
+        - regex: 'even_deny_root'                                               # Enable faillock for root user.
+          string: 'even_deny_root'
+        - regex: 'root_unlock_time = '                                          # Re-enablement interval for root.
+          string: 'root_unlock_time = 30'
+        - regex: 'admin_group'                                                  # Treat group users as root.
+          string: 'admin_group = sudo'
+      ansible.builtin.lineinfile:
+        path: '{{ faillock_path }}'
+        regexp: '{{ item.regex }}'
+        line: '{{ item.string }}'
 
-      - name: '[faillock] Remove empty comments'                                # Just for readability.
-        ansible.builtin.replace:
-            path: '{{ faillock_path }}'
-            regexp: '^#$'
-            replace: ''
+    - name: '[faillock.cleanup] Remove empty comments'                          # Just for readability.
+      ansible.builtin.replace:
+        path: '{{ faillock_path }}'
+        regexp: '^#$'
+        replace: ''
 ...

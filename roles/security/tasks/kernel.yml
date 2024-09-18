@@ -3,39 +3,39 @@
   become: true
   tags: ['kernel']
   block:
-      - name: '[kernel] Set sysctl variables'
-        loop: '{{ security_sysctl_vars }}'
-        ansible.posix.sysctl:
-            ignoreerrors: true
-            name: '{{ item.name }}'
-            value: '{{ item.value }}'
-            state: 'present'
-            sysctl_set: true
-            reload: true
+    - name: '[kernel.sysctl] Set sysctl variables'
+      loop: '{{ security_sysctl_vars }}'
+      ansible.posix.sysctl:
+        ignoreerrors: true
+        name: '{{ item.name }}'
+        value: '{{ item.value }}'
+        state: 'present'
+        sysctl_set: true
+        reload: true
 
-      - name: '[kernel] Use jitterentropy_rng'
-        ansible.builtin.blockinfile:
-            path: '/etc/modules-load.d/jitterentropy_rng.conf'
-            create: true
-            mode: '644'
-            block: 'jitterentropy_rng'
+    - name: '[kernel.jitterentropy_rng] Use jitterentropy_rng'
+      ansible.builtin.blockinfile:
+        path: '/etc/modules-load.d/jitterentropy_rng.conf'
+        create: true
+        mode: '644'
+        block: 'jitterentropy_rng'
 
-      - name: '[kernel] Check /etc/default/grub exists'
-        ansible.builtin.stat:
-            path: '/etc/default/grub'
-        register: 'security_etcdefaultgrub'
+    - name: '[kernel.grub.config] Check /etc/default/grub exists'
+      ansible.builtin.stat:
+        path: '/etc/default/grub'
+      register: 'security_etcdefaultgrub'
 
-      - name: '[kernel] Deploy grub flags'
-        when: 'security_etcdefaultgrub.stat.exists'
-        loop: '{{ security_grub_flags }}'
-        ansible.builtin.replace:
-            path: '/etc/default/grub'
-            regexp: >
-                ^(GRUB_CMDLINE_LINUX=(?:(?![" ]{{ item.option | regex_escape }}=).)*)(?:[" ]
-                {{ item.option | regex_escape }}=\S+)?(.*")$'
-            replace: '\1 {{ item.option }}={{ item.value }}\2'
-            backup: true
-        notify:
-            - 'Update grub'
-            - 'Update initramfs'
+    - name: '[kernel.grub.flags] Deploy grub flags'
+      when: 'security_etcdefaultgrub.stat.exists'
+      loop: '{{ security_grub_flags }}'
+      ansible.builtin.replace:
+        path: '/etc/default/grub'
+        regexp: >
+          ^(GRUB_CMDLINE_LINUX=(?:(?![" ]{{ item.option | regex_escape }}=).)*)(?:[" ]
+          {{ item.option | regex_escape }}=\S+)?(.*")$'
+        replace: '\1 {{ item.option }}={{ item.value }}\2'
+        backup: true
+      notify:
+        - '[handler] Update grub'
+        - '[handler] Update initramfs'
 ...

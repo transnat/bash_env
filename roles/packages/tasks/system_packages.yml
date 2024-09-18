@@ -5,24 +5,24 @@
   when: "ansible_os_family == 'Debian'"
   tags: ['apt']
   ansible.builtin.apt:
-      name: '{{ item.name }}'
-      state: 'present'
-      update_cache: true
-      cache_valid_time: 3600
+    name: '{{ item.name }}'
+    state: 'present'
+    update_cache: true
+    cache_valid_time: 3600
 
 - name: '[system_packages] Install DNF packages'
   become: true
   when: "ansible_os_family == 'RedHat'"
   tags: ['dnf']
   ansible.builtin.dnf:
-      name: '{{ packages_dnf }}'
-      state: 'present'
+    name: '{{ packages_dnf }}'
+    state: 'present'
 
 - name: '[system_packages] Install Pacman packages'
   when: "ansible_os_family == 'Archlinux'"
   become: true
   tags: ['pacman']
   community.general.pacman:
-      name: '{{ packages_pacman }}'
-      state: 'present'
+    name: '{{ packages_pacman }}'
+    state: 'present'
 ...

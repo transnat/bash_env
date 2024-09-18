@@ -1,21 +1,21 @@
 ---
-- name: '[screen] User scripts'
+- name: '[scripts] User scripts'
   tags: ['scripts']
   block:
-      - name: '[screen] Make ~/.local/lib/'
-        ansible.builtin.file:
-            path: '{{ ansible_env.HOME }}/.local/lib'
-            state: 'directory'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            mode: '0700'
+    - name: '[scripts.dir] Make ~/.local/lib/'
+      ansible.builtin.file:
+        path: '{{ ansible_env.HOME }}/.local/lib'
+        state: 'directory'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        mode: '0700'
 
-      - name: '[screen] Symlink ~/.local/lib/scripts'
-        ansible.builtin.file:
-            src: 'scripts/'
-            dest: '{{ ansible_env.HOME }}/.local/lib/scripts'
-            owner: '{{ ansible_effective_user_id }}'
-            group: '{{ ansible_effective_group_id }}'
-            force: true
-            state: 'link'
+    - name: '[scripts.install] Symlink ~/.local/lib/scripts'
+      ansible.builtin.file:
+        src: 'scripts/'
+        dest: '{{ ansible_env.HOME }}/.local/lib/scripts'
+        owner: '{{ ansible_effective_user_id }}'
+        group: '{{ ansible_effective_group_id }}'
+        force: true
+        state: 'link'
 ...

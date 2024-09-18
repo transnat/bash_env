@@ -1,35 +1,42 @@
 " Global default config -------------------------------------------------------
-filetype indent on                      " Turn indent, filetype checking.
-syntax on                               " Turn on syntax highlighting.
+filetype    indent on                           " Turn indent, filetype checking.
+syntax      on                                  " Turn on syntax highlighting.
 
-set encoding=utf-8                      " Set encoding.
-set expandtab                           " Expand tabs to spaces.
-set fileformat=unix                     " Duh.
-set foldenable                          " Enable tab folding
-set foldmethod=indent                   " Set fold for indented lines.
-set hlsearch                            " Highlight search results.
-set incsearch                           " Start highlighting at search.
-set wrap linebreak nolist               " Don't break in the middle of a word.
-set lazyredraw                          " Don't rerender the screen.
-set number                              " Enable line numbers.
-set showmatch                           " Match brackets.
-set spelllang=en_us                     " Set spellcheck language.
-set tabstop=4                           " The width of a TAB is set to 4.
-set softtabstop=4                       " Sets the number of columns for a TAB.
-set shiftwidth=0                        " Indents will match tabstop.
-set shell=bash                          " Set external shell to bash.
+set         encoding=utf-8                      " Set encoding.
+set         expandtab                           " Expand tabs to spaces.
+set         fileformat=unix                     " Duh.
+set         foldenable                          " Enable tab folding
+set         foldmethod=indent                   " Set fold for indented lines.
+set         hlsearch                            " Highlight search results.
+set         incsearch                           " Start highlighting at search.
+set         wrap linebreak nolist               " Don't break in the middle of a word.
+set         lazyredraw                          " Don't rerender the screen.
+set         number                              " Enable line numbers.
+set         showmatch                           " Match brackets.
+set         spelllang=en_us                     " Set spellcheck language.
+set         tabstop=4                           " The width of a TAB is set to 4.
+set         softtabstop=4                       " Sets the number of columns for a TAB.
+set         shiftwidth=0                        " Indents will match tabstop.
+set         shell=bash                          " Set external shell to bash.
 
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle
 
+" ALE config ------------------------------------------------------------------
 let g:ale_linters = {
+\   'Dockerfile': [
+\       'hadolint',
+\       ],
 \   'javascript': [
-\       'jslint'
+\       'jslint',
 \       ],
 \   'python': [
-\       'pylint --rcfile /home/blueberry/.config/pylint.pylintrc',
 \       'flake8 --max-line-length=120',
+\       'pylint --rcfile /home/blueberry/.config/pylint.pylintrc',
 \        ],
+\   'terraform': [
+\       'terraform fmt',
+\       ],
 \   'yaml': [
 \       'yamllint -d ~/.config/yamllint.yml',
 \       ],

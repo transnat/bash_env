@@ -16,21 +16,21 @@ from ipaddress import ip_address
 from requests import get
 from tabulate import tabulate
 
-setlocale(LC_ALL, 'en_US.UTF-8')                                            # Set locale.
+setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 
 def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
-    '''
-    parser = ArgumentParser(description=__doc__)                            # Instantiate argument parser.
+        '''
+    parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                    # ip_addresses
+    parser.add_argument(                                                        # ip_addresses
         'ip_addresses',
         type=str,
         nargs='+',
-        help='List of IP addresses to retrieve.'
+        help='List of IP addresses to retrieve.',
         )
 
     return parser.parse_args()
@@ -38,29 +38,25 @@ def get_arguments() -> Namespace:
 
 def get_location_table(
     api_key: str,
-    ip_addr: str
+    ip_addr: str,
         ) -> list:
     '''
     Gets location data from IPStack.com and returns it as a list of lists.
         :param api_key:     The IPStack API key for the request.
         :param ip_addr:     The IP address to get location info for.
         :return:            List object containing GeoIP data.
-    '''
+        '''
     assert isinstance(api_key, str), '`api_key` must be str.'
     assert isinstance(ip_addr, str) and ip_address(ip_addr), '`ip_addr` must be valid IP string.'
 
-    ip_info = get(
-        f'http://api.ipstack.com/{ip_addr}',
-        params={'access_key': api_key},
-        timeout=2
-        ).json()
+    ip_info = get(f'http://api.ipstack.com/{ip_addr}', params={'access_key': api_key}, timeout=2).json()
     table = [
         ['IP:', ip_info['ip']],
         ['City:', ip_info['city']],
         ['Region:', ip_info['region_name']],
         ['ZIP:', ip_info['zip']],
         ['Country:', ip_info['country_name']],
-        ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}']
+        ['Coordinates:', f'{ip_info["latitude"]}, {ip_info["longitude"]}'],
         ]
 
     return table

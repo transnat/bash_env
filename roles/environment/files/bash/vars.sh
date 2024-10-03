@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 #-*- coding:utf-8 -*-
 
+BROWSER="$(which google-chrome)"
+GPG_TTY="$(tty)"
+SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+
 # Application defaults
-export BROWSER="$(which google-chrome)"
+export BROWSER
 export EDITOR="vim"
 export TERM="xterm-256color"
 
@@ -10,8 +14,6 @@ export TERM="xterm-256color"
 export ALIASES="${HOME}/.bash/aliases.sh"
 export FUNCTIONS="${HOME}/.bash/functions/"
 export SCRIPTS="${HOME}/.local/lib/scripts/"
-export SECRETS="${HOME}/.bash/secrets.asc"
-export WSECRETS="${HOME}/.bash/wsecrets.asc"
 export VARS="${HOME}/.bash/vars.sh"
 export GH="git@github.com"
 export DOMAIN="taumotors.com"
@@ -26,11 +28,11 @@ export ANSIBLE_DUPLICATE_YAML_DICT_KEY=ignore
 export GOOGLE_CREDENTIALS_PATH="/home/caseysparkz/.local/bin/gam/client_secrets.json"
 
 ## PGP
-export GPG_TTY="$(tty)"
+export GPG_TTY
 export PGP_KEY_ID="0xF64015B97A016D10"
 
 ## SSH
-export SSH_AUTH_SOCK="$(gpgconf --list-dirs agent-ssh-socket)"
+export SSH_AUTH_SOCK
 
 ## Terraform
 export TF_CLI_CONFIG_FILE="${HOME}/.terraform.d/terraformrc"

@@ -1,24 +1,36 @@
 " Global default config -------------------------------------------------------
-filetype    indent on                           " Turn indent, filetype checking.
-syntax      on                                  " Turn on syntax highlighting.
+filetype    indent on
+syntax      on
 
-set         encoding=utf-8                      " Set encoding.
-set         expandtab                           " Expand tabs to spaces.
-set         fileformat=unix                     " Duh.
-set         foldenable                          " Enable tab folding
-set         foldmethod=indent                   " Set fold for indented lines.
-set         hlsearch                            " Highlight search results.
-set         incsearch                           " Start highlighting at search.
-set         wrap linebreak nolist               " Don't break in the middle of a word.
-set         lazyredraw                          " Don't rerender the screen.
-set         number                              " Enable line numbers.
-set         showmatch                           " Match brackets.
-set         spelllang=en_us                     " Set spellcheck language.
-set         tabstop=4                           " The width of a TAB is set to 4.
-set         softtabstop=4                       " Sets the number of columns for a TAB.
-set         shiftwidth=0                        " Indents will match tabstop.
-set         shell=bash                          " Set external shell to bash.
+set         encoding=utf-8
+set         expandtab
+set         fileformat=unix
+set         foldenable
+set         foldmethod=indent
+set         hlsearch
+set         incsearch
+set         wrap linebreak nolist
+set         lazyredraw
+set         number
+set         showmatch
+set         spelllang=en_us
+set         tabstop=4
+set         softtabstop=4
+set         shiftwidth=0
+set         shell=bash
 
+" Autoclose parenthetical punctuation -----------------------------------------
+inoremap ` ``<Esc>i
+inoremap ' ''<Esc>i
+inoremap " ""<Esc>i
+inoremap ''' ''''''<Esc>hhi
+inoremap """ """"""<Esc>hhi
+inoremap ( ()<Esc>i
+inoremap < <><Esc>i
+inoremap [ []<Esc>i
+inoremap { {}<Esc>i
+
+" Abbreviated commands --------------------------------------------------------
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle
 

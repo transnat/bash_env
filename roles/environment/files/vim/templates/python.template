@@ -6,11 +6,8 @@
 '''SCRIPT DOCSTRING'''
 
 from argparse import ArgumentParser, Namespace
-from locale import LC_ALL, setlocale
 from logging import FileHandler, Formatter, StreamHandler, getLogger
 from pathlib import Path
-
-setlocale(LC_ALL, 'en_US.UTF-8')                                                # Set locale.
 
 LOG = getLogger()                                                               # Root logger instance.
 
@@ -41,7 +38,7 @@ def get_arguments() -> Namespace:
     arguments.log_file = arguments.log_file.absolute()                          # Cast log file path to absolute path.
     arguments.log_level = range(30, -1, -10)[min(arguments.log_level, 3)]       # Set log verbosity.
 
-    assert arguments.log_file.parent.exists(), f':--log-file {arguments.log_file.parent}: parent dir does not exist.'
+    assert arguments.log_file.parent.exists(), f":--log-file {arguments.log_file=}: parent dir does not exist."
 
     return arguments
 
@@ -55,7 +52,7 @@ def configure_log(
         :param log_level:   User-specified log level. Default WARNING (30).
         :param log_file:    User-specified path to write log file. Default None.
         '''
-    assert 0 <= log_level <= 50, ':param log_level: must be instance of int() between 0 and 50 (incl.).'
+    assert isinstance(log_level, int), f":param {log_level=}: must be instance of int()"
 
     handle_stream = StreamHandler()                                             # Log stream handler.
     formatter = Formatter(
@@ -68,8 +65,8 @@ def configure_log(
     LOG.addHandler(handle_stream)                                               # Log to screen.
 
     if log_file:
-        assert isinstance(log_file, Path), ':param log_file: must be pathlib.Path() or str().'
-        assert log_file.parent.exists(), f':param log_file ({log_file}): parent dir does not exist.'
+        assert isinstance(log_file, (str, Path)), f":param {log_file=}: must be str() or pathlib.Path()."
+        assert log_file.parent.exists(), f":param {log_file=}: parent dir does not exist."
 
         handle_file = FileHandler(log_file)                                     # Log file handler.
 

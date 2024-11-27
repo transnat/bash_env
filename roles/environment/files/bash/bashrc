@@ -58,6 +58,7 @@ case "${TERM}" in                                                               
         ;;
 esac
 
+# shellcheck disable=SC2015,SC2086
 if [ -x "$(which dircolors)" ]; then                                            # Enable color support.
     test -r "${HOME}/.dircolors"                                            \
         && eval "$(dircolors -b ${HOME}/.dircolors)"                        \
@@ -80,10 +81,12 @@ if [ -f "${HOME}/.env/roles/environment/files/bash/vars.sh" ]; then             
     source "${HOME}/.env/roles/environment/files/bash/vars.sh"
 fi
 
+# shellcheck disable=SC1090
 if [ -f "${ALIASES}" ]; then                                                    # Source alias definitions.
     source "${ALIASES}"
 fi
 
+# shellcheck disable=SC1090
 if [ -d "${FUNCTIONS}" ]; then                                                  # Source function definitions.
     for FUNC in "${FUNCTIONS}"/*; do source "${FUNC}"; done
 fi
@@ -92,8 +95,11 @@ if [ -x "$(which thefuck)" ]; then                                              
   eval "$(thefuck --alias)"
 fi
 
-if [ -x "$(which wal)" ]; then                                                  # Enable wal.
-  wal -i "$(grep file "${HOME}/.config/nitrogen/bg-saved.cfg" | cut -c 6-99)" -q -b 000000
+#if [ -x "$(which wal)" ]; then                                                  # FIXME
+#  wal -i "$(grep file "${HOME}/.config/nitrogen/bg-saved.cfg" | cut -c 6-99)" -q -b 000000
+#fi
+if [ -f /home/caseysparkz/.cache/wal/sequences ]; then
+  cat /home/caseysparkz/.cache/wal/sequences
 fi
 
 complete -C /usr/bin/terraform tf                                               # Enable bash completion for terraform.

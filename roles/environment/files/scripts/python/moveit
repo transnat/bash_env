@@ -16,6 +16,13 @@ setlocale(LC_ALL, 'en_US.UTF-8')                                                
 
 START_X = size().width / 2                                                      # Horizontal center.
 START_Y = size().height / 2                                                     # Vertical center.
+DIST = 10
+
+
+def graceful_exit() -> None:
+    '''Excuses the program and exits with code 0.'''
+    print('\nExiting.')
+    sys_exit(0)
 
 
 def user_confirmation() -> bool:
@@ -24,15 +31,13 @@ def user_confirmation() -> bool:
         :return:    Boolean indicating manual user confirmation.
     '''
     try:
-        return input('Press <ENTER> to start.\nPress any other key to abort.') == ''
+        return input('Press <ENTER> to start.\nPress any other key to abort. ') == ''
 
     except KeyboardInterrupt:
-        return False
+        graceful_exit()
 
 
-def move_cursor(
-    interval: int = 3,
-        ) -> None:
+def move_cursor(interval: int = 3) -> None:
     '''
     Move the cursor in a 10px square.
         :param interval:    Interval on which to move the cursor.
@@ -40,7 +45,7 @@ def move_cursor(
     sleep(interval)
     moveTo(START_X, START_Y)                                                    # Center the cursor.
     sleep(interval)
-    moveTo(START_X + randint(0, 100), START_Y + randint(0, 100))                # Move random vector.
+    moveTo(START_X + randint(0, DIST), START_Y + randint(0, DIST))              # Move random vector (0px to 10px).
 
 
 if __name__ == '__main__':
@@ -51,8 +56,6 @@ if __name__ == '__main__':
             try:
                 move_cursor()
             except KeyboardInterrupt:
-                print('\nExiting.')
-                sys_exit(0)
+                graceful_exit()
     else:
-        print('\nExiting.')
-        sys_exit(0)
+        graceful_exit()

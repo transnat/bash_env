@@ -1,10 +1,12 @@
 " Markdown config -------------------------------------------------------------
 autocmd Filetype markdown
-    \ set tabstop=4                                                         |
-    \ set softtabstop=4                                                     |
+    \ set tabstop=3                                                         |
+    \ set colorcolumn=81                                                    |
+    \ set softtabstop=3                                                     |
     \ set expandtab                                                         |
     \ set modeline                                                          |
     \ set spell spelllang=en_us                                             |
-    \ set textwidth=120                                                     |
+    \ set spellfile=~/.vim/spell.utf-8.add                                  |
+    \ set textwidth=80                                                      |
     \ set linebreak                                                         |
     \ set wrap

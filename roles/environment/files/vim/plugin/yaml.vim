@@ -1,5 +1,6 @@
 " YAML config -----------------------------------------------------------------
 autocmd Filetype yaml
+    \ set colorcolumn=80,121                                                |
     \ set autoindent                                                        |
     \ set tabstop=2                                                         |
     \ set softtabstop=2                                                     |

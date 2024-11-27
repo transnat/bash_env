@@ -30,7 +30,7 @@ def get_arguments() -> Namespace:
         type=Path,
         default=None,
         help='Absolute path to write the logfile to.',
-        )
+    )
     parser.add_argument(                                                        # --verbose
         '--verbose', '-v',
         dest='log_level',

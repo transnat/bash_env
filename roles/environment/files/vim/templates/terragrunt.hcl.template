@@ -1,0 +1,87 @@
+#-*- coding:utf-8 -*-
+# Author:       Casey Sparks
+# Date:         DATE
+# Description:  Terragrunt configuration.
+
+terraform {
+  source = ""
+
+#   backend "s3" {
+#     bucket = "mybucket"
+#     key    = "path/to/my/key"
+#     region = "us-east-1"
+#   }
+
+#   extra_arguments "retry_lock" {
+#     commands  = get_terraform_commands_that_need_locking()
+#     arguments = ["-lock-timeout=20m"]
+#   }
+
+#   extra_arguments "custom_vars" {
+#     commands = [
+#       "apply",
+#       "plan",
+#       "import",
+#       "push",
+#       "refresh"
+#     ]
+#     required_var_files = ["${get_parent_terragrunt_dir()}/common.tfvars"]
+#   }
+
+#   before_hook "before_hook_1" {
+#     commands     = ["apply", "plan"]
+#     execute      = ["echo", "Foo"]
+#   }
+
+#   before_hook "before_hook_2" {
+#     commands     = ["apply"]
+#     execute      = ["echo", "Bar"]
+#     run_on_error = true
+#   }
+
+#   before_hook "interpolation_hook_1" {
+#     commands     = ["apply", "plan"]
+#     execute      = ["echo", get_env("HOME", "HelloWorld")]
+#     run_on_error = false
+#   }
+
+#   after_hook "after_hook_1" {
+#     commands     = ["apply", "plan"]
+#     execute      = ["echo", "Baz"]
+#     run_on_error = true
+#   }
+
+#   error_hook "error_hook_1" {
+#     commands  = ["apply", "plan"]
+#     execute   = ["echo", "Error Hook executed"]
+#     on_errors = [".*"]
+#   }
+
+#   after_hook "init_from_module" {
+#     commands = ["init-from-module"]
+#     execute  = ["cp", "${get_parent_terragrunt_dir()}/foo.tf", "."]
+#   }
+
+#   after_hook "terragrunt-read-config" {
+#     commands = ["terragrunt-read-config"]
+#     execute  = ["bash", "script/get_aws_credentials.sh"]
+#   }
+}
+
+# remote_state {
+#   backend = "s3"
+#   config = {
+#     bucket = "mybucket"
+#     key    = "path/to/my/key"
+#     region = "us-east-1"
+#   }
+# }
+
+# include "root" {
+#   path   = find_in_parent_folders()
+#   expose = true
+# }
+
+# inputs = {
+#   remote_state_config = include.root.remote_state
+# }

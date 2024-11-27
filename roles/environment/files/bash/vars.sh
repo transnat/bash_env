@@ -12,11 +12,13 @@ export TERM="xterm-256color"
 
 # Misc.
 export ALIASES="${HOME}/.bash/aliases.sh"
-export FUNCTIONS="${HOME}/.bash/functions/"
-export SCRIPTS="${HOME}/.local/lib/scripts/"
-export VARS="${HOME}/.bash/vars.sh"
-export GH="git@github.com"
+export DOCKER_HOST="unix:///var/run/docker.sock"
 export DOMAIN="taumotors.com"
+export FUNCTIONS="${HOME}/.bash/functions/"
+export GH="git@github.com"
+export SCRIPTS="${HOME}/.local/lib/scripts/"
+export TMPDIR="${HOME}/tmp"
+export VARS="${HOME}/.bash/vars.sh"
 
 ## Ansible
 export ANSIBLE_DUPLICATE_YAML_DICT_KEY=ignore

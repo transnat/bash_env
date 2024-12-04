@@ -5,21 +5,26 @@
 ---
 version: '3.3'
 services:
-    NAME:
-        image: 'NAME'
-        environment: {}                                                         # TODO
-        entrypoint: '/usr/bin/bash'
-        build:
-            context: '.'
-            platforms: ['linux/amd64']
-            network: 'host'
-            args: {}                                                            # TODO
-            labels:
-                kz.caseyspar.docker.image.os.name: ''
-                kz.caseyspar.docker.image.os.version: ''
-                kz.caseyspar.docker.image.description: ''
-                kz.caseyspar.docker.maintainer.author.name: 'Casey Sparks'
-                kz.caseyspar.docker.maintainer.author.email: 'docker@caseyspar.kz'
-                kz.caseyspar.docker.app.name: 'NAME'
-                kz.caseyspar.docker.app.version: ''
+  NAME:
+    container_name: 'NAME'
+    image: ''                                                                   # TODO
+    environment: {}                                                             # TODO
+    entrypoint: '/usr/bin/bash'
+    build:
+      context: '.'
+      platforms: ['linux/amd64']
+      network: 'NAME'
+      args: {}                                                                  # TODO
+      labels:
+        kz.caseyspar.docker.image.os.name: ''
+        kz.caseyspar.docker.image.os.version: ''
+        kz.caseyspar.docker.image.description: ''
+        kz.caseyspar.docker.maintainer.author.name: 'Casey Sparks'
+        kz.caseyspar.docker.maintainer.author.email: 'docker@caseyspar.kz'
+        kz.caseyspar.docker.app.name: 'NAME'
+        kz.caseyspar.docker.app.version: ''
+volumes:
+  NAME_data:
+networks:
+  NAME:
 ...

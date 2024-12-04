@@ -5,6 +5,9 @@
 **/.*.swp
 **/*swp
 
+# Submodules
+roles/environment/files/vim/pack/vim-ale/start/**
+
 # Ansible
 **/*.retry
 **/collections

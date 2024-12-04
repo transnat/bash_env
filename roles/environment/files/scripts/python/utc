@@ -8,25 +8,21 @@
 
 from argparse import ArgumentParser, Namespace
 from datetime import datetime
-from locale import setlocale, LC_ALL
 from pytz import utc
-
-
-setlocale(LC_ALL, 'en_US.UTF-8')
 
 
 def get_arguments() -> Namespace:
     '''
     Get cmdline arguments.
         :return:    argparse.Namespace instance of user arguments.
-    '''
+        '''
     parser = ArgumentParser(description=__doc__)                                # Instantiate argument parser.
 
-    parser.add_argument(                                                        # --logfile
+    parser.add_argument(                                                        # --time
         '-t', '--time',
         default=get_local_time(),
         type=str,
-        help='Local time to convert in HHmm format, like 1830.',
+        help='Time to convert to UTC in HH:mm format, like 18:30.',
         )
 
     return parser.parse_args()
@@ -36,29 +32,23 @@ def get_local_time() -> str:
     '''
     Get local system time.
         :return:    Formatted time string, like '%H%m'.
-    '''
-    return datetime.now().strftime('%H%M')
+        '''
+    return datetime.now().strftime('%H:%M')
 
 
-def get_utc_time(
-    input_time: str = None,
-        ) -> str:
+def convert_to_utc(input_time: str) -> str:
     '''
     Continuously display a text-based clock.
-        :param input_time:         Boolean indicating if clock should show UTC time.
-    '''
-    assert isinstance(input_time, (str, type(None))), ':param input_time: must be instance of str() or Nonetype.'
+        :param input_time:  Time string to convert, like HH:mm.
+        :return:            UTC time string, like HH:mm.
+        '''
+    assert isinstance(input_time, str), ':param input_time: must be time string or None.'
+    assert int(input_time.split(':')[0]) < 24 and int(input_time.split(':')[1]) < 60, ':param input_time: invalid time.'
 
-    if input_time:
-        assert input_time.isdigit(), ':param input_time: must be time string or None.'
-        assert int(input_time[:2]) < 24 and int(input_time[2:4]) < 60, ':param input_time: invalid time.'
-
-    localtime = datetime.strptime(input_time, '%H%M') if input_time else datetime.now()
-
-    return localtime.astimezone(utc).strftime('%H%M')
+    return datetime.strptime(input_time, '%H:%M').astimezone(utc).strftime('%H:%M')
 
 
 if __name__ == '__main__':
     args = get_arguments()
 
-    print(get_utc_time(args.time))
+    print(convert_to_utc(args.time))

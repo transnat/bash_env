@@ -32,7 +32,5 @@ let g:ale_linters={
 \       'flake8 --max-line-length=120',
 \       ],
 \   'shell': ['shellcheck'],
-\   'yaml': [
-\       'yamllint --config-data ~/.config/yamllint.yml',
-\       ],
+\   'yaml': ['yamllint --config-data ~/.config/yamllint.yml'],
 \   }

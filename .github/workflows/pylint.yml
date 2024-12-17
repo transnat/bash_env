@@ -1,41 +1,50 @@
 ---
 name: 'Validate Python code'
+# Author:       Casey Sparks
+# Date:         November 15, 2023
+# Description:  Lint all Python files with Pylint, Flake8, and Ruff
+
 on:
-  push:
-    branches: 'main'
-    paths: 'roles/environment/files/scripts/python/**'
   pull_request:
-    branches: 'main'
-    paths: 'roles/environment/files/scripts/python/**'
+    branches: ['main']
+    paths:
+      - '**/*.py'
+      - 'roles/environment/files/scripts/python/**'
 jobs:
-  pylint:
+  ruff:
+    name: 'ruff format --check'
     runs-on: 'ubuntu-latest'
-    strategy.matrix.python-version: ['3.11']
+    permissions:
+      contents: 'write'
+    needs: ['pylint']
     steps:
-      - uses: 'actions/checkout@v3'
+      - name: 'Checkout'
+        uses: 'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683' # v4.2.2
+        with:
+          fetch-depth: 0
 
-      - name: 'Set up Python ${{ matrix.python-version }}'
-        uses: 'actions/setup-python@v3'
-        with.python-version: '${{ matrix.python-version }}'
+      - name: 'Reformat all Python code'
+        id: 'ruff'
+        uses: 'astral-sh/ruff-action@d0a0e814ec17e92d33be7d24dd922b479f1bcd38' # v1.1.1
+        with:
+          args: 'format --config .github/config/ruff.toml'
+          changed-files: 'true'
 
-      - name: 'Install dependencies'
-        run: >
-          sudo apt update
-          && python -m pip install --no-cache-dir
-            pylint
-            -r python_requirements.txt
-        working-directory: 'roles/environment/files/scripts/'
+      - name: 'Import PGP identity'
+        id: 'import_pgp'
+        uses: 'crazy-max/ghaction-import-gpg@cb9bde2e2525e640591a934b1fd28eef1dcaf5e5' # v6.2.0
+        with:
+          gpg_private_key: '${{ secrets.ORG_SIGNING_KEY }}'
+          passphrase: '${{ secrets.ORG_SIGNING_KEY_PASSPHRASE }}'
+          git_user_signingkey: true
+          git_commit_gpgsign: true
 
-      - name: 'Lint Python scripts with PyLint'
-        run: >
-          pylint
-            --max-line-length=120
-            --disable E0611,R0801,W0212,W1116,W1203
-            ./*
-            # E0611: no-name-in-module
-            # R0801: similar-lines
-            # W0212: protected-acess
-            # W1116: isinstance-second-argument-not-valid-type
-            # W1203: logging-fstring-interpolation
-        working-directory: 'roles/environment/files/scripts/python'
+      - name: 'Auto-commit/push changes'
+        uses: 'stefanzweifel/git-auto-commit-action@8621497c8c39c72f3e2a999a26b4ca1b5058a842' # v5.0.1
+        with:
+          commit_author: '${{ steps.import_pgp.outputs.name }} <${{ steps.import_pgp.outputs.email }}>'
+          commit_user_email: '${{ steps.import_pgp.outputs.email }}'
+          commit_user_name: '${{ steps.import_pgp.outputs.name }}'
+          commit_message: 'style(python): Auto-reformatted Terraform configs'
+          file_pattern: '*.py'
 ...

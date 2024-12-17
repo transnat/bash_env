@@ -18,11 +18,3 @@
 	url = git@github.com:dense-analysis/vim-ale
 	branch = master
 	shallow = true
-[submodule "vim-lsp"]
-	path = roles/environment/files/vim/pack/plugins/start/lsp
-	url = git@github.com:prabirshrestha/vim-lsp
-	branch = master
-[submodule "vim-lsp-settings"]
-	path = roles/environment/files/vim/pack/plugins/start/vim-lsp-settings
-	url = git@github.com:mattn/vim-lsp-settings
-	branch = master

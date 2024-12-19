@@ -1,44 +1,34 @@
-#!/usr/bin/env bash
-# -*- coding:utf-8 -*-
+#!/usr/bin/env sh
+#-*- encoding:utf-8 -*-
 
 xrandr                                                                      \
-    --output                                                                \
-eDP-1                                                                       \
-    --off                                                                   \
-    --output                                                                \
-HDMI-1                                                                      \
-    --off                                                                   \
-    --output                                                                \
-DP-1                                                                        \
-    --off                                                                   \
-    --output                                                                \
-HDMI-2                                                                      \
-    --off                                                                   \
-    --output                                                                \
-DP-2                                                                        \
-    --off                                                                   \
-    --output                                                                \
-HDMI-3                                                                      \
-    --off                                                                   \
-    --output                                                                \
-DP-3                                                                        \
-    --off                                                                   \
-    --output                                                                \
-DP-4                                                                        \
-    --off                                                                   \
-    --output                                                                \
-DP-3-1                                                                      \
-    --mode 1920x1080                                                        \
-    --pos 0x281                                                             \
-    --rotate normal                                                         \
-    --output                                                                \
-DP-3-2                                                                      \
-    --primary                                                               \
-    --mode 1920x1080                                                        \
-    --pos 1920x281                                                          \
-    --rotate normal                                                         \
-    --output                                                                \
-DP-3-3                                                                      \
-    --mode 1920x1080                                                        \
-    --pos 3840x0                                                            \
-    --rotate right
+    --output eDP1                                                           \
+        --off                                                               \
+    --output DP1                                                            \
+        --off                                                               \
+    --output DP2                                                            \
+        --off                                                               \
+    --output DP3                                                            \
+        --off                                                               \
+    --output DP3-1                                                          \
+        --mode 1920x1080                                                    \
+        --pos 0x319                                                         \
+        --rotate normal                                                     \
+    --output DP3-2                                                          \
+        --mode 1920x1080                                                    \
+        --pos 1920x319                                                      \
+        --rotate normal                                                     \
+    --output DP3-3                                                          \
+        --mode 1920x1080                                                    \
+        --pos 3840x0                                                        \
+        --rotate right                                                      \
+    --output DP4                                                            \
+        --off                                                               \
+    --output HDMI1                                                          \
+        --off                                                               \
+    --output HDMI2                                                          \
+        --off                                                               \
+    --output HDMI3                                                          \
+        --off                                                               \
+    --output VIRTUAL1                                                       \
+        --off

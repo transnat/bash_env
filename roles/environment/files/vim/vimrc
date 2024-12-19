@@ -19,37 +19,19 @@ set         softtabstop=4
 set         shiftwidth=0
 set         shell=bash
 
-" Autoclose parenthetical punctuation -----------------------------------------
-inoremap ` ``<Esc>i
-inoremap ' ''<Esc>i
-inoremap " ""<Esc>i
-inoremap ''' ''''''<Esc>hhi
-inoremap """ """"""<Esc>hhi
-inoremap ( ()<Esc>i
-inoremap < <><Esc>i
-inoremap [ []<Esc>i
-inoremap { {}<Esc>i
-
 " Abbreviated commands --------------------------------------------------------
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle
 
 " ALE config ------------------------------------------------------------------
 let g:ale_linters = {
-\   'Dockerfile': [
-\       'hadolint',
-\       ],
-\   'javascript': [
-\       'jslint',
-\       ],
+\   'Dockerfile': ['hadolint'],
+\   'Markdown': ['mdl'],
+\   'javascript': ['jslint'],
 \   'python': [
 \       'flake8 --max-line-length=120',
 \       'pylint --rcfile /home/blueberry/.config/pylint.pylintrc',
 \        ],
-\   'terraform': [
-\       'terraform fmt',
-\       ],
-\   'yaml': [
-\       'yamllint -d ~/.config/yamllint.yml',
-\       ],
+\   'terraform': ['tflint'],
+\   'yaml': ['yamllint -d ~/.config/yamllint.yml'],
 \   }

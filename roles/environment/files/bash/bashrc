@@ -13,6 +13,7 @@ HISTFILESIZE=2000                                                               
 shopt -s histappend                                                             # Append to the history file.
 shopt -s checkwinsize                                                           # Check the window size; update LIN/COL.
 shopt -s globstar
+set -o pipefail
 
 if ! shopt -oq posix; then                                                      # Enable programmable completion features.
     if [ -f /usr/share/bash-completion/bash_completion ]; then

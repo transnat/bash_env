@@ -1,8 +1,9 @@
 # ~/.screenrc
 startup_message off
 caption always
-defshell -bash
-shelltitle "$ |bash"
+shell -$SHELL
+defshell -${SHELL}
+shelltitle "$ |${SHELL}"
 defscrollback 3000000
 defslowpaste 1
 hardstatus alwayslistline

@@ -7,5 +7,5 @@
             name: 'Delete screenshots.'
             minute: 0
             hour: 10
-            job: 'rm ${HOME}/Pictures/screenshots/*'
+            job: 'rm ${HOME}/Pictures/{S,s}creenshots/*'
 ...

@@ -20,6 +20,7 @@ set softtabstop=4                       " Sets the number of columns for a TAB.
 set ruler                               " Enable the ruler.
 set shiftwidth=0                        " Indents will match tabstop.
 set shell=bash                          " Set external shell to bash.
+set spellfile=~/.vim/spell.utf-8.add    " Spelling/dictionary (but don't enable spellcheck).
 
 cnoreabbrev nt NERDTree
 cnoreabbrev nT NERDTreeToggle

@@ -88,4 +88,5 @@
 **/cython_debug/
 
 # Vim
-roles/environment/files/vim/spell*
+roles/environment/files/vim/spell.utf-8.add
+roles/environment/files/vim/spell.utf-8.add.spl

@@ -8,5 +8,4 @@ autocmd Filetype markdown
     \ set spell spelllang=en_us                                             |
     \ set spellfile=~/.vim/spell.utf-8.add                                  |
     \ set textwidth=80                                                      |
-    \ set linebreak                                                         |
-    \ set wrap
+    \ set wrap linebreak nolist
